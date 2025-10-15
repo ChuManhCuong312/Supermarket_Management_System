@@ -3,6 +3,7 @@ package com.supermarket.management.controller;
 import com.supermarket.management.entity.Customer;
 import com.supermarket.management.repository.CustomerRepository;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -17,7 +18,13 @@ public class CustomerController {
     }
 
     @GetMapping
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+    public List<Customer> getAllCustomers(
+            @RequestParam(defaultValue = "asc") String sort) {
+
+        Sort.Direction direction = sort.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        return customerRepository.findAll(Sort.by(direction, "name"));
     }
 }
