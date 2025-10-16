@@ -4,6 +4,7 @@ package com.supermarket.management.service;
 import com.supermarket.management.entity.Customer;
 import com.supermarket.management.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Sort;
 import java.util.List;
 @Service
 public class CustomerService {
@@ -16,8 +17,16 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
+    public List<Customer> getAllCustomers(String sort, String sortBy) {
+        String sortField = "points".equalsIgnoreCase(sortBy) ? "points" : "name";
 
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+        if ("desc".equalsIgnoreCase(sort)) {
+            return customerRepository.findAll(Sort.by(Sort.Direction.DESC, sortField));
+        } else if ("asc".equalsIgnoreCase(sort)) {
+            return customerRepository.findAll(Sort.by(Sort.Direction.ASC, sortField));
+        } else {
+            return customerRepository.findAll();
+        }
     }
+
 }
