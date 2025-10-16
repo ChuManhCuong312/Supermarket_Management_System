@@ -19,12 +19,17 @@ public class CustomerController {
 
     @GetMapping
     public List<Customer> getAllCustomers(
-            @RequestParam(defaultValue = "asc") String sort) {
+            @RequestParam(required = false, defaultValue = "none") String sort,
+            @RequestParam(required = false, defaultValue = "name") String sortBy) {
 
-        Sort.Direction direction = sort.equalsIgnoreCase("desc")
-                ? Sort.Direction.DESC
-                : Sort.Direction.ASC;
+        String sortField = "points".equalsIgnoreCase(sortBy) ? "points" : "name";
 
-        return customerRepository.findAll(Sort.by(direction, "name"));
+        if ("desc".equalsIgnoreCase(sort)) {
+            return customerRepository.findAll(Sort.by(Sort.Direction.DESC, sortField));
+        } else if ("asc".equalsIgnoreCase(sort)) {
+            return customerRepository.findAll(Sort.by(Sort.Direction.ASC, sortField));
+        } else {
+            return customerRepository.findAll();
+        }
     }
 }
