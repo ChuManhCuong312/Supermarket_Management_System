@@ -8,15 +8,13 @@ import org.springframework.data.domain.Sort;
 import java.util.List;
 @Service
 public class CustomerService {
-
-
     private final CustomerRepository customerRepository;
-
 
     public CustomerService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
     }
 
+    // Hiển thị danh sách
     public List<Customer> getAllCustomers(String sort, String sortBy) {
         String sortField = "points".equalsIgnoreCase(sortBy) ? "points" : "name";
 
@@ -28,6 +26,8 @@ public class CustomerService {
             return customerRepository.findAll();
         }
     }
+
+    // Thêm mới
     public Customer createCustomer(Customer customer) {
         customer.setName(customer.getName() != null ? customer.getName().trim() : null);
         customer.setEmail(customer.getEmail() != null ? customer.getEmail().trim() : null);
@@ -47,4 +47,14 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-}
+
+        // Xóa khách hàng theo ID
+        public void deleteCustomer(Integer id) {
+            if (!customerRepository.existsById(id)) {
+                throw new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + id);
+            }
+            customerRepository.deleteById(id);
+        }
+    }
+
+

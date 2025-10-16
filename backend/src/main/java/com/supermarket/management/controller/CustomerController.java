@@ -43,5 +43,16 @@ public class CustomerController {
                     .body("Lỗi server: " + e.getMessage());
         }
     }
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteCustomer(@PathVariable Integer id) {
+        try {
+            customerService.deleteCustomer(id);
+            return ResponseEntity.ok("Xóa khách hàng thành công!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi server: " + e.getMessage());
+        }
+    }
 }
