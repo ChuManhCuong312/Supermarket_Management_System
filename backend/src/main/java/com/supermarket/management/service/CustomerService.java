@@ -6,6 +6,8 @@ import com.supermarket.management.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class CustomerService {
     private final CustomerRepository customerRepository;
@@ -28,6 +30,7 @@ public class CustomerService {
     }
 
     // Thêm mới
+    @Transactional
     public Customer createCustomer(Customer customer) {
         trimCustomer(customer);
         validateCustomer(customer, null);
@@ -36,6 +39,7 @@ public class CustomerService {
     }
 
         // Xóa khách hàng theo ID
+        @Transactional
         public void deleteCustomer(Integer id) {
             if (!customerRepository.existsById(id)) {
                 throw new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + id);
@@ -44,6 +48,7 @@ public class CustomerService {
         }
 
     // Chỉnh sửa thông tin
+    @Transactional
     public Customer updateCustomer(Integer id, Customer updatedCustomer) {
         Customer existingCustomer = customerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Khách hàng không tồn tại"));
@@ -63,6 +68,20 @@ public class CustomerService {
 
         return customerRepository.save(existingCustomer);
     }
+
+    // Tìm kiếm
+    public List<Customer> searchCustomers(String name, String phone, String email, String membershipType) {
+        // trim các input
+        name = (name != null) ? name.trim() : null;
+        phone = (phone != null) ? phone.trim() : null;
+        email = (email != null) ? email.trim() : null;
+        membershipType = (membershipType != null) ? membershipType.trim() : null;
+
+        return customerRepository.searchAdvanced(name, phone, email, membershipType);
+    }
+
+
+    // Validator
     private void validateCustomer(Customer customer, Customer existingCustomer) {
         // name
         if (customer.getName() == null || customer.getName().isEmpty())
