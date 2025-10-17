@@ -37,4 +37,16 @@ public class EmployeeController {
                     .body("Lỗi server: " + e.getMessage());
         }
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateEmployee(@PathVariable Integer id, @RequestBody Employee employee) {
+        try {
+            Employee updatedEmployee = employeeService.updateEmployee(id, employee);
+            return ResponseEntity.ok(updatedEmployee);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi server: " + e.getMessage());
+        }
+    }
 }

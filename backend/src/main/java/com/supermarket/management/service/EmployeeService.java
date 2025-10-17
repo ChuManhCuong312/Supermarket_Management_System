@@ -1,14 +1,14 @@
 package com.supermarket.management.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.supermarket.management.repository.EmployeeRepository;
 import com.supermarket.management.entity.Employee;
-import org.springframework.data.domain.Sort;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.regex.Pattern;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 public class EmployeeService {
@@ -33,8 +33,27 @@ public class EmployeeService {
     @Transactional
     public Employee createEmployee(Employee employee) {
         trimEmployee(employee);
-        validateEmployee(employee);
+        validateEmployee(employee, null);
         return employeeRepository.save(employee);
+    }
+
+    // Chỉnh sửa thông tin nhân viên
+    @Transactional
+    public Employee updateEmployee(Integer id, Employee updatedEmployee) {
+        Employee existingEmployee = employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Nhân viên không tồn tại"));
+
+        trimEmployee(updatedEmployee);
+        validateEmployee(updatedEmployee, existingEmployee);
+
+        existingEmployee.setName(updatedEmployee.getName());
+        existingEmployee.setPosition(updatedEmployee.getPosition());
+        existingEmployee.setPhone(updatedEmployee.getPhone());
+        existingEmployee.setEmail(updatedEmployee.getEmail());
+        existingEmployee.setSalary(updatedEmployee.getSalary());
+        existingEmployee.setShift(updatedEmployee.getShift());
+
+        return employeeRepository.save(existingEmployee);
     }
 
     // Trim dữ liệu (xóa khoảng trắng)
@@ -47,8 +66,7 @@ public class EmployeeService {
     }
 
     // Validate dữ liệu
-    private void validateEmployee(Employee employee) {
-        // Kiểm tra trường không trống
+    private void validateEmployee(Employee employee, Employee existingEmployee) {
         if (employee.getName() == null || employee.getName().isEmpty()) {
             throw new IllegalArgumentException("Tên nhân viên không được để trống");
         }
@@ -68,31 +86,40 @@ public class EmployeeService {
             throw new IllegalArgumentException("Ca làm việc không được để trống");
         }
 
-        // Validate email
         String emailRegex = "^[A-Za-z0-9+_.-]+@gmail\\.com$";
         if (!Pattern.matches(emailRegex, employee.getEmail())) {
             throw new IllegalArgumentException("Email không hợp lệ");
         }
 
-        // Validate SĐT (10-15 chữ số)
         String phoneRegex = "^0[0-9]{9}$";
         if (!Pattern.matches(phoneRegex, employee.getPhone())) {
             throw new IllegalArgumentException("SĐT phải gồm 10 số và bắt đầu bằng 0");
         }
 
-        // Validate Lương >= 0
         if (employee.getSalary().signum() < 0) {
             throw new IllegalArgumentException("Lương không thể âm");
         }
 
-        // Kiểm tra email đã tồn tại
-        if (employeeRepository.existsByEmail(employee.getEmail())) {
-            throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");
+        if (existingEmployee == null) {
+            if (employeeRepository.existsByEmail(employee.getEmail())) {
+                throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");
+            }
+        } else {
+            if (!existingEmployee.getEmail().equals(employee.getEmail())
+                    && employeeRepository.existsByEmail(employee.getEmail())) {
+                throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");
+            }
         }
 
-        // Kiểm tra SĐT đã tồn tại
-        if (employeeRepository.existsByPhone(employee.getPhone())) {
-            throw new IllegalArgumentException("Số điện thoại đã tồn tại trong hệ thống");
+        if (existingEmployee == null) {
+            if (employeeRepository.existsByPhone(employee.getPhone())) {
+                throw new IllegalArgumentException("Số điện thoại đã tồn tại trong hệ thống");
+            }
+        } else {
+            if (!existingEmployee.getPhone().equals(employee.getPhone())
+                    && employeeRepository.existsByPhone(employee.getPhone())) {
+                throw new IllegalArgumentException("Số điện thoại đã tồn tại trong hệ thống");
+            }
         }
     }
 }
