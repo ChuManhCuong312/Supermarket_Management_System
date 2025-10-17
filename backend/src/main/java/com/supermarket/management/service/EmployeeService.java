@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.supermarket.management.repository.EmployeeRepository;
 import com.supermarket.management.entity.Employee;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -13,8 +14,17 @@ public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    // Lấy danh sách tất cả nhân viên
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+    // Hiển thị và sắp xếp
+    public List<Employee> getAllEmployees(String sort, String sortBy) {
+        String sortField = "salary".equalsIgnoreCase(sortBy) ? "salary" : "name";
+
+        if ("desc".equalsIgnoreCase(sort)) {
+            return employeeRepository.findAll(Sort.by(Sort.Direction.DESC, sortField));
+        } else if ("asc".equalsIgnoreCase(sort)) {
+            return employeeRepository.findAll(Sort.by(Sort.Direction.ASC, sortField));
+        } else {
+            return employeeRepository.findAll();
+        }
     }
+
 }

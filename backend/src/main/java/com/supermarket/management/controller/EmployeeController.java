@@ -19,8 +19,9 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Employee>> getAllEmployees() {
-        List<Employee> employees = employeeService.getAllEmployees();
-        return new ResponseEntity<>(employees, HttpStatus.OK);
+    public List<Employee> getAllEmployees(
+            @RequestParam(required = false, defaultValue = "none") String sort,
+            @RequestParam(required = false, defaultValue = "name") String sortBy) {
+        return employeeService.getAllEmployees(sort, sortBy);
     }
 }
