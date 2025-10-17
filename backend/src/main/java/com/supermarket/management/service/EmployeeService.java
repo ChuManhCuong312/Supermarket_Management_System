@@ -56,6 +56,15 @@ public class EmployeeService {
         return employeeRepository.save(existingEmployee);
     }
 
+    // Xóa nhân viên
+    @Transactional
+    public void deleteEmployee(Integer id) {
+        if (!employeeRepository.existsById(id)) {
+            throw new IllegalArgumentException("Không tìm thấy nhân viên với ID: " + id);
+        }
+        employeeRepository.deleteById(id);
+    }
+
     // Trim dữ liệu (xóa khoảng trắng)
     private void trimEmployee(Employee employee) {
         if (employee.getName() != null) employee.setName(employee.getName().trim());
