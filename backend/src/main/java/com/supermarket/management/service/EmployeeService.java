@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import com.supermarket.management.repository.EmployeeRepository;
 import com.supermarket.management.entity.Employee;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.regex.Pattern;
 
 import java.util.List;
 
@@ -27,4 +29,70 @@ public class EmployeeService {
         }
     }
 
+    // Thêm mới nhân viên
+    @Transactional
+    public Employee createEmployee(Employee employee) {
+        trimEmployee(employee);
+        validateEmployee(employee);
+        return employeeRepository.save(employee);
+    }
+
+    // Trim dữ liệu (xóa khoảng trắng)
+    private void trimEmployee(Employee employee) {
+        if (employee.getName() != null) employee.setName(employee.getName().trim());
+        if (employee.getPosition() != null) employee.setPosition(employee.getPosition().trim());
+        if (employee.getPhone() != null) employee.setPhone(employee.getPhone().trim());
+        if (employee.getEmail() != null) employee.setEmail(employee.getEmail().trim());
+        if (employee.getShift() != null) employee.setShift(employee.getShift().trim());
+    }
+
+    // Validate dữ liệu
+    private void validateEmployee(Employee employee) {
+        // Kiểm tra trường không trống
+        if (employee.getName() == null || employee.getName().isEmpty()) {
+            throw new IllegalArgumentException("Tên nhân viên không được để trống");
+        }
+        if (employee.getPhone() == null || employee.getPhone().isEmpty()) {
+            throw new IllegalArgumentException("Số điện thoại không được để trống");
+        }
+        if (employee.getEmail() == null || employee.getEmail().isEmpty()) {
+            throw new IllegalArgumentException("Email không được để trống");
+        }
+        if (employee.getPosition() == null || employee.getPosition().isEmpty()) {
+            throw new IllegalArgumentException("Chức vụ không được để trống");
+        }
+        if (employee.getSalary() == null) {
+            throw new IllegalArgumentException("Lương không được để trống");
+        }
+        if (employee.getShift() == null || employee.getShift().isEmpty()) {
+            throw new IllegalArgumentException("Ca làm việc không được để trống");
+        }
+
+        // Validate email
+        String emailRegex = "^[A-Za-z0-9+_.-]+@gmail\\.com$";
+        if (!Pattern.matches(emailRegex, employee.getEmail())) {
+            throw new IllegalArgumentException("Email không hợp lệ");
+        }
+
+        // Validate SĐT (10-15 chữ số)
+        String phoneRegex = "^0[0-9]{9}$";
+        if (!Pattern.matches(phoneRegex, employee.getPhone())) {
+            throw new IllegalArgumentException("SĐT phải gồm 10 số và bắt đầu bằng 0");
+        }
+
+        // Validate Lương >= 0
+        if (employee.getSalary().signum() < 0) {
+            throw new IllegalArgumentException("Lương không thể âm");
+        }
+
+        // Kiểm tra email đã tồn tại
+        if (employeeRepository.existsByEmail(employee.getEmail())) {
+            throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");
+        }
+
+        // Kiểm tra SĐT đã tồn tại
+        if (employeeRepository.existsByPhone(employee.getPhone())) {
+            throw new IllegalArgumentException("Số điện thoại đã tồn tại trong hệ thống");
+        }
+    }
 }

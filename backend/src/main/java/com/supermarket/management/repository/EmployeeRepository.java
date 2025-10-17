@@ -7,4 +7,6 @@ import java.util.List;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
+    boolean existsByPhone(String phone);
+    boolean existsByEmail(String email);
 }

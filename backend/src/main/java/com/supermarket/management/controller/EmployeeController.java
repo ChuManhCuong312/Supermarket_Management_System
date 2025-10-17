@@ -24,4 +24,17 @@ public class EmployeeController {
             @RequestParam(required = false, defaultValue = "name") String sortBy) {
         return employeeService.getAllEmployees(sort, sortBy);
     }
+
+    @PostMapping
+    public ResponseEntity<?> createEmployee(@RequestBody Employee employee) {
+        try {
+            Employee newEmployee = employeeService.createEmployee(employee);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newEmployee);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi server: " + e.getMessage());
+        }
+    }
 }
