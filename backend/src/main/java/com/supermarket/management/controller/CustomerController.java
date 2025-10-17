@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
-
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
