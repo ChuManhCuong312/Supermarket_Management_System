@@ -35,7 +35,7 @@ public class Customer {
     @Min(value = 0, message = "Điểm tích lũy không thể âm")
     @Column(name = "points", nullable = false)
     private Integer points = 0;
-
+    public Customer() {}
 
     // Getter & Setter
     public Integer getId() { return id; }
