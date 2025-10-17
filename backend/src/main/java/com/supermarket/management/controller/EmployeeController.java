@@ -61,4 +61,18 @@ public class EmployeeController {
                     .body("Lỗi server: " + e.getMessage());
         }
     }
+    @GetMapping("/search")
+    public ResponseEntity<?> searchEmployee(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String position,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String email){
+        try {
+            List<Employee> results = employeeService.searchEmployee(name,position, phone, email);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi server: " + e.getMessage());
+        }
+    }
 }

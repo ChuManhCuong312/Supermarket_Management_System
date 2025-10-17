@@ -65,6 +65,18 @@ public class EmployeeService {
         employeeRepository.deleteById(id);
     }
 
+    // Tìm kiếm
+    public List<Employee> searchEmployee(String name, String position, String phone, String email) {
+        // trim các input
+        name = (name != null) ? name.trim() : null;
+        position = (position != null) ? position.trim() : null;
+        phone = (phone != null) ? phone.trim() : null;
+        email = (email != null) ? email.trim() : null;
+
+        return employeeRepository.searchAdvanced(name, position, phone, email);
+    }
+
+
     // Trim dữ liệu (xóa khoảng trắng)
     private void trimEmployee(Employee employee) {
         if (employee.getName() != null) employee.setName(employee.getName().trim());
