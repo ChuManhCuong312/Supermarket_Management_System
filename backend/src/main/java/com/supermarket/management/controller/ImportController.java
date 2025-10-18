@@ -1,11 +1,14 @@
 package com.supermarket.management.controller;
 
 import com.supermarket.management.entity.ImportEntity;
-import com.supermarket.management.service.ImportService;
+import com.supermarket.management.repository.ImportRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/imports")
@@ -18,49 +21,55 @@ public class ImportController {
         this.importRepository = importRepository;
     }
 
-    // ------------------ GET ALL ------------------
+    // ALL
     @GetMapping
     public ResponseEntity<?> getAllImports() {
         try {
             List<ImportEntity> list = importRepository.findAll();
             return ResponseEntity.ok(list);
-        } catch (Exception e) {
+        }
+        // System exception
+        catch (Exception e) {
             return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch imports", e.getMessage());
         }
     }
 
-    // ------------------ GET BY ID ------------------
+    // ------------------ LẤY IMPORT THEO ID ------------------
     @GetMapping("/{id}")
     public ResponseEntity<?> getImportById(@PathVariable Integer id) {
         try {
+            // Tìm import theo id
             return importRepository.findById(id)
                     .map(ResponseEntity::ok)
                     .orElseGet(() -> buildError(HttpStatus.NOT_FOUND, "Import not found with id: " + id, null));
-        } catch (Exception e) {
+        }
+        // System exception
+        catch (Exception e) {
             return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to get import", e.getMessage());
         }
     }
 
-    // ------------------ CREATE ------------------
+    // ------------------ TẠO MỚI IMPORT ------------------
     @PostMapping
-    public ResponseEntity<?> createImport(@RequestBody ImportEntity importEntity) {
+    public ResponseEntity<?> createImport(@Valid @RequestBody ImportEntity importEntity) {
         try {
-            if (importEntity.getImportDate() == null) {
-                return buildError(HttpStatus.BAD_REQUEST, "Import date cannot be null", null);
-            }
+            // Dữ liệu hợp lệ → lưu import
             ImportEntity saved = importRepository.save(importEntity);
             return new ResponseEntity<>(saved, HttpStatus.CREATED);
-        } catch (Exception e) {
+        }
+        // Exception: lỗi hệ thống (ví dụ lỗi DB, null pointer,...)
+        catch (Exception e) {
             return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create import", e.getMessage());
         }
     }
 
-    // ------------------ UPDATE ------------------
+    // ------------------ CẬP NHẬT IMPORT ------------------
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateImport(@PathVariable Integer id, @RequestBody ImportEntity updated) {
+    public ResponseEntity<?> updateImport(@PathVariable Integer id, @Valid @RequestBody ImportEntity updated) {
         try {
             return importRepository.findById(id)
                     .map(existing -> {
+                        // Cập nhật thông tin import
                         existing.setSupplierId(updated.getSupplierId());
                         existing.setImportDate(updated.getImportDate());
                         existing.setTotalAmount(updated.getTotalAmount());
@@ -69,30 +78,47 @@ public class ImportController {
                         ImportEntity saved = importRepository.save(existing);
                         return ResponseEntity.ok(saved);
                     })
+                    // Nếu không tồn tại import theo id → 404
                     .orElseGet(() -> buildError(HttpStatus.NOT_FOUND, "Import not found with id: " + id, null));
-        } catch (Exception e) {
+        }
+        // Exception: các lỗi hệ thống hoặc validation không mong muốn
+        catch (Exception e) {
             return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to update import", e.getMessage());
         }
     }
 
-    // ------------------ DELETE ------------------
+    // ------------------ XÓA IMPORT ------------------
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteImport(@PathVariable Integer id) {
         try {
+            // Nếu không tìm thấy → trả lỗi 404
             if (!importRepository.existsById(id)) {
                 return buildError(HttpStatus.NOT_FOUND, "Import not found with id: " + id, null);
             }
             importRepository.deleteById(id);
+
+            // Trả thông báo xóa thành công
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Import deleted successfully");
-            response.put("status", HttpStatus.NO_CONTENT.value());
             return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
+        }
+        // Exception: lỗi hệ thống khi xóa (ràng buộc khóa ngoại, DB lỗi,...)
+        catch (Exception e) {
             return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete import", e.getMessage());
         }
     }
 
-    // ------------------ PRIVATE ERROR BUILDER ------------------
+    // ------------------ XỬ LÝ LỖI VALIDATION ------------------
+    // Khi request body không hợp lệ (ví dụ thiếu importDate, giá trị âm,...)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
+        // Lấy message từ annotation @NotNull, @DecimalMin,...
+        String message = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        // Trả lỗi 400 (Bad Request)
+        return buildError(HttpStatus.BAD_REQUEST, "Validation failed", message);
+    }
+
+    // ------------------ HÀM DÙNG CHUNG: TẠO JSON LỖI ------------------
     private ResponseEntity<Map<String, Object>> buildError(HttpStatus status, String message, String details) {
         Map<String, Object> error = new HashMap<>();
         error.put("timestamp", new Date());

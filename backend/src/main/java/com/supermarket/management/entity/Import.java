@@ -1,4 +1,4 @@
-package com.example.demo.entity;
+package com.supermarket.management.controller;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -16,12 +16,15 @@ public class Import {
     @Column(name = "supplier_id")
     private Integer supplierId;
 
+    @NotNull(message = "Import date cannot be null")
     @Column(name = "import_date", nullable = false)
     private LocalDate importDate;
 
+    @DecimalMin(value = "0.0", inclusive = true, message = "Total amount must be >= 0")
     @Column(name = "total_amount", precision = 12, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
+    @Size(max = 50, message = "Status must be 50 characters or less")
     @Column(name = "status", length = 50)
     private String status = "Pending";
 
