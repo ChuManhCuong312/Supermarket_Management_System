@@ -1,7 +1,7 @@
-package com.example.demo.service;
+package com.supermarket.management.service;
 
-import com.example.demo.entity.ImportEntity;
-import com.example.demo.repository.ImportRepository;
+import com.supermarket.management.entity.Import;
+import com.supermarket.management.repository.ImportRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,19 +16,19 @@ public class ImportService {
         this.importRepository = importRepository;
     }
 
-    public List<ImportEntity> getAllImports() {
+    public List<Import> getAllImports() {
         return importRepository.findAll();
     }
 
-    public Optional<ImportEntity> getImportById(Integer id) {
+    public Optional<Import> getImportById(Integer id) {
         return importRepository.findById(id);
     }
 
-    public ImportEntity createImport(ImportEntity importEntity) {
+    public Import createImport(Import importEntity) {
         return importRepository.save(importEntity);
     }
 
-    public ImportEntity updateImport(Integer id, ImportEntity updated) {
+    public Import updateImport(Integer id, Import updated) {
         return importRepository.findById(id)
                 .map(existing -> {
                     existing.setSupplierId(updated.getSupplierId());

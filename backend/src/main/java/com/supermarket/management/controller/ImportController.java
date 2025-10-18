@@ -1,6 +1,6 @@
 package com.supermarket.management.controller;
 
-import com.supermarket.management.entity.ImportEntity;
+import com.supermarket.management.entity.Import;
 import com.supermarket.management.repository.ImportRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,7 @@ public class ImportController {
     @GetMapping
     public ResponseEntity<?> getAllImports() {
         try {
-            List<ImportEntity> list = importRepository.findAll();
+            List<Import> list = importRepository.findAll();
             return ResponseEntity.ok(list);
         }
         // System exception
@@ -41,7 +41,8 @@ public class ImportController {
             // Tìm import theo id
             return importRepository.findById(id)
                     .map(ResponseEntity::ok)
-                    .orElseGet(() -> buildError(HttpStatus.NOT_FOUND, "Import not found with id: " + id, null));
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(null));
         }
         // System exception
         catch (Exception e) {
@@ -51,10 +52,10 @@ public class ImportController {
 
     // ------------------ TẠO MỚI IMPORT ------------------
     @PostMapping
-    public ResponseEntity<?> createImport(@Valid @RequestBody ImportEntity importEntity) {
+    public ResponseEntity<?> createImport(@Valid @RequestBody Import importEntity) {
         try {
             // Dữ liệu hợp lệ → lưu import
-            ImportEntity saved = importRepository.save(importEntity);
+            Import saved = importRepository.save(importEntity);
             return new ResponseEntity<>(saved, HttpStatus.CREATED);
         }
         // Exception: lỗi hệ thống (ví dụ lỗi DB, null pointer,...)
@@ -65,7 +66,7 @@ public class ImportController {
 
     // ------------------ CẬP NHẬT IMPORT ------------------
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateImport(@PathVariable Integer id, @Valid @RequestBody ImportEntity updated) {
+    public ResponseEntity<?> updateImport(@PathVariable Integer id, @Valid @RequestBody Import updated) {
         try {
             return importRepository.findById(id)
                     .map(existing -> {
@@ -75,11 +76,12 @@ public class ImportController {
                         existing.setTotalAmount(updated.getTotalAmount());
                         existing.setStatus(updated.getStatus());
                         existing.setNote(updated.getNote());
-                        ImportEntity saved = importRepository.save(existing);
+                        Import saved = importRepository.save(existing);
                         return ResponseEntity.ok(saved);
                     })
                     // Nếu không tồn tại import theo id → 404
-                    .orElseGet(() -> buildError(HttpStatus.NOT_FOUND, "Import not found with id: " + id, null));
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(null));
         }
         // Exception: các lỗi hệ thống hoặc validation không mong muốn
         catch (Exception e) {
