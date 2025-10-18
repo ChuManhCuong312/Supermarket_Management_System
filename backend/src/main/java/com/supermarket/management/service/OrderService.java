@@ -16,4 +16,12 @@ public class OrderService {
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
+
+    public List<Order> getOrdersSortedByDateAsc() {
+        return orderRepository.findAllByOrderByOrderDateAsc();
+    }
+
+    public List<Order> getOrdersSortedByDateDesc() {
+        return orderRepository.findAllByOrderByOrderDateDesc();
+    }
 }
