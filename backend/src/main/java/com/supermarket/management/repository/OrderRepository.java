@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface OrderRepository extends JpaRepository<Order, Integer> {
     // Fetch all orders sorted by order date
     List<Order> findAllByOrderByOrderDateAsc(); // ascending order
     List<Order> findAllByOrderByOrderDateDesc(); // descending order
