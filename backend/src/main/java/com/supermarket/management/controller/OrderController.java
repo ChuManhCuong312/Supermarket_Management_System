@@ -1,6 +1,7 @@
     package com.supermarket.management.controller;
 
     import com.supermarket.management.dto.OrderRequest;
+    import com.supermarket.management.dto.OrderUpdateRequest;
     import  com.supermarket.management.entity.Order;
     import com.supermarket.management.service.OrderService;
     import org.springframework.beans.factory.annotation.Autowired;
@@ -55,4 +56,20 @@
                 );
             }
         }
+
+        @PutMapping("/{orderId}")
+        public ResponseEntity<?> updateOrder(
+                @PathVariable Integer orderId,
+                @RequestBody OrderUpdateRequest updateRequest) {
+            try {
+                Order updatedOrder = orderService.updateOrderAmountAndDiscount(orderId, updateRequest);
+                return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ResponseEntity<>("Failed to update order: " + e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
     }
+
+
