@@ -49,7 +49,6 @@ public class OrderDetailController {
         return orderDetailService.getAllOrderDetailsSortedByTotalPriceAsc();
     }
 
-
     @PostMapping("/add")
     public ResponseEntity<?> createOrderDetail(@RequestBody OrderDetail orderDetail) {
         try {

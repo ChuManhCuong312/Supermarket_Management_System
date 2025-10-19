@@ -4,6 +4,9 @@ import com.supermarket.management.entity.OrderDetail;
 import com.supermarket.management.repository.OrderDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+// ==== Conflict: import thêm từ nhánh dev ====
+/*
 import com.supermarket.management.entity.Order;
 import com.supermarket.management.entity.Product;
 import com.supermarket.management.exception.ResourceNotFoundException;
@@ -11,6 +14,9 @@ import com.supermarket.management.repository.OrderRepository;
 import com.supermarket.management.repository.ProductRepository;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+*/
+// ==== End conflict ====
+
 import java.util.List;
 
 @Service
@@ -19,13 +25,15 @@ public class OrderDetailService {
     @Autowired
     private OrderDetailRepository orderDetailRepository;
 
-    // ===== Conflict: chỉ có trong nhánh dev =====
+    // ==== Conflict: chỉ có trong nhánh dev ====
+    /*
     @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
     private ProductRepository productRepository;
-    // ===== End conflict =====
+    */
+    // ==== End conflict ====
 
     public List<OrderDetail> getAllOrderDetails() {
         return orderDetailRepository.findAll();
@@ -47,7 +55,8 @@ public class OrderDetailService {
         return orderDetailRepository.findAllByOrderByTotalPriceDesc();
     }
 
-    // ===== Conflict: chỉ có trong nhánh dev =====
+    // ==== Conflict: method chỉ có trong nhánh dev ====
+    /*
     @Transactional
     public OrderDetail createOrderDetail(OrderDetail orderDetail) {
         // Get product
@@ -87,9 +96,14 @@ public class OrderDetailService {
 
         return savedDetail;
     }
-    // ===== End conflict =====
+    */
+    // ==== End conflict ====
 
+    // ==== Conflict: chỉ có trong nhánh dev ====
+    /*
     public List<OrderDetail> searchOrderDetails(Integer orderId, Integer productId) {
         return orderDetailRepository.searchOrderDetails(orderId, productId);
     }
+    */
+    // ==== End conflict ====
 }
