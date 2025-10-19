@@ -22,4 +22,8 @@ public class OrderDetailService {
     public List<OrderDetail> getAllOrderDetailsSortedByTotalPriceAsc() {return orderDetailRepository.findAllByOrderByTotalPriceAsc();}
 
     public List<OrderDetail> getAllOrderDetailsSortedByTotalPriceDesc() {return orderDetailRepository.findAllByOrderByTotalPriceDesc();}
+
+    public List<OrderDetail> searchOrderDetails(Integer orderId, Integer productId) {
+        return orderDetailRepository.searchOrderDetails(orderId, productId);
+    }
 }
