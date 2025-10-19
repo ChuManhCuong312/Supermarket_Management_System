@@ -48,4 +48,30 @@ public class OrderDetailController {
         }
         return orderDetailService.getAllOrderDetailsSortedByTotalPriceAsc();
     }
+
+    @PostMapping("/add")
+    public ResponseEntity<?> createOrderDetail(@RequestBody OrderDetail orderDetail) {
+        try {
+            OrderDetail savedDetail = orderDetailService.createOrderDetail(orderDetail);
+            return ResponseEntity.ok(savedDetail);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchOrderDetails(
+            @RequestParam(required = false) Integer orderId,
+            @RequestParam(required = false) Integer productId
+    ) {
+        try {
+            List<OrderDetail> details = orderDetailService.searchOrderDetails(orderId, productId);
+            return new ResponseEntity<>(details, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("Failed to search order details: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
