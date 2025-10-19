@@ -13,7 +13,9 @@ public class OrderDetailService {
     @Autowired
     private OrderDetailRepository orderDetailRepository;
 
-    public List<OrderDetail> getAllOrderDetails() {
-        return orderDetailRepository.findAll();
-    }
+    public List<OrderDetail> getAllOrderDetails() {return orderDetailRepository.findAll();}
+
+    public List<OrderDetail> getAllOrderDetailsSortedAsc() {return orderDetailRepository.findAllByOrderByOrderIdAsc();}
+
+    public List<OrderDetail> getAllOrderDetailsSortedDesc() {return orderDetailRepository.findAllByOrderByOrderIdDesc();}
 }
