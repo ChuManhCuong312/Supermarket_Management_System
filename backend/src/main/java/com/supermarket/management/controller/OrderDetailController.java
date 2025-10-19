@@ -49,6 +49,7 @@ public class OrderDetailController {
         return orderDetailService.getAllOrderDetailsSortedByTotalPriceAsc();
     }
 
+
     @PostMapping("/add")
     public ResponseEntity<?> createOrderDetail(@RequestBody OrderDetail orderDetail) {
         try {
@@ -58,6 +59,7 @@ public class OrderDetailController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 
     @GetMapping("/search")
     public ResponseEntity<?> searchOrderDetails(
