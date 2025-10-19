@@ -18,4 +18,8 @@ public class OrderDetailService {
     public List<OrderDetail> getAllOrderDetailsSortedAsc() {return orderDetailRepository.findAllByOrderByOrderIdAsc();}
 
     public List<OrderDetail> getAllOrderDetailsSortedDesc() {return orderDetailRepository.findAllByOrderByOrderIdDesc();}
+
+    public List<OrderDetail> getAllOrderDetailsSortedByTotalPriceAsc() {return orderDetailRepository.findAllByOrderByTotalPriceAsc();}
+
+    public List<OrderDetail> getAllOrderDetailsSortedByTotalPriceDesc() {return orderDetailRepository.findAllByOrderByTotalPriceDesc();}
 }
