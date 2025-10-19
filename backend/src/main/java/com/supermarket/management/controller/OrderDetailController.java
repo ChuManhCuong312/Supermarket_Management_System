@@ -39,4 +39,13 @@ public class OrderDetailController {
         }
         return orderDetailService.getAllOrderDetailsSortedAsc();
     }
+
+    // Sorted: use query param 'sort=asc' or 'sort=desc'
+    @GetMapping("/sorted/totalprice")
+    public List<OrderDetail> getAllOrderDetailsSortedByTotalPrice(@RequestParam(defaultValue = "asc") String sort) {
+        if (sort.equalsIgnoreCase("desc")) {
+            return orderDetailService.getAllOrderDetailsSortedByTotalPriceDesc();
+        }
+        return orderDetailService.getAllOrderDetailsSortedByTotalPriceAsc();
+    }
 }
