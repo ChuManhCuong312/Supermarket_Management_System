@@ -30,48 +30,4 @@ public class OrderDetailController {
             );
         }
     }
-
-    // Sorted: use query param 'sort=asc' or 'sort=desc'
-    @GetMapping("/sorted/orderid")
-    public List<OrderDetail> getAllOrderDetailsSortedByOrderId(@RequestParam(defaultValue = "asc") String sort) {
-        if (sort.equalsIgnoreCase("desc")) {
-            return orderDetailService.getAllOrderDetailsSortedDesc();
-        }
-        return orderDetailService.getAllOrderDetailsSortedAsc();
-    }
-
-    // Sorted: use query param 'sort=asc' or 'sort=desc'
-    @GetMapping("/sorted/totalprice")
-    public List<OrderDetail> getAllOrderDetailsSortedByTotalPrice(@RequestParam(defaultValue = "asc") String sort) {
-        if (sort.equalsIgnoreCase("desc")) {
-            return orderDetailService.getAllOrderDetailsSortedByTotalPriceDesc();
-        }
-        return orderDetailService.getAllOrderDetailsSortedByTotalPriceAsc();
-    }
-
-    @PostMapping("/add")
-    public ResponseEntity<?> createOrderDetail(@RequestBody OrderDetail orderDetail) {
-        try {
-            OrderDetail savedDetail = orderDetailService.createOrderDetail(orderDetail);
-            return ResponseEntity.ok(savedDetail);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-
-    @GetMapping("/search")
-    public ResponseEntity<?> searchOrderDetails(
-            @RequestParam(required = false) Integer orderId,
-            @RequestParam(required = false) Integer productId
-    ) {
-        try {
-            List<OrderDetail> details = orderDetailService.searchOrderDetails(orderId, productId);
-            return new ResponseEntity<>(details, HttpStatus.OK);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>("Failed to search order details: " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 }
