@@ -59,6 +59,16 @@ public class OrderDetailController {
         }
     }
 
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateOrderDetail(@PathVariable("id") Integer id, @RequestBody OrderDetail updatedDetail) {
+        try {
+            OrderDetail savedDetail = orderDetailService.updateOrderDetail(id, updatedDetail);
+            return ResponseEntity.ok(savedDetail);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/search")
     public ResponseEntity<?> searchOrderDetails(
             @RequestParam(required = false) Integer orderId,
