@@ -68,6 +68,18 @@ public class EmployeeService {
         return employeeRepository.save(existingEmployee);
     }
 
+    // Tìm kiếm
+    public List<Employee> searchEmployee(String name, String position, String phone, String email) {
+        // trim các input
+        name = (name != null) ? name.trim() : null;
+        position = (position != null) ? position.trim() : null;
+        phone = (phone != null) ? phone.trim() : null;
+        email = (email != null) ? email.trim() : null;
+
+
+        return employeeRepository.searchAdvanced(name, position, phone, email);
+    }
+
     // Validate dữ liệu
     private void validateEmployee(Employee employee, Employee existingEmployee) {
         if (employee.getName() == null || employee.getName().isEmpty()) {
