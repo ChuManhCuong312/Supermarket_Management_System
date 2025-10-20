@@ -54,17 +54,13 @@
             }
         }
 
-        @PutMapping("/{orderId}")
-        public ResponseEntity<?> updateOrder(
-                @PathVariable Integer orderId,
-                @RequestBody OrderUpdateRequest updateRequest) {
+        @PutMapping("/update/{id}")
+        public ResponseEntity<?> updateOrder(@PathVariable("id") Integer id, @RequestBody Order updatedOrder) {
             try {
-                Order updatedOrder = orderService.updateOrderAmountAndDiscount(orderId, updateRequest);
-                return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+                Order savedOrder = orderService.updateOrder(id, updatedOrder);
+                return ResponseEntity.ok(savedOrder);
             } catch (Exception e) {
-                e.printStackTrace();
-                return new ResponseEntity<>("Failed to update order: " + e.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR);
+                return ResponseEntity.badRequest().body(e.getMessage());
             }
         }
 
