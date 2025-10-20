@@ -46,6 +46,28 @@ public class EmployeeService {
         employeeRepository.deleteById(id);
     }
 
+    // Chỉnh sửa thông tin nhân viên
+    @Transactional
+    public Employee updateEmployee(Integer id, Employee updatedEmployee) {
+        Employee existingEmployee = employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Nhân viên không tồn tại"));
+
+
+        trimEmployee(updatedEmployee);
+        validateEmployee(updatedEmployee, existingEmployee);
+
+
+        existingEmployee.setName(updatedEmployee.getName());
+        existingEmployee.setPosition(updatedEmployee.getPosition());
+        existingEmployee.setPhone(updatedEmployee.getPhone());
+        existingEmployee.setEmail(updatedEmployee.getEmail());
+        existingEmployee.setSalary(updatedEmployee.getSalary());
+        existingEmployee.setShift(updatedEmployee.getShift());
+
+
+        return employeeRepository.save(existingEmployee);
+    }
+
     // Validate dữ liệu
     private void validateEmployee(Employee employee, Employee existingEmployee) {
         if (employee.getName() == null || employee.getName().isEmpty()) {
