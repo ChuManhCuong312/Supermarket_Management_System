@@ -59,7 +59,6 @@ public class OrderDetailController {
         }
     }
 
-
     @GetMapping("/search")
     public ResponseEntity<?> searchOrderDetails(
             @RequestParam(required = false) Integer orderId,
