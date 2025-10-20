@@ -36,6 +36,16 @@ public class EmployeeService {
         validateEmployee(employee, null);
         return employeeRepository.save(employee);
     }
+
+    // Xóa nhân viên
+    @Transactional
+    public void deleteEmployee(Integer id) {
+        if (!employeeRepository.existsById(id)) {
+            throw new IllegalArgumentException("Không tìm thấy nhân viên với ID: " + id);
+        }
+        employeeRepository.deleteById(id);
+    }
+
     // Validate dữ liệu
     private void validateEmployee(Employee employee, Employee existingEmployee) {
         if (employee.getName() == null || employee.getName().isEmpty()) {
@@ -105,7 +115,4 @@ public class EmployeeService {
         if (employee.getEmail() != null) employee.setEmail(employee.getEmail().trim());
         if (employee.getShift() != null) employee.setShift(employee.getShift().trim());
     }
-
-
-
 }
