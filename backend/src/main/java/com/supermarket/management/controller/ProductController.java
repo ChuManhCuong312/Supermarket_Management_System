@@ -30,4 +30,10 @@ public class ProductController {
         Product created = productService.createProduct(product);
         return ResponseEntity.ok(created);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> updateProduct(@PathVariable Integer id, @RequestBody Product product) {
+        Product updated = productService.updateProduct(id, product);
+        return ResponseEntity.ok(updated);
+    }
 }

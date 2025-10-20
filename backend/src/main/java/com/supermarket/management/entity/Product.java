@@ -49,6 +49,6 @@ public class Product {
     public void setPrice(BigDecimal price) {this.price = price;}
     public Integer getStock() {return stock;}
     public void setStock(Integer stock) {this.stock = stock;}
-    public Supplier getSupplierId() {return supplier;}
-    public void setSupplierId(Supplier stock) {this.supplier = supplier;}
+    public Supplier getSupplier() {return supplier;}
+    public void setSupplier(Supplier stock) {this.supplier = supplier;}
 }
