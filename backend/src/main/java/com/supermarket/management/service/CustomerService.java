@@ -38,6 +38,16 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
+    // Xóa khách hàng theo ID
+    @Transactional
+    public void deleteCustomer(Integer id) {
+        if (!customerRepository.existsById(id)) {
+            throw new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + id);
+        }
+        customerRepository.deleteById(id);
+    }
+
+
     // Validator
     private void validateCustomer(Customer customer, Customer existingCustomer) {
         if (customer.getName() == null || customer.getName().isEmpty())
