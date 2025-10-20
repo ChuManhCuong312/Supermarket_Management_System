@@ -31,4 +31,18 @@ public class CustomerController {
             @RequestParam(required = false, defaultValue = "name") String sortBy) {
         return customerService.getAllCustomers(sort, sortBy);
     }
+
+    @PostMapping
+    public ResponseEntity<?> createCustomer(@RequestBody Customer customer) {
+        try {
+            Customer newCustomer = customerService.createCustomer(customer);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newCustomer);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi server: " + e.getMessage());
+        }
+    }
+
 }
