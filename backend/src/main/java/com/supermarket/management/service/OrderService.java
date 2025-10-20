@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -58,5 +59,9 @@ public class OrderService {
         }
 
         return orderRepository.save(order);
+    }
+
+    public List<Order> searchOrders(Integer customerId, Integer employeeId, LocalDate orderDate) {
+        return orderRepository.searchOrders(customerId, employeeId, orderDate);
     }
 }
