@@ -47,6 +47,32 @@ public class CustomerService {
         customerRepository.deleteById(id);
     }
 
+    // Chỉnh sửa thông tin
+    @Transactional
+    public Customer updateCustomer(Integer id, Customer updatedCustomer) {
+        Customer existingCustomer = customerRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Khách hàng không tồn tại"));
+
+
+        trimCustomer(updatedCustomer);
+        validateCustomer(updatedCustomer, existingCustomer); // truyền existingCustomer để check trùng khi update
+
+
+        if (updatedCustomer.getMembershipType() == null)
+            updatedCustomer.setMembershipType("Thường");
+
+
+        existingCustomer.setName(updatedCustomer.getName());
+        existingCustomer.setPhone(updatedCustomer.getPhone());
+        existingCustomer.setEmail(updatedCustomer.getEmail());
+        existingCustomer.setAddress(updatedCustomer.getAddress());
+        existingCustomer.setMembershipType(updatedCustomer.getMembershipType());
+        existingCustomer.setPoints(updatedCustomer.getPoints());
+
+
+        return customerRepository.save(existingCustomer);
+    }
+
 
     // Validator
     private void validateCustomer(Customer customer, Customer existingCustomer) {
