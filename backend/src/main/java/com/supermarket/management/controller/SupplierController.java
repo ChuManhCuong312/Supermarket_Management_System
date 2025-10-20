@@ -38,4 +38,10 @@ public class SupplierController {
         return ResponseEntity.ok(updated);
     }
 
+    // DELETE /api/suppliers/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSupplier(@PathVariable Integer id) {
+        supplierService.deleteSupplier(id);
+        return ResponseEntity.noContent().build();
+    }
 }

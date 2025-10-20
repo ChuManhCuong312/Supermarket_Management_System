@@ -41,4 +41,12 @@ public class SupplierService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhà cung cấp với ID: " + id));
     }
 
+    // Xóa nhà cung cấp
+    public void deleteSupplier(Integer id) {
+        if (!supplierRepository.existsById(id)) {
+            throw new RuntimeException("Không tìm thấy nhà cung cấp với ID: " + id );
+        }
+
+        supplierRepository.deleteById(id);
+    }
 }
