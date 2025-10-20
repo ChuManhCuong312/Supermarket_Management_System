@@ -26,4 +26,18 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    // Cập nhật sản phẩm
+    public Product updateProduct(Integer id, Product updatedProduct) {
+        return productRepository.findById(id)
+                .map(product -> {
+                    product.setName(updatedProduct.getName());
+                    product.setBarcode(updatedProduct.getBarcode());
+                    product.setCategory(updatedProduct.getCategory());
+                    product.setPrice(updatedProduct.getPrice());
+                    product.setStock(updatedProduct.getStock());
+                    product.setSupplier(updatedProduct.getSupplier());
+                    return productRepository.save(product);
+                })
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+    }
 }
