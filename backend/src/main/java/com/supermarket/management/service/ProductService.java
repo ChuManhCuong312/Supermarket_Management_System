@@ -21,4 +21,9 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+    // Thêm sản phẩm mới
+    public Product createProduct(Product product) {
+        return productRepository.save(product);
+    }
+
 }
