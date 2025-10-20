@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
@@ -31,6 +31,7 @@ public class CustomerController {
             @RequestParam(required = false, defaultValue = "name") String sortBy) {
         return customerService.getAllCustomers(sort, sortBy);
     }
+
     @PostMapping
     public ResponseEntity<?> createCustomer(@RequestBody Customer customer) {
         try {
@@ -43,6 +44,7 @@ public class CustomerController {
                     .body("Lỗi server: " + e.getMessage());
         }
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCustomer(@PathVariable Integer id) {
         try {
@@ -55,6 +57,7 @@ public class CustomerController {
                     .body("Lỗi server: " + e.getMessage());
         }
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCustomer(@PathVariable Integer id, @RequestBody Customer customer) {
         try {

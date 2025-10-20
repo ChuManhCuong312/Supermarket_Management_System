@@ -23,3 +23,4 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
                                   @Param("email") String email,
                                   @Param("membershipType") String membershipType);
 }
+

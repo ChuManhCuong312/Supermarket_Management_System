@@ -13,7 +13,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     boolean existsByPhone(String phone);
     boolean existsByEmail(String email);
 
-
     @Query("SELECT e FROM Employee e WHERE " +
             "(:name IS NULL OR e.name LIKE %:name%) AND " +
             "(:position IS NULL OR e.position LIKE %:position%) AND " +
@@ -25,4 +24,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
             @Param("phone") String phone,
             @Param("email") String email
     );
+
 }

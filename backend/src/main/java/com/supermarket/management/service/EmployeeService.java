@@ -37,14 +37,25 @@ public class EmployeeService {
         return employeeRepository.save(employee);
     }
 
+    // Xóa nhân viên
+    @Transactional
+    public void deleteEmployee(Integer id) {
+        if (!employeeRepository.existsById(id)) {
+            throw new IllegalArgumentException("Không tìm thấy nhân viên với ID: " + id);
+        }
+        employeeRepository.deleteById(id);
+    }
+
     // Chỉnh sửa thông tin nhân viên
     @Transactional
     public Employee updateEmployee(Integer id, Employee updatedEmployee) {
         Employee existingEmployee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Nhân viên không tồn tại"));
 
+
         trimEmployee(updatedEmployee);
         validateEmployee(updatedEmployee, existingEmployee);
+
 
         existingEmployee.setName(updatedEmployee.getName());
         existingEmployee.setPosition(updatedEmployee.getPosition());
@@ -53,16 +64,8 @@ public class EmployeeService {
         existingEmployee.setSalary(updatedEmployee.getSalary());
         existingEmployee.setShift(updatedEmployee.getShift());
 
-        return employeeRepository.save(existingEmployee);
-    }
 
-    // Xóa nhân viên
-    @Transactional
-    public void deleteEmployee(Integer id) {
-        if (!employeeRepository.existsById(id)) {
-            throw new IllegalArgumentException("Không tìm thấy nhân viên với ID: " + id);
-        }
-        employeeRepository.deleteById(id);
+        return employeeRepository.save(existingEmployee);
     }
 
     // Tìm kiếm
@@ -73,17 +76,8 @@ public class EmployeeService {
         phone = (phone != null) ? phone.trim() : null;
         email = (email != null) ? email.trim() : null;
 
+
         return employeeRepository.searchAdvanced(name, position, phone, email);
-    }
-
-
-    // Trim dữ liệu (xóa khoảng trắng)
-    private void trimEmployee(Employee employee) {
-        if (employee.getName() != null) employee.setName(employee.getName().trim());
-        if (employee.getPosition() != null) employee.setPosition(employee.getPosition().trim());
-        if (employee.getPhone() != null) employee.setPhone(employee.getPhone().trim());
-        if (employee.getEmail() != null) employee.setEmail(employee.getEmail().trim());
-        if (employee.getShift() != null) employee.setShift(employee.getShift().trim());
     }
 
     // Validate dữ liệu
@@ -107,19 +101,23 @@ public class EmployeeService {
             throw new IllegalArgumentException("Ca làm việc không được để trống");
         }
 
+
         String emailRegex = "^[A-Za-z0-9+_.-]+@gmail\\.com$";
         if (!Pattern.matches(emailRegex, employee.getEmail())) {
             throw new IllegalArgumentException("Email không hợp lệ");
         }
+
 
         String phoneRegex = "^0[0-9]{9}$";
         if (!Pattern.matches(phoneRegex, employee.getPhone())) {
             throw new IllegalArgumentException("SĐT phải gồm 10 số và bắt đầu bằng 0");
         }
 
+
         if (employee.getSalary().signum() < 0) {
             throw new IllegalArgumentException("Lương không thể âm");
         }
+
 
         if (existingEmployee == null) {
             if (employeeRepository.existsByEmail(employee.getEmail())) {
@@ -132,6 +130,7 @@ public class EmployeeService {
             }
         }
 
+
         if (existingEmployee == null) {
             if (employeeRepository.existsByPhone(employee.getPhone())) {
                 throw new IllegalArgumentException("Số điện thoại đã tồn tại trong hệ thống");
@@ -142,5 +141,12 @@ public class EmployeeService {
                 throw new IllegalArgumentException("Số điện thoại đã tồn tại trong hệ thống");
             }
         }
+    }
+    private void trimEmployee(Employee employee) {
+        if (employee.getName() != null) employee.setName(employee.getName().trim());
+        if (employee.getPosition() != null) employee.setPosition(employee.getPosition().trim());
+        if (employee.getPhone() != null) employee.setPhone(employee.getPhone().trim());
+        if (employee.getEmail() != null) employee.setEmail(employee.getEmail().trim());
+        if (employee.getShift() != null) employee.setShift(employee.getShift().trim());
     }
 }
