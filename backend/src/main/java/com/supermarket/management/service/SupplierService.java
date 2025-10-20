@@ -27,4 +27,18 @@ public class SupplierService {
         return supplierRepository.save(supplier);
     }
 
+    // Cập nhật nhà cung cấp
+    public Supplier updateSupplier(Integer id, Supplier updatedSupplier) {
+        return supplierRepository.findById(id)
+                .map(supplier -> {
+                    supplier.setCompanyName(updatedSupplier.getCompanyName());
+                    supplier.setPhone(updatedSupplier.getPhone());
+                    supplier.setEmail(updatedSupplier.getEmail());
+                    supplier.setAddress(updatedSupplier.getAddress());
+                    supplier.setContactPerson(updatedSupplier.getContactPerson());
+                    return supplierRepository.save(supplier);
+                })
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhà cung cấp với ID: " + id));
+    }
+
 }

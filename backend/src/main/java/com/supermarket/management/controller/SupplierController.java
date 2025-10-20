@@ -31,4 +31,11 @@ public class SupplierController {
         return ResponseEntity.ok(saved);
     }
 
+    // PUT /api/suppliers/{id}
+    @PutMapping("/{id}")
+    public ResponseEntity<Supplier> updateSupplier(@PathVariable Integer id, @RequestBody Supplier supplier) {
+        Supplier updated = supplierService.updateSupplier(id, supplier);
+        return ResponseEntity.ok(updated);
+    }
+
 }
