@@ -69,6 +69,16 @@ public class OrderDetailController {
         }
     }
 
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteOrderDetail(@PathVariable("id") Integer id) {
+        try {
+            OrderDetail deletedDetail = orderDetailService.deleteOrderDetail(id);
+            return ResponseEntity.ok(deletedDetail);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping("/search")
     public ResponseEntity<?> searchOrderDetails(
             @RequestParam(required = false) Integer orderId,

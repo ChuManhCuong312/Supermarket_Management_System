@@ -139,6 +139,45 @@ public class OrderDetailService {
         return existingDetail;
     }
 
+    @Transactional
+    public OrderDetail deleteOrderDetail(Integer orderDetailId) {
+        // Find existing order detail
+        OrderDetail existingDetail = orderDetailRepository.findById(orderDetailId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order detail not found with ID: " + orderDetailId));
+
+        // Restore product stock
+        Product product = productRepository.findById(existingDetail.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found for ID: " + existingDetail.getProductId()));
+
+        product.setStock(product.getStock() + existingDetail.getQuantity());
+        productRepository.save(product);
+
+        // Get the parent order
+        Order order = orderRepository.findById(existingDetail.getOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found for ID: " + existingDetail.getOrderId()));
+
+        // Delete the order detail
+        orderDetailRepository.delete(existingDetail);
+
+        // Recalculate total for the order
+        BigDecimal recalculatedTotal = orderDetailRepository.findAll().stream()
+                .filter(od -> od.getOrderId().equals(order.getOrderId()))
+                .map(OrderDetail::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Apply discount if any
+        if (order.getDiscount() != null && order.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal discountRate = order.getDiscount().divide(BigDecimal.valueOf(100));
+            recalculatedTotal = recalculatedTotal.subtract(recalculatedTotal.multiply(discountRate));
+        }
+
+        order.setTotalAmount(recalculatedTotal);
+        orderRepository.save(order);
+
+        // return deleted detail for response
+        return existingDetail;
+    }
+
     public List<OrderDetail> searchOrderDetails(Integer orderId, Integer productId) {
         return orderDetailRepository.searchOrderDetails(orderId, productId);
     }
