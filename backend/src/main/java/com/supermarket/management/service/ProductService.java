@@ -40,4 +40,12 @@ public class ProductService {
                 })
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
     }
+
+    public void deleteProduct(Integer id) {
+        if (!productRepository.existsById(id)) {
+            throw new RuntimeException("Không tìm thấy sản phẩm với ID: " + id);
+        }
+
+        productRepository.deleteById(id);
+    }
 }
