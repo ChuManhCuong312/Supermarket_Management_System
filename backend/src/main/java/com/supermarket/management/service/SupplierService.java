@@ -49,4 +49,8 @@ public class SupplierService {
 
         supplierRepository.deleteById(id);
     }
+
+    public List<Supplier> searchSuppliers(String keyword) {
+        return supplierRepository.searchByKeyword(keyword);
+    }
 }

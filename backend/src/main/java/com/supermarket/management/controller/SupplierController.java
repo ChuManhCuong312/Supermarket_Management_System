@@ -44,4 +44,10 @@ public class SupplierController {
         supplierService.deleteSupplier(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Supplier>> search(@RequestParam String keyword) {
+        List<Supplier> results = supplierService.searchSuppliers(keyword);
+        return ResponseEntity.ok(results);
+    }
 }
