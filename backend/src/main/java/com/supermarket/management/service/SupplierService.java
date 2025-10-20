@@ -22,4 +22,9 @@ public class SupplierService {
         return supplierRepository.findAll();
     }
 
+    // Thêm mới nhà cung cấp
+    public Supplier createSupplier(Supplier supplier) {
+        return supplierRepository.save(supplier);
+    }
+
 }

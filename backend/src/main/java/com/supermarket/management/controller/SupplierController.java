@@ -24,4 +24,11 @@ public class SupplierController {
         return supplierService.getAllSuppliers();
     }
 
+    // POST /api/suppliers
+    @PostMapping
+    public ResponseEntity<Supplier> createSupplier(@RequestBody Supplier supplier) {
+        Supplier saved = supplierService.createSupplier(supplier);
+        return ResponseEntity.ok(saved);
+    }
+
 }
