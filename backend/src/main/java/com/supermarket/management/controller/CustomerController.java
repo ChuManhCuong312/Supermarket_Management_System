@@ -71,6 +71,18 @@ public class CustomerController {
         }
     }
 
-
-
+    @GetMapping("/search")
+    public ResponseEntity<?> searchCustomers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String membershipType) {
+        try {
+            List<Customer> results = customerService.searchCustomers(name, phone, email, membershipType);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi server: " + e.getMessage());
+        }
+    }
 }

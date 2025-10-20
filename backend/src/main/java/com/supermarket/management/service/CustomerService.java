@@ -73,6 +73,18 @@ public class CustomerService {
         return customerRepository.save(existingCustomer);
     }
 
+    // Tìm kiếm
+    public List<Customer> searchCustomers(String name, String phone, String email, String membershipType) {
+        // trim các input
+        name = (name != null) ? name.trim() : null;
+        phone = (phone != null) ? phone.trim() : null;
+        email = (email != null) ? email.trim() : null;
+        membershipType = (membershipType != null) ? membershipType.trim() : null;
+
+
+        return customerRepository.searchAdvanced(name, phone, email, membershipType);
+    }
+
 
     // Validator
     private void validateCustomer(Customer customer, Customer existingCustomer) {
