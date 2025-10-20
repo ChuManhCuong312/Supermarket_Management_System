@@ -45,16 +45,12 @@
 
 
         @PostMapping("/add")
-        public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderRequest) {
+        public ResponseEntity<?> createOrder(@RequestBody Order order) {
             try {
-                Order order = orderService.createOrder(orderRequest);
-                return new ResponseEntity<>(order, HttpStatus.CREATED);
+                Order savedOrder = orderService.createOrder(order);
+                return ResponseEntity.ok(savedOrder);
             } catch (Exception e) {
-                e.printStackTrace();
-                return new ResponseEntity<>(
-                        "Failed to create order: " + e.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR
-                );
+                return ResponseEntity.badRequest().body(e.getMessage());
             }
         }
 
