@@ -35,13 +35,27 @@ public class OrderService {
     public List<Order> getOrdersSortedByTotalDesc() {return orderRepository.findAllByOrderByTotalAmountDesc();}
 
     @Transactional
-    public Order createOrder(OrderRequest request) {
-        Order order = new Order();
-        order.setCustomerId(request.getCustomerId());
-        order.setEmployeeId(request.getEmployeeId());
-        order.setOrderDate(request.getOrderDate());
-        order.setTotalAmount(request.getTotalAmount() != null ? request.getTotalAmount() : BigDecimal.ZERO);
-        order.setDiscount(request.getDiscount() != null ? request.getDiscount() : BigDecimal.ZERO);
+    public Order createOrder(Order order) {
+        // Validate required fields
+        if (order.getCustomerId() == null) {
+            throw new IllegalArgumentException("Customer ID is required");
+        }
+        if (order.getEmployeeId() == null) {
+            throw new IllegalArgumentException("Employee ID is required");
+        }
+
+        // Set order date to today if not provided
+        if (order.getOrderDate() == null) {
+            order.setOrderDate(LocalDate.now());
+        }
+
+        // Force total_amount = 0 at creation
+        order.setTotalAmount(BigDecimal.ZERO);
+
+        // Default discount = 0 if not provided
+        if (order.getDiscount() == null) {
+            order.setDiscount(BigDecimal.ZERO);
+        }
 
         return orderRepository.save(order);
     }
