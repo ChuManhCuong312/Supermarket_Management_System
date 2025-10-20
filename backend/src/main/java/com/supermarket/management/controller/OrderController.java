@@ -1,6 +1,7 @@
     package com.supermarket.management.controller;
 
     import com.supermarket.management.dto.OrderRequest;
+    import com.supermarket.management.dto.OrderUpdateRequest;
     import  com.supermarket.management.entity.Order;
     import com.supermarket.management.service.OrderService;
     import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@
     import org.springframework.http.ResponseEntity;
     import org.springframework.web.bind.annotation.*;
 
+    import java.time.LocalDate;
     import java.util.List;
 
     @RestController
@@ -43,16 +45,49 @@
 
 
         @PostMapping("/add")
-        public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderRequest) {
+        public ResponseEntity<?> createOrder(@RequestBody Order order) {
             try {
-                Order order = orderService.createOrder(orderRequest);
-                return new ResponseEntity<>(order, HttpStatus.CREATED);
+                Order savedOrder = orderService.createOrder(order);
+                return ResponseEntity.ok(savedOrder);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+
+        @PutMapping("/{orderId}")
+        public ResponseEntity<?> updateOrder(
+                @PathVariable Integer orderId,
+                @RequestBody OrderUpdateRequest updateRequest) {
+            try {
+                Order updatedOrder = orderService.updateOrderAmountAndDiscount(orderId, updateRequest);
+                return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
             } catch (Exception e) {
                 e.printStackTrace();
-                return new ResponseEntity<>(
-                        "Failed to create order: " + e.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR
-                );
+                return new ResponseEntity<>("Failed to update order: " + e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        @GetMapping("/search")
+        public ResponseEntity<?> searchOrders(
+                @RequestParam(required = false) Integer customerId,
+                @RequestParam(required = false) Integer employeeId,
+                @RequestParam(required = false) String orderDate // pass as "yyyy-MM-dd"
+        ) {
+            try {
+                LocalDate date = null;
+                if (orderDate != null && !orderDate.isEmpty()) {
+                    date = LocalDate.parse(orderDate);
+                }
+
+                List<Order> orders = orderService.searchOrders(customerId, employeeId, date);
+                return new ResponseEntity<>(orders, HttpStatus.OK);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ResponseEntity<>("Failed to search orders: " + e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
     }
+
+
