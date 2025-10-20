@@ -19,4 +19,22 @@ public class OrderController {
     public List<Order> getAllOrders() {
         return orderService.getAllOrders();
     }
+
+    // Sorted: use query param 'sort=asc' or 'sort=desc'
+    @GetMapping("/sorted/buydate")
+    public List<Order> getAllOrdersSortedByDate(@RequestParam(defaultValue = "asc") String sort) {
+        if (sort.equalsIgnoreCase("desc")) {
+            return orderService.getOrdersSortedByDateDesc();
+        }
+        return orderService.getOrdersSortedByDateAsc();
+    }
+
+    // Sorted: use query param 'sort=asc' or 'sort=desc'
+    @GetMapping("/sorted/totalamount")
+    public List<Order> getAllOrdersSortedByTotalAmount(@RequestParam(defaultValue = "asc") String sort) {
+        if (sort.equalsIgnoreCase("desc")) {
+            return orderService.getOrdersSortedByTotalDesc();
+        }
+        return orderService.getOrdersSortedByTotalAsc();
+    }
 }
