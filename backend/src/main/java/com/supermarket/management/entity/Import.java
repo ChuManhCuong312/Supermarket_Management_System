@@ -18,15 +18,15 @@ public class Import {
     @Column(name = "supplier_id")
     private Integer supplierId;
 
-    @NotNull(message = "Import date cannot be null")
+    @NotNull(message = "Ngày nhập hàng không được để trống")
     @Column(name = "import_date", nullable = false)
     private LocalDate importDate;
 
-    @DecimalMin(value = "0.0", inclusive = true, message = "Total amount must be >= 0")
+    @DecimalMin(value = "0.0", inclusive = true, message = "Tổng tiền không được âm")
     @Column(name = "total_amount", precision = 12, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
-    @Size(max = 50, message = "Status must be 50 characters or less")
+    @Size(max = 50, message = "Trạng thái không được vượt quá 50 ký tự")
     @Column(name = "status", length = 50)
     private String status = "Pending";
 
