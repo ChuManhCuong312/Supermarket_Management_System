@@ -6,6 +6,8 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @Table(name = "import")
 public class Import {
@@ -15,15 +17,19 @@ public class Import {
     @Column(name = "import_id")
     private Integer importId;
 
+    @NotNull(message = "Nhà cung cấp không được để trống")
+    @JsonProperty("supplier_id")
     @Column(name = "supplier_id")
     private Integer supplierId;
 
     @NotNull(message = "Ngày nhập hàng không được để trống")
     @Column(name = "import_date", nullable = false)
+    @JsonProperty("import_date")
     private LocalDate importDate;
 
     @DecimalMin(value = "0.0", inclusive = true, message = "Tổng tiền không được âm")
     @Column(name = "total_amount", precision = 12, scale = 2)
+    @JsonProperty("total_amount")
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
     @Size(max = 50, message = "Trạng thái không được vượt quá 50 ký tự")
