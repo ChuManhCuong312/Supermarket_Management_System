@@ -107,23 +107,19 @@ public class EmployeeService {
             throw new IllegalArgumentException("Ca làm việc không được để trống");
         }
 
-
         String emailRegex = "^[A-Za-z0-9+_.-]+@gmail\\.com$";
         if (!Pattern.matches(emailRegex, employee.getEmail())) {
             throw new IllegalArgumentException("Email không hợp lệ");
         }
-
 
         String phoneRegex = "^0[0-9]{9}$";
         if (!Pattern.matches(phoneRegex, employee.getPhone())) {
             throw new IllegalArgumentException("SĐT phải gồm 10 số và bắt đầu bằng 0");
         }
 
-
         if (employee.getSalary().signum() < 0) {
             throw new IllegalArgumentException("Lương không thể âm");
         }
-
 
         if (existingEmployee == null) {
             if (employeeRepository.existsByEmail(employee.getEmail())) {
@@ -135,7 +131,6 @@ public class EmployeeService {
                 throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");
             }
         }
-
 
         if (existingEmployee == null) {
             if (employeeRepository.existsByPhone(employee.getPhone())) {
