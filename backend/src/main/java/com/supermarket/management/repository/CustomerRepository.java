@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Integer> {
@@ -18,9 +20,11 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
             "(:phone IS NULL OR c.phone = :phone) AND " +
             "(:email IS NULL OR c.email LIKE %:email%) AND " +
             "(:membershipType IS NULL OR c.membershipType = :membershipType)")
-    List<Customer> searchAdvanced(@Param("name") String name,
-                                  @Param("phone") String phone,
-                                  @Param("email") String email,
-                                  @Param("membershipType") String membershipType);
+    Page<Customer> searchAdvanced(
+            @Param("name") String name,
+            @Param("phone") String phone,
+            @Param("email") String email,
+            @Param("membershipType") String membershipType,
+            Pageable pageable);
 }
 
