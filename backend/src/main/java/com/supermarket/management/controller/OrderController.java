@@ -64,6 +64,47 @@
             }
         }
 
+        @DeleteMapping("/cancel/{orderId}")
+        public ResponseEntity<Order> cancelOrder(@PathVariable Integer orderId) {
+            Order canceledOrder = orderService.cancelOrder(orderId);
+            return ResponseEntity.ok(canceledOrder);
+        }
+
+        @DeleteMapping("/hide/{orderId}")
+        public ResponseEntity<Order> hideLegacyOrder(@PathVariable Integer orderId) {
+            Order hiddenOrder = orderService.hideLegacyOrder(orderId);
+            return ResponseEntity.ok(hiddenOrder);
+        }
+
+        // Get Active Orders
+        @GetMapping("/active")
+        public List<Order> getActiveOrders() {
+            return orderService.getActiveOrders();
+        }
+
+        // Get Canceled Orders
+        @GetMapping("/canceled")
+        public List<Order> getCanceledOrders() {
+            return orderService.getCanceledOrders();
+        }
+
+        // Get Hidden Orders
+        @GetMapping("/hidden")
+        public List<Order> getHiddenOrders() {
+            return orderService.getHiddenOrders();
+        }
+
+        // Restore canceled or hidden order
+        @PutMapping("/restore/{orderId}")
+        public ResponseEntity<Order> restoreOrder(@PathVariable Integer orderId) {
+            try {
+                Order restoredOrder = orderService.restoreOrder(orderId);
+                return ResponseEntity.ok(restoredOrder);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+
         @GetMapping("/search")
         public ResponseEntity<?> searchOrders(
                 @RequestParam(required = false) Integer customerId,

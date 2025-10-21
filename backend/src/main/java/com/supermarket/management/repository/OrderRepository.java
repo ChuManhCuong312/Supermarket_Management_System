@@ -8,24 +8,37 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
+    // Active orders
+    List<Order> findByDeletedTypeIsNull();
+
+    // Orders by deleted type
+    List<Order> findByDeletedType(String deletedType);
+
+    // Fetch active order by ID
+    Optional<Order> findByOrderIdAndDeletedTypeIsNull(Integer orderId);
+
+    // Search only active orders by customer, employee, or orderDate
     @Query("SELECT o FROM Order o " +
-            "WHERE (:customerId IS NULL OR o.customerId = :customerId) " +
+            "WHERE o.deletedType IS NULL " +
+            "AND (:customerId IS NULL OR o.customerId = :customerId) " +
             "AND (:employeeId IS NULL OR o.employeeId = :employeeId) " +
             "AND (:orderDate IS NULL OR o.orderDate = :orderDate)")
-    List<Order> searchOrders(
+    List<Order> searchActiveOrders(
             @Param("customerId") Integer customerId,
             @Param("employeeId") Integer employeeId,
             @Param("orderDate") LocalDate orderDate
     );
 
-    // Fetch all orders sorted by order date
-    List<Order> findAllByOrderByOrderDateAsc(); // ascending order
-    List<Order> findAllByOrderByOrderDateDesc(); // descending order
 
-    // Fetch all orders sorted by total amount
-    List<Order> findAllByOrderByTotalAmountAsc();
-    List<Order> findAllByOrderByTotalAmountDesc();
+    // Active orders sorted by date
+    List<Order> findByDeletedTypeIsNullOrderByOrderDateAsc();
+    List<Order> findByDeletedTypeIsNullOrderByOrderDateDesc();
+
+    // Active orders sorted by total amount
+    List<Order> findByDeletedTypeIsNullOrderByTotalAmountAsc();
+    List<Order> findByDeletedTypeIsNullOrderByTotalAmountDesc();
 }

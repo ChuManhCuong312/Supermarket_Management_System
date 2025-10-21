@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Integer> {
+    List<OrderDetail> findByOrderId(Integer orderId);
     // Search by orderId or productId
     @Query("SELECT od FROM OrderDetail od " +
             "WHERE (:orderId IS NULL OR od.orderId = :orderId) " +
