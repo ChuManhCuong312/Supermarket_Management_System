@@ -8,9 +8,11 @@ import org.springframework.data.domain.Sort;
 import com.supermarket.management.service.CustomerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
-
+import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -26,9 +28,20 @@ public class CustomerController {
     }
 
     @GetMapping
-    public List<Customer> getAllCustomers(
+    public ResponseEntity<Map<String, Object>> getAllCustomers(
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
             @RequestParam(required = false, defaultValue = "none") String sort,
             @RequestParam(required = false, defaultValue = "name") String sortBy) {
-        return customerService.getAllCustomers(sort, sortBy);
+        int pageIndex = page - 1;
+        Page<Customer> customerPage = customerService.getAllCustomers(pageIndex, size, sort, sortBy);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", customerPage.getContent());
+        response.put("currentPage", customerPage.getNumber());
+        response.put("totalItems", customerPage.getTotalElements());
+        response.put("totalPages", customerPage.getTotalPages());
+
+        return ResponseEntity.ok(response);
     }
 }
