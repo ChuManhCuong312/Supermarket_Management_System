@@ -7,6 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,10 +28,18 @@ public class ImportController {
 
     // ALL
     @GetMapping
-    public ResponseEntity<?> getAllImports() {
+    public ResponseEntity<?> getAllImports(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size) {
         try {
-            List<Import> list = importRepository.findAll();
-            return ResponseEntity.ok(list);
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Import> importPage = importRepository.findAll(pageable);
+            Map<String, Object> response = new HashMap<>();
+            response.put("imports", importPage.getContent());
+            response.put("currentPage", importPage.getNumber());
+            response.put("totalItems", importPage.getTotalElements());
+            response.put("totalPages", importPage.getTotalPages());
+            return ResponseEntity.ok(response);
         }
         // System exception
         catch (Exception e) {
