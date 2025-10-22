@@ -5,8 +5,11 @@ import com.supermarket.management.entity.Customer;
 import com.supermarket.management.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
-import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 
 @Service
 public class CustomerService {
@@ -17,16 +20,20 @@ public class CustomerService {
     }
 
     // Hiển thị danh sách
-    public List<Customer> getAllCustomers(String sort, String sortBy) {
+    public Page<Customer> getAllCustomers(int page, int size, String sort, String sortBy) {
         String sortField = "points".equalsIgnoreCase(sortBy) ? "points" : "name";
 
+        Pageable pageable;
+
         if ("desc".equalsIgnoreCase(sort)) {
-            return customerRepository.findAll(Sort.by(Sort.Direction.DESC, sortField));
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortField));
         } else if ("asc".equalsIgnoreCase(sort)) {
-            return customerRepository.findAll(Sort.by(Sort.Direction.ASC, sortField));
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortField));
         } else {
-            return customerRepository.findAll();
+            pageable = PageRequest.of(page, size);
         }
+
+        return customerRepository.findAll(pageable);
     }
 
     // Thêm mới
@@ -74,17 +81,17 @@ public class CustomerService {
     }
 
     // Tìm kiếm
-    public List<Customer> searchCustomers(String name, String phone, String email, String membershipType) {
-        // trim các input
+    public Page<Customer> searchCustomers(String name, String phone, String email, String membershipType,
+                                          int page, int size) {
         name = (name != null) ? name.trim() : null;
         phone = (phone != null) ? phone.trim() : null;
         email = (email != null) ? email.trim() : null;
         membershipType = (membershipType != null) ? membershipType.trim() : null;
 
+        Pageable pageable = PageRequest.of(page, size);
 
-        return customerRepository.searchAdvanced(name, phone, email, membershipType);
+        return customerRepository.searchAdvanced(name, phone, email, membershipType, pageable);
     }
-
 
     // Validator
     private void validateCustomer(Customer customer, Customer existingCustomer) {

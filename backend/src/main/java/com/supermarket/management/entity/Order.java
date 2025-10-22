@@ -27,6 +27,9 @@ public class Order {
     @Column(name = "discount")
     private BigDecimal discount;
 
+    @Column(name = "deleted_type")
+    private String deletedType;
+
     //Getters and Setters
     public Integer getOrderId() { return orderId; }
     public void setOrderId(Integer orderId) { this.orderId = orderId; }
@@ -45,4 +48,8 @@ public class Order {
 
     public BigDecimal getDiscount() { return discount; }
     public void setDiscount(BigDecimal discount) { this.discount = discount; }
+
+    // Getters and setters
+    public String getDeletedType() { return deletedType; }
+    public void setDeletedType(String deletedType) { this.deletedType = deletedType; }
 }

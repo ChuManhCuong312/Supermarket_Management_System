@@ -45,30 +45,63 @@
 
 
         @PostMapping("/add")
-        public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderRequest) {
+        public ResponseEntity<?> createOrder(@RequestBody Order order) {
             try {
-                Order order = orderService.createOrder(orderRequest);
-                return new ResponseEntity<>(order, HttpStatus.CREATED);
+                Order savedOrder = orderService.createOrder(order);
+                return ResponseEntity.ok(savedOrder);
             } catch (Exception e) {
-                e.printStackTrace();
-                return new ResponseEntity<>(
-                        "Failed to create order: " + e.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR
-                );
+                return ResponseEntity.badRequest().body(e.getMessage());
             }
         }
 
-        @PutMapping("/{orderId}")
-        public ResponseEntity<?> updateOrder(
-                @PathVariable Integer orderId,
-                @RequestBody OrderUpdateRequest updateRequest) {
+        @PutMapping("/update/{id}")
+        public ResponseEntity<?> updateOrder(@PathVariable("id") Integer id, @RequestBody Order updatedOrder) {
             try {
-                Order updatedOrder = orderService.updateOrderAmountAndDiscount(orderId, updateRequest);
-                return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+                Order savedOrder = orderService.updateOrder(id, updatedOrder);
+                return ResponseEntity.ok(savedOrder);
             } catch (Exception e) {
-                e.printStackTrace();
-                return new ResponseEntity<>("Failed to update order: " + e.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR);
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+
+        @DeleteMapping("/cancel/{orderId}")
+        public ResponseEntity<Order> cancelOrder(@PathVariable Integer orderId) {
+            Order canceledOrder = orderService.cancelOrder(orderId);
+            return ResponseEntity.ok(canceledOrder);
+        }
+
+        @DeleteMapping("/hide/{orderId}")
+        public ResponseEntity<Order> hideLegacyOrder(@PathVariable Integer orderId) {
+            Order hiddenOrder = orderService.hideLegacyOrder(orderId);
+            return ResponseEntity.ok(hiddenOrder);
+        }
+
+        // Get Active Orders
+        @GetMapping("/active")
+        public List<Order> getActiveOrders() {
+            return orderService.getActiveOrders();
+        }
+
+        // Get Canceled Orders
+        @GetMapping("/canceled")
+        public List<Order> getCanceledOrders() {
+            return orderService.getCanceledOrders();
+        }
+
+        // Get Hidden Orders
+        @GetMapping("/hidden")
+        public List<Order> getHiddenOrders() {
+            return orderService.getHiddenOrders();
+        }
+
+        // Restore canceled or hidden order
+        @PutMapping("/restore/{orderId}")
+        public ResponseEntity<Order> restoreOrder(@PathVariable Integer orderId) {
+            try {
+                Order restoredOrder = orderService.restoreOrder(orderId);
+                return ResponseEntity.ok(restoredOrder);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().build();
             }
         }
 

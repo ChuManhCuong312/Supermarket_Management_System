@@ -7,7 +7,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 
 @RestController
@@ -23,10 +28,18 @@ public class ImportController {
 
     // ALL
     @GetMapping
-    public ResponseEntity<?> getAllImports() {
+    public ResponseEntity<?> getAllImports(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size) {
         try {
-            List<Import> list = importRepository.findAll();
-            return ResponseEntity.ok(list);
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Import> importPage = importRepository.findAll(pageable);
+            Map<String, Object> response = new HashMap<>();
+            response.put("imports", importPage.getContent());
+            response.put("currentPage", importPage.getNumber());
+            response.put("totalItems", importPage.getTotalElements());
+            response.put("totalPages", importPage.getTotalPages());
+            return ResponseEntity.ok(response);
         }
         // System exception
         catch (Exception e) {
@@ -118,6 +131,60 @@ public class ImportController {
         String message = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
         // Trả lỗi 400 (Bad Request)
         return buildError(HttpStatus.BAD_REQUEST, "Validation failed", message);
+    }
+
+    // ------------------ LỌC THEO NGÀY ------------------
+    @GetMapping("/filter/date")
+    public ResponseEntity<?> filterByDate(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+
+        try {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+
+            if (end.isBefore(start)) {
+                return buildError(HttpStatus.BAD_REQUEST, "End date must be after start date", null);
+            }
+
+            List<Import> imports = sortOrder.equalsIgnoreCase("desc")
+                    ? importRepository.findByDateDesc(start, end)
+                    : importRepository.findByDateAsc(start, end);
+
+            return imports.isEmpty()
+                    ? buildError(HttpStatus.NOT_FOUND, "No imports found in the given date range", null)
+                    : ResponseEntity.ok(imports);
+
+        } catch (Exception e) {
+            return buildError(HttpStatus.BAD_REQUEST, "Invalid date format", e.getMessage());
+        }
+    }
+
+    // ------------------ LỌC THEO TỔNG TIỀN ------------------
+    @GetMapping("/filter/amount")
+    public ResponseEntity<?> filterByAmount(
+            @RequestParam BigDecimal minAmount,
+            @RequestParam BigDecimal maxAmount,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+
+        try {
+            if (maxAmount.compareTo(minAmount) < 0) {
+                return buildError(HttpStatus.BAD_REQUEST, "Max amount must be greater than or equal to min amount",
+                        null);
+            }
+
+            List<Import> imports = sortOrder.equalsIgnoreCase("desc")
+                    ? importRepository.findByAmountDesc(minAmount, maxAmount)
+                    : importRepository.findByAmountAsc(minAmount, maxAmount);
+
+            return imports.isEmpty()
+                    ? buildError(HttpStatus.NOT_FOUND, "No imports found in the given amount range", null)
+                    : ResponseEntity.ok(imports);
+
+        } catch (Exception e) {
+            return buildError(HttpStatus.BAD_REQUEST, "Invalid amount input", e.getMessage());
+        }
     }
 
     // ------------------ HÀM DÙNG CHUNG: TẠO JSON LỖI ------------------
