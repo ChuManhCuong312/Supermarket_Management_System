@@ -48,8 +48,8 @@ const [editingId, setEditingId] = useState(null);
       setTotalPages(response.totalPages);
       setTotalItems(response.totalItems);
     } catch (err) {
-      console.error("Lỗi khi tải nhân viên:", err);
-    }
+    if (err?.isExtensionError) return;
+    console.error("Lỗi khi tải nhân viên:", err);    }
   };
 
   const handleSearch = async (searchFilters) => {
@@ -69,8 +69,8 @@ const [editingId, setEditingId] = useState(null);
       setTotalItems(response.totalItems);
       setPage(0);
     } catch (err) {
-      console.error("Lỗi khi tìm kiếm:", err);
-    }
+    if (err?.isExtensionError) return;
+    console.error("Lỗi khi tìm kiếm:", err);    }
   };
 const openEditForm = (employee) => {
   setIsEditing(true);
@@ -107,16 +107,16 @@ const openEditForm = (employee) => {
       closeForm();
       fetchEmployees();
     } catch (err) {
-      let errorMsg = "Có lỗi xảy ra";
-      if (err.response?.data) {
-        errorMsg = typeof err.response.data === 'string'
-          ? err.response.data
-          : err.response.data.message || JSON.stringify(err.response.data);
-      } else if (err.message) {
-        errorMsg = err.message;
-      }
-      showModal("❌ Lỗi", errorMsg, "error");
-    }
+                        let errorMsg = "Có lỗi xảy ra";
+                        if (err.response?.data) {
+                          errorMsg = typeof err.response.data === 'string'
+                            ? err.response.data
+                            : err.response.data.message || JSON.stringify(err.response.data);
+                        } else if (err.message) {
+                          errorMsg = err.message;
+                        }
+                        showModal("❌ Lỗi", errorMsg, "error");
+                      }
   };
 
 const handleSaveEmployee = async (e) => {
@@ -139,10 +139,16 @@ const handleSaveEmployee = async (e) => {
     fetchEmployees();
 
   } catch (err) {
-    console.error("Lỗi khi lưu nhân viên:", err);
-    let errorMsg = err.response?.data?.message || err.message || "Có lỗi xảy ra";
-    showModal("❌ Lỗi", errorMsg, "error");
-  }
+    let errorMsg = "Có lỗi xảy ra";
+                        if (err.response?.data) {
+                          errorMsg = typeof err.response.data === 'string'
+                            ? err.response.data
+                            : err.response.data.message || JSON.stringify(err.response.data);
+                        } else if (err.message) {
+                          errorMsg = err.message;
+                        }
+                        showModal("❌ Lỗi", errorMsg, "error");
+                      }
 };
 
 
@@ -162,8 +168,8 @@ const handleSaveEmployee = async (e) => {
       fetchEmployees();
       showModal("✓ Thành công", "Xóa nhân viên thành công!", "success");
     } catch (err) {
-      console.error("Lỗi khi xóa:", err);
-      showModal("❌ Lỗi", "Không thể xóa nhân viên", "error");
+    console.error("Lỗi khi xóa:", err);
+    showModal("❌ Lỗi", "Không thể xóa khách hàng", "error");
     } finally {
       setConfirmDelete({ isOpen: false, employeeId: null, message: "" });
     }
@@ -382,3 +388,4 @@ const handleSaveEmployee = async (e) => {
     </div>
   );
 }
+
