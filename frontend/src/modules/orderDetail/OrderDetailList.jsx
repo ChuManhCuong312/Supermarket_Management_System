@@ -38,10 +38,25 @@ export default function OrderDetailList() {
     setLoading(false);
   };
 
-  const handleSearch = () => {
-    console.log("Search clicked:", { searchOrderId, searchProductId });
-    // TODO: Add filtered search later
-  };
+  const handleSearch = async () => {
+      if (!searchOrderId && !searchProductId) {
+        alert("Vui lòng nhập ít nhất Mã đơn hoặc Mã sản phẩm để tìm kiếm!"); /* cần sửa lại thành dùng toad chứ ko dùng alert */
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const data = await OrderDetailService.searchOrderDetails(
+          searchOrderId || null,
+          searchProductId || null
+        );
+        setOrderDetails(data);
+      } catch (error) {
+        console.error("Error searching order details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const handleAdd = () => {
     alert("Thêm mới (chưa có form)");
