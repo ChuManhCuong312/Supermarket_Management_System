@@ -20,13 +20,12 @@ export default function OrderDetailList() {
     fetchAll();
   }, []);
 
-  // --- Sort current displayed data only ---
-    const handleSort = (field) => {
-      let newDirection =
-        sortConfig.field === field && sortConfig.direction === "asc"
-          ? "desc"
-          : "asc";
-      setSortConfig({ field, direction: newDirection });
+  const handleSort = async (field) => {
+    let newDirection =
+      sortConfig.field === field && sortConfig.direction === "asc"
+        ? "desc"
+        : "asc";
+    setSortConfig({ field, direction: newDirection });
 
       const sortedData = [...orderDetails].sort((a, b) => {
         if (a[field] < b[field]) return newDirection === "asc" ? -1 : 1;
