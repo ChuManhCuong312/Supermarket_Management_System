@@ -150,16 +150,62 @@ th {
 }
 
 th.sortable {
+  position: relative;
   cursor: pointer;
   user-select: none;
+  padding-right: 18px;
 }
 
 th.sortable::after {
-  content: "⇅";
-  margin-left: 5px;
-  font-size: 12px;
+  content: "▲\A▼"; /* Up and down arrows stacked */
+  white-space: pre;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  line-height: 10px;
+  color: #bbb;
+  opacity: 0.5;
+  text-align: center;
+  transition: all 0.3s ease;
 }
 
+/* ASCENDING → up arrow bright, down arrow dim */
+th.sortable.asc::after {
+  content: "▲\A▼";
+  color: #07f40e; /* bright green for up arrow */
+  text-shadow: 0 0 6px rgba(76, 175, 80, 0.7);
+  opacity: 1;
+}
+
+/* DESCENDING → down arrow bright, up arrow dim */
+th.sortable.desc::after {
+  content: "▲\A▼";
+  color: #e53935; /* bright red for down arrow */
+  text-shadow: 0 0 6px rgba(229, 57, 53, 0.7);
+  opacity: 1;
+}
+
+/* Add subtle difference between arrows for visual clarity */
+th.sortable.asc::after {
+  background: linear-gradient(to bottom, #06f40e 50%, #999 50%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+th.sortable.desc::after {
+  background: linear-gradient(to bottom, #999 50%, #ef0400 50%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* No sorting → both arrows faded */
+th.sortable:not(.asc):not(.desc)::after {
+  color: #aaa;
+  opacity: 0.4;
+  text-shadow: none;
+}
 tbody tr {
   border-bottom: 1px solid #ddd;
 }
