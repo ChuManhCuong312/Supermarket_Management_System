@@ -8,9 +8,10 @@ import org.springframework.data.domain.Sort;
 import com.supermarket.management.service.CustomerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
 
-
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -26,10 +27,21 @@ public class CustomerController {
     }
 
     @GetMapping
-    public List<Customer> getAllCustomers(
+    public ResponseEntity<Map<String, Object>> getAllCustomers(
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
             @RequestParam(required = false, defaultValue = "none") String sort,
             @RequestParam(required = false, defaultValue = "name") String sortBy) {
-        return customerService.getAllCustomers(sort, sortBy);
+        int pageIndex = page - 1;
+        Page<Customer> customerPage = customerService.getAllCustomers(pageIndex, size, sort, sortBy);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", customerPage.getContent());
+        response.put("currentPage", customerPage.getNumber());
+        response.put("totalItems", customerPage.getTotalElements());
+        response.put("totalPages", customerPage.getTotalPages());
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
@@ -72,17 +84,30 @@ public class CustomerController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchCustomers(
+    public ResponseEntity<Map<String, Object>> searchCustomers(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) String email,
-            @RequestParam(required = false) String membershipType) {
+            @RequestParam(required = false) String membershipType,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
         try {
-            List<Customer> results = customerService.searchCustomers(name, phone, email, membershipType);
-            return ResponseEntity.ok(results);
+            int pageIndex = page - 1;
+            Page<Customer> customerPage = customerService.searchCustomers(
+                    name, phone, email, membershipType, pageIndex, size);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("data", customerPage.getContent());
+            response.put("currentPage", customerPage.getNumber() + 1);
+            response.put("totalItems", customerPage.getTotalElements());
+            response.put("totalPages", customerPage.getTotalPages());
+            response.put("itemsPerPage", customerPage.getSize());
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi server: " + e.getMessage());
+                    .body(Map.of("error", "Lỗi server: " + e.getMessage()));
         }
     }
 }

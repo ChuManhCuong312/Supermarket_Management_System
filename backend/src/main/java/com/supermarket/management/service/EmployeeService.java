@@ -7,8 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.supermarket.management.repository.EmployeeRepository;
 import com.supermarket.management.entity.Employee;
 
-import java.util.List;
+
 import java.util.regex.Pattern;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 public class EmployeeService {
@@ -17,16 +20,20 @@ public class EmployeeService {
     private EmployeeRepository employeeRepository;
 
     // Hiển thị và sắp xếp
-    public List<Employee> getAllEmployees(String sort, String sortBy) {
+    public Page<Employee> getAllEmployees(int page, int size, String sort, String sortBy) {
         String sortField = "salary".equalsIgnoreCase(sortBy) ? "salary" : "name";
 
+        Pageable pageable;
+
         if ("desc".equalsIgnoreCase(sort)) {
-            return employeeRepository.findAll(Sort.by(Sort.Direction.DESC, sortField));
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortField));
         } else if ("asc".equalsIgnoreCase(sort)) {
-            return employeeRepository.findAll(Sort.by(Sort.Direction.ASC, sortField));
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, sortField));
         } else {
-            return employeeRepository.findAll();
+            pageable = PageRequest.of(page, size);
         }
+
+        return employeeRepository.findAll(pageable);
     }
 
     // Thêm mới nhân viên
@@ -69,15 +76,14 @@ public class EmployeeService {
     }
 
     // Tìm kiếm
-    public List<Employee> searchEmployee(String name, String position, String phone, String email) {
-        // trim các input
+    public Page<Employee> searchEmployee(String name, String position, String phone, String email, int page, int size) {
         name = (name != null) ? name.trim() : null;
         position = (position != null) ? position.trim() : null;
         phone = (phone != null) ? phone.trim() : null;
         email = (email != null) ? email.trim() : null;
 
-
-        return employeeRepository.searchAdvanced(name, position, phone, email);
+        Pageable pageable = PageRequest.of(page, size);
+        return employeeRepository.searchAdvanced(name, position, phone, email, pageable);
     }
 
     // Validate dữ liệu
@@ -101,23 +107,19 @@ public class EmployeeService {
             throw new IllegalArgumentException("Ca làm việc không được để trống");
         }
 
-
         String emailRegex = "^[A-Za-z0-9+_.-]+@gmail\\.com$";
         if (!Pattern.matches(emailRegex, employee.getEmail())) {
             throw new IllegalArgumentException("Email không hợp lệ");
         }
-
 
         String phoneRegex = "^0[0-9]{9}$";
         if (!Pattern.matches(phoneRegex, employee.getPhone())) {
             throw new IllegalArgumentException("SĐT phải gồm 10 số và bắt đầu bằng 0");
         }
 
-
         if (employee.getSalary().signum() < 0) {
             throw new IllegalArgumentException("Lương không thể âm");
         }
-
 
         if (existingEmployee == null) {
             if (employeeRepository.existsByEmail(employee.getEmail())) {
@@ -129,7 +131,6 @@ public class EmployeeService {
                 throw new IllegalArgumentException("Email đã tồn tại trong hệ thống");
             }
         }
-
 
         if (existingEmployee == null) {
             if (employeeRepository.existsByPhone(employee.getPhone())) {
