@@ -36,6 +36,20 @@ const OrderDetailService = {
       return [];
     }
   },
+
+  searchOrderDetails: async (orderId, productId) => {
+      try {
+        const params = {};
+        if (orderId) params.orderId = orderId;
+        if (productId) params.productId = productId;
+
+        const response = await axiosClient.get(`${API_BASE}/search`, { params });
+        return response.data;
+      } catch (error) {
+        console.error("Failed to search order details:", error);
+        return [];
+      }
+    },
 };
 
 export default OrderDetailService;
