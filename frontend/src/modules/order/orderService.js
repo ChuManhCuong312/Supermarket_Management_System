@@ -31,6 +31,26 @@ const OrderService = {
       return [];
     }
   },
+
+  getSortedByBuyDate: async (sort = "asc") => {
+    try {
+      const response = await axiosClient.get(`${API_BASE}/sorted/buydate?sort=${sort}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to sort by date:", error);
+      return [];
+    }
+  },
+
+  getSortedByTotalAmount: async (sort = "asc") => {
+    try {
+      const response = await axiosClient.get(`${API_BASE}/sorted/totalamount?sort=${sort}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to sort by total amount:", error);
+      return [];
+    }
+  },
 };
 
 export default OrderService;
