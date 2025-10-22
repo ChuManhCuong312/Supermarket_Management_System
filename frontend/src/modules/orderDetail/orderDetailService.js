@@ -50,6 +50,16 @@ const OrderDetailService = {
         return [];
       }
     },
+
+  deleteOrderDetail: async (id) => {
+    try {
+      const response = await axiosClient.delete(`${API_BASE}/delete/${id}`);
+      return response.data; // optionally return deleted object
+    } catch (error) {
+      console.error("Failed to delete order detail:", error);
+      throw error; // let the caller handle it
+    }
+  },
 };
 
 export default OrderDetailService;
