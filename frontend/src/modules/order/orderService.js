@@ -51,6 +51,22 @@ const OrderService = {
       return [];
     }
   },
+
+  searchOrders: async (customerId, employeeId, orderDate) => {
+    try {
+      const params = new URLSearchParams();
+      if (customerId) params.append("customerId", customerId);
+      if (employeeId) params.append("employeeId", employeeId);
+      if (orderDate) params.append("orderDate", orderDate);
+
+      const response = await axiosClient.get(`${API_BASE}/search?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to search orders:", error);
+      return [];
+    }
+  },
+
 };
 
 export default OrderService;
