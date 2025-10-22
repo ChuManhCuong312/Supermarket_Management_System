@@ -38,33 +38,33 @@ INSERT INTO product (name, barcode, category, price, stock, supplier_id) VALUES
 
 -- CUSTOMER
 INSERT INTO customer (name, phone, email, address, membership_type, points) VALUES
-('Nguyễn Thị Lan', '0909876543', 'lan.nguyen@gmail.com', '12 Nguyễn Trãi, TP.HCM', 'Vàng', 520),
-('Trần Văn Hùng', '0912345670', 'hung.tran@yahoo.com', '45 Lý Thường Kiệt, Hà Nội', 'Bạc', 240),
+('Nguyễn Thị Lan', '0909876543', 'lan.nguyen@gmail.com', '12 Nguyễn Trãi, TP.HCM', 'VIP', 520),
+('Trần Văn Hùng', '0912345670', 'hung.tran@yahoo.com', '45 Lý Thường Kiệt, Hà Nội', 'Thân Thiết', 240),
 ('Phạm Thị Hạnh', '0938765432', 'hanh.pham@gmail.com', '67 Nguyễn Huệ, Đà Nẵng', 'Thường', 120),
-('Lê Văn Minh', '0907654321', 'minh.le@gmail.com', '23 Trần Hưng Đạo, TP.HCM', 'Bạc', 310),
-('Vũ Thị Hoa', '0912233445', 'hoa.vu@gmail.com', '5 Bạch Mai, Hà Nội', 'Vàng', 600),
-('Ngô Văn Phúc', '0923344556', 'phuc.ngo@gmail.com', '77 Hai Bà Trưng, TP.HCM', 'Kim Cương', 1050),
+('Lê Văn Minh', '0907654321', 'minh.le@gmail.com', '23 Trần Hưng Đạo, TP.HCM', 'Thân Thiết', 310),
+('Vũ Thị Hoa', '0912233445', 'hoa.vu@gmail.com', '5 Bạch Mai, Hà Nội', 'VIP', 600),
+('Ngô Văn Phúc', '0923344556', 'phuc.ngo@gmail.com', '77 Hai Bà Trưng, TP.HCM', 'Thân Thiết', 1050),
 ('Đinh Thị Mai', '0903344556', 'mai.dinh@gmail.com', '89 Lê Duẩn, Đà Nẵng', 'Thường', 80),
-('Trần Quốc Cường', '0934455667', 'cuong.tran@gmail.com', '12 Nguyễn Văn Cừ, TP.HCM', 'Bạc', 250),
+('Trần Quốc Cường', '0934455667', 'cuong.tran@gmail.com', '12 Nguyễn Văn Cừ, TP.HCM', 'Thân Thiết', 250),
 ('Hoàng Văn Quân', '0915566778', 'quan.hoang@gmail.com', '10 Nguyễn Tri Phương, Huế', 'Thường', 90),
-('Phạm Thu Trang', '0926677889', 'trang.pham@gmail.com', '21 Võ Văn Kiệt, TP.HCM', 'Vàng', 580),
+('Phạm Thu Trang', '0926677889', 'trang.pham@gmail.com', '21 Võ Văn Kiệt, TP.HCM', 'VIP', 580),
 ('Nguyễn Đức Anh', '0937788990', 'anh.nguyen@gmail.com', '9 Trần Bình Trọng, Hà Nội', 'Kim Cương', 1300),
-('Lê Hồng Nhung', '0908899001', 'nhung.le@gmail.com', '33 Nguyễn Văn Linh, Đà Nẵng', 'Bạc', 270),
+('Lê Hồng Nhung', '0908899001', 'nhung.le@gmail.com', '33 Nguyễn Văn Linh, Đà Nẵng', 'Thân Thiết', 270),
 ('Trần Minh Tâm', '0919900112', 'tam.tran@gmail.com', '54 Lê Lợi, TP.HCM', 'Thường', 60),
-('Phan Quang Vinh', '0920011223', 'vinh.phan@gmail.com', '67 Phan Chu Trinh, Hà Nội', 'Bạc', 340),
-('Đỗ Kim Oanh', '0931122334', 'oanh.do@gmail.com', '88 Pasteur, TP.HCM', 'Vàng', 470);
+('Phan Quang Vinh', '0920011223', 'vinh.phan@gmail.com', '67 Phan Chu Trinh, Hà Nội', 'Thân Thiết', 340),
+('Đỗ Kim Oanh', '0931122334', 'oanh.do@gmail.com', '88 Pasteur, TP.HCM', 'VIP', 470);
 
 -- EMPLOYEE
 INSERT INTO employee (name, position, phone, email, salary, shift) VALUES
 ('Nguyễn Văn Nam', 'Thu ngân', '0901122334', 'nam.nguyen@supermart.vn', 8500000, 'Ca sáng'),
 ('Trần Thị Hòa', 'Bán hàng', '0912233445', 'hoa.tran@supermart.vn', 7800000, 'Ca chiều'),
-('Phạm Văn Dũng', 'Quản lý', '0923344556', 'dung.pham@supermart.vn', 15000000, 'Hành chính'),
+('Phạm Văn Dũng', 'Quản lý', '0923344556', 'dung.pham@supermart.vn', 15000000, 'Cả ngày'),
 ('Lê Thị Mai', 'Bán hàng', '0934455667', 'mai.le@supermart.vn', 7800000, 'Ca tối'),
 ('Nguyễn Văn Tài', 'Kho hàng', '0945566778', 'tai.nguyen@supermart.vn', 9000000, 'Ca sáng'),
 ('Vũ Hồng Sơn', 'Bảo vệ', '0956677889', 'son.vu@supermart.vn', 6500000, 'Ca đêm'),
 ('Trần Quốc Huy', 'Thu ngân', '0967788990', 'huy.tran@supermart.vn', 8200000, 'Ca chiều'),
 ('Lê Thanh Hà', 'Bán hàng', '0978899001', 'ha.le@supermart.vn', 7800000, 'Ca sáng'),
-('Phan Minh Tuấn', 'Quản lý', '0989900112', 'tuan.phan@supermart.vn', 15500000, 'Hành chính'),
+('Phan Minh Tuấn', 'Quản lý', '0989900112', 'tuan.phan@supermart.vn', 15500000, 'Cả ngày'),
 ('Đỗ Hồng Phúc', 'Kho hàng', '0990011223', 'phuc.do@supermart.vn', 9100000, 'Ca tối'),
 ('Nguyễn Thị Thu', 'Thu ngân', '0901123456', 'thu.nguyen@supermart.vn', 8300000, 'Ca sáng'),
 ('Phạm Anh Duy', 'Bảo vệ', '0912234567', 'duy.pham@supermart.vn', 6700000, 'Ca tối'),
