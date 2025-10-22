@@ -1,5 +1,10 @@
 package com.supermarket.management.controller;
 
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+
 import com.supermarket.management.entity.Supplier;
 import com.supermarket.management.service.SupplierService;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +25,10 @@ public class SupplierController {
 
     // GET /api/suppliers
     @GetMapping
-    public List<Supplier> getAllSuppliers() {
-        return supplierService.getAllSuppliers();
+    public Page<Supplier> getSuppliersByPage(@RequestParam(defaultValue = "1") int page) {
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        return supplierService.getSuppliers(pageable);
     }
 
     // POST /api/suppliers
@@ -45,9 +52,17 @@ public class SupplierController {
         return ResponseEntity.noContent().build();
     }
 
+    // SEARCH /api/suppliers/search
     @GetMapping("/search")
-    public ResponseEntity<List<Supplier>> search(@RequestParam String keyword) {
-        List<Supplier> results = supplierService.searchSuppliers(keyword);
+    public ResponseEntity<Page<Supplier>> search(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String email,
+            @RequestParam(defaultValue = "0") int page) {
+        int pageSize=10;
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<Supplier> results = supplierService.searchSuppliers(name, phone, email, pageable);
         return ResponseEntity.ok(results);
     }
+
 }
