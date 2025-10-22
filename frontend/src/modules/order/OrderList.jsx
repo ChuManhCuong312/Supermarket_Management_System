@@ -7,31 +7,23 @@ export default function OrderList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewType, setViewType] = useState("active"); // active | hidden | canceled
+  const [sortConfig, setSortConfig] = useState({ field: "", direction: "asc" });
 
   // Search fields
   const [customerId, setCustomerId] = useState("");
   const [employeeId, setEmployeeId] = useState("");
   const [orderDate, setOrderDate] = useState("");
 
-  useEffect(() => {
-    fetchOrders();
-  }, [viewType]);
-
-  const fetchOrders = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      let data = [];
-      if (viewType === "active") data = await OrderService.getActiveOrders();
-      if (viewType === "hidden") data = await OrderService.getHiddenOrders();
-      if (viewType === "canceled") data = await OrderService.getCanceledOrders();
+  const fetchAllOrders = async () => {
+      setLoading(true);
+      const data = await OrderService.getActiveOrders();
       setOrders(data);
-    } catch (err) {
-      setError("Không thể lấy dữ liệu đơn hàng.");
-    } finally {
       setLoading(false);
-    }
-  };
+    };
+
+    useEffect(() => {
+      fetchAllOrders();
+    }, []);
 
   const handleSearch = () => {
     const filtered = orders.filter((order) => {
@@ -47,11 +39,29 @@ export default function OrderList() {
   };
 
   const handleClearFilter = () => {
-    setCustomerId("");
-    setEmployeeId("");
-    setOrderDate("");
-    fetchOrders();
-  };
+    //  setSearchOrderId("");
+     // setSearchProductId("");
+      setSortConfig({ field: "", direction: "asc" });
+      fetchAllOrders(); // reload full list
+    };
+
+  // === SORT BY DATE or TOTAL AMOUNT ===
+   const handleSort = async (field) => {
+     let newDirection =
+       sortConfig.field === field && sortConfig.direction === "asc"
+         ? "desc"
+         : "asc";
+     setSortConfig({ field, direction: newDirection });
+
+     let sortedData = [];
+     if (field === "buyDate") {
+       sortedData = await OrderService.getSortedByBuyDate(newDirection);
+     } else if (field === "totalAmount") {
+       sortedData = await OrderService.getSortedByTotalAmount(newDirection);
+     }
+
+     setOrders(sortedData);
+   };
 
   return (
     <div>
@@ -153,8 +163,22 @@ export default function OrderList() {
                 <th>ID</th>
                 <th>Mã KH</th>
                 <th>Mã NV</th>
-                <th className="sortable">Ngày mua</th>
-                <th className="sortable">Tổng tiền</th>
+                <th
+                    className={`sortable ${
+                        sortConfig.field === "buyDate" ? sortConfig.direction : ""
+                    }`}
+                        onClick={() => handleSort("buyDate")}
+                    >
+                        Ngày mua
+                    </th>
+                 <th
+                    className={`sortable ${
+                        sortConfig.field === "totalAmount" ? sortConfig.direction : ""
+                    }`}
+                        onClick={() => handleSort("totalAmount")}
+                    >
+                        Tổng tiền
+                    </th>
                 <th>Giảm giá</th>
                 <th>Thao tác</th>
               </tr>
