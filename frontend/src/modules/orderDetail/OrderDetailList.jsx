@@ -64,9 +64,17 @@ export default function OrderDetailList() {
     alert(`Chỉnh sửa chi tiết đơn hàng ID: ${id}`);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa chi tiết đơn hàng này?")) {
-      console.log("Deleting ID:", id);
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa chi tiết đơn hàng này?")) return;
+
+    try {
+      await OrderDetailService.deleteOrderDetail(id);
+      // remove deleted item from state
+      setOrderDetails(orderDetails.filter((detail) => detail.orderDetailId !== id));
+      alert("✅ Xóa chi tiết đơn hàng thành công!");
+    } catch (error) {
+      console.error("Failed to delete:", error);
+      alert("❌ Xóa chi tiết đơn hàng thất bại!");
     }
   };
 
