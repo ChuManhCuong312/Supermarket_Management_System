@@ -20,27 +20,26 @@ export default function OrderDetailList() {
     fetchAll();
   }, []);
 
-  const handleSort = async (field) => {
-    let newDirection =
-      sortConfig.field === field && sortConfig.direction === "asc"
-        ? "desc"
-        : "asc";
-    setSortConfig({ field, direction: newDirection });
+  // --- Sort current displayed data only ---
+    const handleSort = (field) => {
+      let newDirection =
+        sortConfig.field === field && sortConfig.direction === "asc"
+          ? "desc"
+          : "asc";
+      setSortConfig({ field, direction: newDirection });
 
-    setLoading(true);
-    let data = [];
-    if (field === "productId") {
-      data = await OrderDetailService.getSortedByProductId(newDirection);
-    } else if (field === "totalPrice") {
-      data = await OrderDetailService.getSortedByTotalPrice(newDirection);
-    }
-    setOrderDetails(data);
-    setLoading(false);
-  };
+      const sortedData = [...orderDetails].sort((a, b) => {
+        if (a[field] < b[field]) return newDirection === "asc" ? -1 : 1;
+        if (a[field] > b[field]) return newDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+      setOrderDetails(sortedData);
+    };
 
-  const handleSearch = async () => {
+  // --- Search ---
+    const handleSearch = async () => {
       if (!searchOrderId && !searchProductId) {
-        alert("Vui lòng nhập ít nhất Mã đơn hoặc Mã sản phẩm để tìm kiếm!"); /* cần sửa lại thành dùng toad chứ ko dùng alert */
+        alert("Vui lòng nhập ít nhất Mã đơn hoặc Mã sản phẩm để tìm kiếm!");
         return;
       }
 
@@ -72,6 +71,14 @@ export default function OrderDetailList() {
     }
   };
 
+// --- Clear Filter ---
+  const handleClearFilter = () => {
+    setSearchOrderId("");
+    setSearchProductId("");
+    setSortConfig({ field: "", direction: "asc" });
+    fetchAll(); // reload full list
+  };
+
   return (
     <div>
       <div className="header">
@@ -94,14 +101,8 @@ export default function OrderDetailList() {
               value={searchOrderId}
               onChange={(e) => setSearchOrderId(e.target.value)}
             />
-            <span
-              className="clear-filter"
-              onClick={() => {
-                fetchAll();
-                setSortConfig({ field: "", direction: "asc" }); // reset sort
-               }}
-            >
-              ✖ Clear Filter
+            <span className="clear-filter" onClick={handleClearFilter}>
+                        ✖ Clear Filter
             </span>
           </div>
 
