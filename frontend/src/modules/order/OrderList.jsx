@@ -25,25 +25,31 @@ export default function OrderList() {
       fetchAllOrders();
     }, []);
 
-  const handleSearch = () => {
-    const filtered = orders.filter((order) => {
-      const matchCustomer =
-        !customerId || String(order.customerId).includes(customerId);
-      const matchEmployee =
-        !employeeId || String(order.employeeId).includes(employeeId);
-      const matchDate =
-        !orderDate || order.orderDate?.includes(orderDate.trim());
-      return matchCustomer && matchEmployee && matchDate;
-    });
-    setOrders(filtered);
+  const handleSearch = async () => {
+    if (!customerId && !employeeId && !orderDate) {
+      alert("Vui lòng nhập ít nhất một tiêu chí tìm kiếm!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await OrderService.searchOrders(customerId, employeeId, orderDate);
+      setOrders(data);
+    } catch (err) {
+      console.error("Error searching orders:", err);
+      setError("Không thể tìm kiếm đơn hàng.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClearFilter = () => {
-    //  setSearchOrderId("");
-     // setSearchProductId("");
-      setSortConfig({ field: "", direction: "asc" });
-      fetchAllOrders(); // reload full list
-    };
+    setCustomerId("");
+    setEmployeeId("");
+    setOrderDate("");
+    setSortConfig({ field: "", direction: "asc" });
+    fetchAllOrders(); // reload the default view (active, hidden, or canceled)
+  };
 
   // === SORT BY DATE or TOTAL AMOUNT ===
    const handleSort = async (field) => {
@@ -53,14 +59,27 @@ export default function OrderList() {
          : "asc";
      setSortConfig({ field, direction: newDirection });
 
-     let sortedData = [];
-     if (field === "buyDate") {
-       sortedData = await OrderService.getSortedByBuyDate(newDirection);
-     } else if (field === "totalAmount") {
-       sortedData = await OrderService.getSortedByTotalAmount(newDirection);
-     }
+     // Check if user has active filters
+     const hasActiveFilters = customerId || employeeId || orderDate;
 
-     setOrders(sortedData);
+     if (hasActiveFilters) {
+       // Local sort only
+       const sortedData = [...orders].sort((a, b) => {
+         if (a[field] < b[field]) return newDirection === "asc" ? -1 : 1;
+         if (a[field] > b[field]) return newDirection === "asc" ? 1 : -1;
+         return 0;
+       });
+       setOrders(sortedData);
+     } else {
+       // Server-side sort when no filters are active
+       let sortedData = [];
+       if (field === "buyDate") {
+         sortedData = await OrderService.getSortedByBuyDate(newDirection);
+       } else if (field === "totalAmount") {
+         sortedData = await OrderService.getSortedByTotalAmount(newDirection);
+       }
+       setOrders(sortedData);
+     }
    };
 
   return (
