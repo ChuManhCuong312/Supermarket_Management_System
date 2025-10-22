@@ -5,22 +5,38 @@ import "../../styles/orderdetail.css";
 export default function OrderDetailList() {
   const [orderDetails, setOrderDetails] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sortConfig, setSortConfig] = useState({ field: "", direction: "asc" });
   const [searchOrderId, setSearchOrderId] = useState("");
   const [searchProductId, setSearchProductId] = useState("");
 
+ const fetchAll = async () => {
+    setLoading(true);
+    const data = await OrderDetailService.getAll();
+    setOrderDetails(data);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await OrderDetailService.getAll();
-        setOrderDetails(data);
-      } catch (error) {
-        console.error("Error loading order details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    fetchAll();
   }, []);
+
+  const handleSort = async (field) => {
+    let newDirection =
+      sortConfig.field === field && sortConfig.direction === "asc"
+        ? "desc"
+        : "asc";
+    setSortConfig({ field, direction: newDirection });
+
+    setLoading(true);
+    let data = [];
+    if (field === "productId") {
+      data = await OrderDetailService.getSortedByProductId(newDirection);
+    } else if (field === "totalPrice") {
+      data = await OrderDetailService.getSortedByTotalPrice(newDirection);
+    }
+    setOrderDetails(data);
+    setLoading(false);
+  };
 
   const handleSearch = () => {
     console.log("Search clicked:", { searchOrderId, searchProductId });
@@ -63,8 +79,14 @@ export default function OrderDetailList() {
               value={searchOrderId}
               onChange={(e) => setSearchOrderId(e.target.value)}
             />
-            <span className="clear-filter" onClick={() => setSearchOrderId("")}>
-              X clear filter
+            <span
+              className="clear-filter"
+              onClick={() => {
+                fetchAll();
+                setSortConfig({ field: "", direction: "asc" }); // reset sort
+               }}
+            >
+              ✖ Clear Filter
             </span>
           </div>
 
@@ -97,10 +119,24 @@ export default function OrderDetailList() {
             <tr>
               <th>ID</th>
               <th>Mã đơn</th>
-              <th className="sortable">Mã SP</th>
+              <th
+                className={`sortable ${
+                  sortConfig.field === "productId" ? sortConfig.direction : ""
+                }`}
+                onClick={() => handleSort("productId")}
+              >
+                Mã SP
+              </th>
               <th>Số lượng</th>
               <th>Đơn giá</th>
-              <th className="sortable">Thành tiền</th>
+              <th
+                className={`sortable ${
+                  sortConfig.field === "totalPrice" ? sortConfig.direction : ""
+                }`}
+                onClick={() => handleSort("totalPrice")}
+              >
+                Thành tiền
+              </th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -163,3 +199,4 @@ export default function OrderDetailList() {
     </div>
   );
 }
+
