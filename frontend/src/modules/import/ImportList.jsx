@@ -16,6 +16,9 @@ export default function ImportList() {
         maxAmount: "",
     });
 
+    const [searchId, setSearchId] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
+
     const [newImport, setNewImport] = useState({
         supplierId: "",
         importDate: "",
@@ -42,10 +45,46 @@ export default function ImportList() {
             setImports(data.imports);
             setTotalItems(data.totalItems);
             setTotalPages(data.totalPages);
+            setIsSearching(false);
         } catch (err) {
             console.error("Lỗi khi tải danh sách nhập kho:", err);
             showModal("❌ Lỗi", "Không thể tải danh sách nhập kho", "error");
         }
+    };
+
+    // === Search by ID ===
+    const handleSearchById = async () => {
+        if (!searchId || searchId.trim() === "") {
+            showModal("⚠️ Cảnh báo", "Vui lòng nhập ID cần tìm", "error");
+            return;
+        }
+
+        try {
+            const response = await axios.get(`http://localhost:8080/api/imports/${searchId}`);
+            if (response.data) {
+                setImports([response.data]); // Show only the searched item
+                setIsSearching(true);
+                setTotalPages(1);
+                setTotalItems(1);
+
+            }
+        } catch (err) {
+            if (err.response?.status === 404) {
+                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập với ID: ${searchId}`, "error");
+                setImports([]);
+            } else {
+                showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
+            }
+            console.error("Search error:", err);
+        }
+    };
+
+    // === Clear search and reload all ===
+    const handleClearSearch = () => {
+        setSearchId("");
+        setIsSearching(false);
+        setPage(0);
+        fetchImports();
     };
 
     useEffect(() => {
@@ -193,28 +232,96 @@ export default function ImportList() {
                 </nav>
             </div>
 
-            {/* Filter */}
-            <div className="filter">
-                <div className="filter-buttons">
-                    <button
-                        onClick={() => {
-                            setIsEditing(false);
-                            setEditingId(null);
-                            setNewImport({
-                                supplierId: "",
-                                importDate: "",
-                                totalAmount: "",
-                                status: "Pending",
-                                note: "",
-                            });
-                            setErrors({});
-                            setShowAddBox(true);
+            {/* Search and Filter Section */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '1rem',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '8px',
+                marginBottom: '1rem',
+                gap: '1rem',
+                flexWrap: 'wrap'
+            }}>
+                {/* Search by ID */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    flex: '1',
+                    minWidth: '300px'
+                }}>
+                    <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
+                        🔍 Tìm theo ID:
+                    </label>
+                    <input
+                        type="number"
+                        placeholder="Nhập ID phiếu nhập..."
+                        value={searchId}
+                        onChange={(e) => setSearchId(e.target.value)}
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSearchById();
+                            }
                         }}
-                        className="btn add-btn"
-                    >
-                        ➕ Thêm mới
+                        style={{
+                            padding: '0.5rem 1rem',
+                            border: '1px solid #ddd',
+                            borderRadius: '5px',
+                            fontSize: '14px',
+                            minWidth: '180px',
+                            flex: '1'
+                        }}
+                    />
+                    <button onClick={handleSearchById} className="btn" style={{
+                        background: '#3b82f6',
+                        color: 'white',
+                        padding: '0.5rem 1rem',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                    }}>
+                        Tìm kiếm
                     </button>
+                    {isSearching && (
+                        <button onClick={handleClearSearch} className="btn" style={{
+                            background: '#ef4444',
+                            color: 'white',
+                            padding: '0.5rem 1rem',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap'
+                        }}>
+                            ✕ Xóa bộ lọc
+                        </button>
+                    )}
                 </div>
+
+                {/* Add Button */}
+                <button
+                    onClick={() => {
+                        setIsEditing(false);
+                        setEditingId(null);
+                        setNewImport({
+                            supplierId: "",
+                            importDate: "",
+                            totalAmount: "",
+                            status: "Pending",
+                            note: "",
+                        });
+                        setErrors({});
+                        setShowAddBox(true);
+                    }}
+                    className="btn add-btn"
+                    style={{
+                        whiteSpace: 'nowrap'
+                    }}
+                >
+                    ➕ Thêm mới
+                </button>
             </div>
 
             {/* Table */}
@@ -282,11 +389,17 @@ export default function ImportList() {
 
             {/* Pagination */}
             <div className="pagination">
-                <button onClick={() => handlePageChange(page - 1)} disabled={page === 0}>
+                <button onClick={() => handlePageChange(page - 1)} disabled={page === 0 || isSearching}>
                     ← Trước
                 </button>
-                <span>Trang {page + 1} / {totalPages || 1} ({totalItems} phiếu)</span>
-                <button onClick={() => handlePageChange(page + 1)} disabled={page === totalPages - 1 || totalPages === 0}>
+                <span>
+                    {isSearching ? (
+                        `Kết quả tìm kiếm: ${totalItems} phiếu`
+                    ) : (
+                        `Trang ${page + 1} / ${totalPages || 1} (${totalItems} phiếu)`
+                    )}
+                </span>
+                <button onClick={() => handlePageChange(page + 1)} disabled={page === totalPages - 1 || totalPages === 0 || isSearching}>
                     Sau →
                 </button>
             </div>
