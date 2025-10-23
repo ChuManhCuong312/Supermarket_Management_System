@@ -5,6 +5,8 @@ import "../../styles/Customer-Employee.css"; // dùng lại CSS của bạn
 
 export default function ImportList() {
     const [imports, setImports] = useState([]);
+    const [sortDate, setSortDate] = useState("asc");
+    const [sortAmount, setSortAmount] = useState("asc");
     const [filters, setFilters] = useState({
         startDate: "",
         endDate: "",
@@ -107,6 +109,23 @@ export default function ImportList() {
             showModal("❌ Lỗi", "Không thể xóa phiếu nhập", "error");
         }
     };
+    const handleSortByDate = async () => {
+        const startDate = "2000-01-01";
+        const endDate = new Date().toISOString().split("T")[0];
+        const newOrder = sortDate === "asc" ? "desc" : "asc";
+        const data = await importService.filterByDate(startDate, endDate, newOrder);
+        setImports(data);
+        setSortDate(newOrder);
+    };
+
+    const handleSortByAmount = async () => {
+        const minAmount = 0;
+        const maxAmount = 999999999;
+        const newOrder = sortAmount === "asc" ? "desc" : "asc";
+        const data = await importService.filterByAmount(minAmount, maxAmount, newOrder);
+        setImports(data);
+        setSortAmount(newOrder);
+    };
 
     const handlePageChange = (newPage) => setPage(newPage);
     const showModal = (title, message, type = "info") => {
@@ -163,8 +182,27 @@ export default function ImportList() {
                         <tr>
                             <th>ID</th>
                             <th>Nhà cung cấp</th>
-                            <th>Ngày nhập</th>
-                            <th>Tổng tiền</th>
+                            {/* --- Cột Ngày nhập --- */}
+                            <th
+                                style={{ cursor: "pointer", userSelect: "none" }}
+                                onClick={handleSortByDate}
+                            >
+                                Ngày nhập{" "}
+                                <span style={{ fontSize: "14px" }}>
+                                    {sortDate === "asc" ? "▲" : "▼"}
+                                </span>
+                            </th>
+
+                            {/* --- Cột Tổng tiền --- */}
+                            <th
+                                style={{ cursor: "pointer", userSelect: "none" }}
+                                onClick={handleSortByAmount}
+                            >
+                                Tổng tiền{" "}
+                                <span style={{ fontSize: "14px" }}>
+                                    {sortAmount === "asc" ? "▲" : "▼"}
+                                </span>
+                            </th>
                             <th>Trạng thái</th>
                             <th>Ghi chú</th>
                             <th>Thao tác</th>
@@ -172,11 +210,11 @@ export default function ImportList() {
                     </thead>
                     <tbody>
                         {imports.length > 0 ? imports.map(i => (
-                            <tr key={i.id}>
-                                <td>{i.id}</td>
-                                <td>{i.supplierId}</td>
-                                <td>{i.importDate}</td>
-                                <td>{i.totalAmount}</td>
+                            <tr key={i.importId}>
+                                <td>{i.importId}</td>
+                                <td>{i.supplier_id}</td>
+                                <td>{i.import_date}</td>
+                                <td>{i.total_amount}</td>
                                 <td>{i.status}</td>
                                 <td>{i.note}</td>
                                 <td>
