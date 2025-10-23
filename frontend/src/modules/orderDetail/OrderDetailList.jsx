@@ -13,6 +13,7 @@ export default function OrderDetailList() {
   const [searchOrderId, setSearchOrderId] = useState("");
   const [searchProductId, setSearchProductId] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingDetail, setEditingDetail] = useState(null);
 
  const fetchAll = async () => {
     setLoading(true);
@@ -63,11 +64,13 @@ export default function OrderDetailList() {
     };
 
 const handleAdd = () => {
+    setEditingDetail(null); // ✅ clear previous edit data
     setShowAddForm(true);
   };
 
   const handleCloseForm = () => {
     setShowAddForm(false);
+    setEditingDetail(null);
   };
 
   const handleFormSuccess = () => {
@@ -75,8 +78,9 @@ const handleAdd = () => {
     setShowAddForm(false);
   };
 
-  const handleEdit = (id) => {
-    toast.info(`Chỉnh sửa chi tiết đơn hàng ID: ${id}`);
+  const handleEdit = (detail) => {
+    setEditingDetail(detail); // store the clicked detail
+    setShowAddForm(true);     // show the modal
   };
 
   const handleDelete = (id) => {
@@ -210,7 +214,7 @@ const handleAdd = () => {
                     <div className="actions">
                       <button
                         className="icon-button edit-icon"
-                        onClick={() => handleEdit(detail.orderDetailId)}
+                        onClick={() => handleEdit(detail)}
                         title="Sửa"
                       >
                         📝
@@ -249,10 +253,14 @@ const handleAdd = () => {
       {/* ✅ Modal Overlay */}
             {showAddForm && (
               <div className="modal-overlay">
-                <div className="modal-content">
-                  <OrderDetailForm onSuccess={handleFormSuccess} onCancel={handleCloseForm} />
+                  <div className="modal-content">
+                    <OrderDetailForm
+                      initialData={editingDetail}  // <-- prefill form if editing
+                      onSuccess={handleFormSuccess}
+                      onCancel={handleCloseForm}
+                    />
+                  </div>
                 </div>
-              </div>
             )}
     </div>
   );
