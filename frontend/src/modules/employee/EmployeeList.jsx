@@ -19,6 +19,12 @@ export default function EmployeeList() {
     salary: "",
     shift: "",
   });
+
+const [sortConfig, setSortConfig] = useState({
+    sort: "none",
+    sortBy: "name"
+  });
+
   const [showAddBox, setShowAddBox] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, employeeId: null, message: "" });
 const [isEditing, setIsEditing] = useState(false);
@@ -52,26 +58,56 @@ const [editingId, setEditingId] = useState(null);
     console.error("Lỗi khi tải nhân viên:", err);    }
   };
 
-  const handleSearch = async (searchFilters) => {
-    const validParams = Object.fromEntries(
-      Object.entries(searchFilters).filter(([_, v]) => v && v.trim() !== "")
-    );
+const handleSearch = async (searchFilters, sort = "none", sortBy = "name") => {
+  const validParams = Object.fromEntries(
+    Object.entries(searchFilters).filter(([_, v]) => v && v.trim() !== "")
+  );
 
-    try {
-      if (Object.keys(validParams).length === 0) {
-        fetchEmployees();
-        return;
-      }
-
-      const response = await employeeService.searchEmployees(validParams, 0, itemsPerPage);
+  try {
+    if (Object.keys(validParams).length === 0) {
+      const response = await employeeService.getAllEmployees(page, itemsPerPage, sort, sortBy);
       setEmployees(response.data);
       setTotalPages(response.totalPages);
       setTotalItems(response.totalItems);
-      setPage(0);
-    } catch (err) {
-    if (err?.isExtensionError) return;
-    console.error("Lỗi khi tìm kiếm:", err);    }
-  };
+      return;
+    }
+
+    const response = await employeeService.searchEmployees(validParams, page, itemsPerPage, sort, sortBy);
+    setEmployees(response.data);
+    setTotalPages(response.totalPages);
+    setTotalItems(response.totalItems);
+  } catch (err) {
+    console.error("Lỗi khi tìm kiếm:", err);
+  }
+};
+
+
+const handleSort = (field) => {
+  setSortConfig(prev => {
+    let newSort = {};
+    if (prev.sortBy !== field || prev.sort === "none") {
+      newSort = { sort: "asc", sortBy: field };
+    } else if (prev.sort === "asc") {
+      newSort = { sort: "desc", sortBy: field };
+    } else {
+      newSort = { sort: "none", sortBy: field };
+    }
+    handleSearch(filters, newSort.sort, newSort.sortBy);
+    setPage(0);
+
+    return newSort;
+  });
+};
+
+const renderSortIcon = (field) => {
+  if (sortConfig.sortBy !== field) return <span className="sort-icon none" />;
+
+  if (sortConfig.sort === "asc") return <span className="sort-icon asc active" />;
+  if (sortConfig.sort === "desc") return <span className="sort-icon desc active" />;
+
+  return <span className="sort-icon none" />;
+};
+
 const openEditForm = (employee) => {
   setIsEditing(true);
   setEditingId(employee.id);
@@ -107,16 +143,15 @@ const openEditForm = (employee) => {
       closeForm();
       fetchEmployees();
     } catch (err) {
-                        let errorMsg = "Có lỗi xảy ra";
-                        if (err.response?.data) {
-                          errorMsg = typeof err.response.data === 'string'
-                            ? err.response.data
-                            : err.response.data.message || JSON.stringify(err.response.data);
-                        } else if (err.message) {
-                          errorMsg = err.message;
-                        }
-                        showModal("❌ Lỗi", errorMsg, "error");
-                      }
+     let errorMsg = "Có lỗi xảy ra";
+     if (err.response?.data) {
+         errorMsg = typeof err.response.data === 'string'? err.response.data
+         : err.response.data.message || JSON.stringify(err.response.data);
+         } else if (err.message) {
+             errorMsg = err.message;
+             }
+         showModal("❌ Lỗi", errorMsg, "error");
+         }
   };
 
 const handleSaveEmployee = async (e) => {
@@ -140,17 +175,16 @@ const handleSaveEmployee = async (e) => {
 
   } catch (err) {
     let errorMsg = "Có lỗi xảy ra";
-                        if (err.response?.data) {
-                          errorMsg = typeof err.response.data === 'string'
-                            ? err.response.data
-                            : err.response.data.message || JSON.stringify(err.response.data);
-                        } else if (err.message) {
-                          errorMsg = err.message;
-                        }
-                        showModal("❌ Lỗi", errorMsg, "error");
-                      }
+    if (err.response?.data) {
+        errorMsg = typeof err.response.data === 'string'
+        ? err.response.data
+        : err.response.data.message || JSON.stringify(err.response.data);
+    } else if (err.message) {
+        errorMsg = err.message;
+    }
+    showModal("❌ Lỗi", errorMsg, "error");
+  }
 };
-
 
   const handleDelete = (id) => {
     const employee = employees.find(e => e.id === id);
@@ -192,8 +226,8 @@ const handleSaveEmployee = async (e) => {
         {/* Header */}
         <div className="header">
           <div className="header-left">
-            <span className="header-icon">👥</span>
-            <h2 className="header-title">Quản lý khách hàng</h2>
+            <span className="header-icon">‍👨‍💼</span>
+            <h2 className="header-title">Quản lý nhân viên</h2>
           </div>
 
           <nav className="header-nav">
@@ -278,11 +312,23 @@ const handleSaveEmployee = async (e) => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Tên</th>
+<th
+                      className="sortable-header"
+                      onClick={() => handleSort("name")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      Tên {renderSortIcon("name")}
+              </th>
               <th>Chức vụ</th>
               <th>SĐT</th>
               <th>Email</th>
-              <th>Lương</th>
+<th
+                      className="sortable-header"
+                      onClick={() => handleSort("salary")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      Lương {renderSortIcon("salary")}
+                    </th>
               <th>Ca làm việc</th>
               <th>Thao tác</th>
             </tr>

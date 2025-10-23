@@ -39,16 +39,24 @@ const employeeService = {
         }
   },
 
-  searchEmployees: async (filters, page = 0, size = 10) => {
-    try{
-    const res = await axiosClient.get("/employees/search", {
-      params: { ...filters, page, size }
-    });
-    return res.data;
-     } catch (err) {
-               throw err;
-             }
-  }
+searchEmployees: async (filters, page = 0, size = 10, sort = "none", sortBy = "name") => {
+  const res = await axiosClient.get("/employees/search", {
+    params: {
+      ...filters,
+      page,
+      size,
+      sort,
+      sortBy
+    }
+  });
+  return {
+    data: res.data.data,
+    totalPages: res.data.totalPages,
+    totalItems: res.data.totalItems,
+    currentPage: res.data.currentPage
+  };
+}
+
 };
 
 export default employeeService;
