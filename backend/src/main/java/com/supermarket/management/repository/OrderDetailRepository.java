@@ -21,8 +21,8 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
     );
 
 
-    List<OrderDetail> findAllByOrderByOrderIdAsc();
-    List<OrderDetail> findAllByOrderByOrderIdDesc();
+    List<OrderDetail> findAllByOrderByProductIdAsc();
+    List<OrderDetail> findAllByOrderByProductIdDesc();
 
     List<OrderDetail> findAllByOrderByTotalPriceAsc();
     List<OrderDetail> findAllByOrderByTotalPriceDesc();

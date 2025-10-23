@@ -4,6 +4,11 @@ import com.supermarket.management.entity.Supplier;
 import com.supermarket.management.repository.SupplierRepository;
 import org.springframework.stereotype.Service;
 
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +23,8 @@ public class SupplierService {
     }
 
     // Lấy tất cả nhà cung cấp
-    public List<Supplier> getAllSuppliers() {
-        return supplierRepository.findAll();
+    public Page<Supplier> getSuppliers(Pageable pageable) {
+        return supplierRepository.findAll(pageable);
     }
 
     // Thêm mới nhà cung cấp
@@ -50,7 +55,12 @@ public class SupplierService {
         supplierRepository.deleteById(id);
     }
 
-    public List<Supplier> searchSuppliers(String keyword) {
-        return supplierRepository.searchByKeyword(keyword);
+    public Page<Supplier> searchSuppliers(String name, String phone, String email, Pageable pageable) {
+        return supplierRepository.searchByParams(
+                name != null ? name : "",
+                phone != null ? phone : "",
+                email != null ? email : "",
+                pageable!= null ? pageable : PageRequest.of(0, 10)
+        );
     }
 }

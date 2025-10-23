@@ -32,12 +32,13 @@ public class OrderDetailController {
     }
 
     // Sorted: use query param 'sort=asc' or 'sort=desc'
-    @GetMapping("/sorted/orderid")
-    public List<OrderDetail> getAllOrderDetailsSortedByOrderId(@RequestParam(defaultValue = "asc") String sort) {
+    @GetMapping("/sorted/productid")
+    public List<OrderDetail> getAllOrderDetailsSortedByProductId(
+            @RequestParam(defaultValue = "asc") String sort) {
         if (sort.equalsIgnoreCase("desc")) {
-            return orderDetailService.getAllOrderDetailsSortedDesc();
+            return orderDetailService.getAllOrderDetailsSortedByProductIdDesc();
         }
-        return orderDetailService.getAllOrderDetailsSortedAsc();
+        return orderDetailService.getAllOrderDetailsSortedByProductIdAsc();
     }
 
     // Sorted: use query param 'sort=asc' or 'sort=desc'
