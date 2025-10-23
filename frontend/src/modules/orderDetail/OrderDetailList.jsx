@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import OrderDetailService from "./orderDetailService";
 import "../../styles/orderdetail.css";
+import OrderDetailForm from "./OrderDetailForm";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
+import { toast } from "react-toastify";
 
 export default function OrderDetailList() {
   const [orderDetails, setOrderDetails] = useState([]);
@@ -8,6 +12,7 @@ export default function OrderDetailList() {
   const [sortConfig, setSortConfig] = useState({ field: "", direction: "asc" });
   const [searchOrderId, setSearchOrderId] = useState("");
   const [searchProductId, setSearchProductId] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
 
  const fetchAll = async () => {
     setLoading(true);
@@ -38,7 +43,7 @@ export default function OrderDetailList() {
   // --- Search ---
     const handleSearch = async () => {
       if (!searchOrderId && !searchProductId) {
-        alert("Vui lòng nhập ít nhất Mã đơn hoặc Mã sản phẩm để tìm kiếm!");
+        toast.warn("Vui lòng nhập ít nhất Mã đơn hoặc Mã sản phẩm để tìm kiếm!");
         return;
       }
 
@@ -50,32 +55,54 @@ export default function OrderDetailList() {
         );
         setOrderDetails(data);
       } catch (error) {
+        toast.warn("Lỗi thêm chi tiết đơn!");
         console.error("Error searching order details:", error);
       } finally {
         setLoading(false);
       }
     };
 
-  const handleAdd = () => {
-    alert("Thêm mới (chưa có form)");
+const handleAdd = () => {
+    setShowAddForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowAddForm(false);
+  };
+
+  const handleFormSuccess = () => {
+    fetchAll();
+    setShowAddForm(false);
   };
 
   const handleEdit = (id) => {
-    alert(`Chỉnh sửa chi tiết đơn hàng ID: ${id}`);
+    toast.info(`Chỉnh sửa chi tiết đơn hàng ID: ${id}`);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa chi tiết đơn hàng này?")) return;
-
-    try {
-      await OrderDetailService.deleteOrderDetail(id);
-      // remove deleted item from state
-      setOrderDetails(orderDetails.filter((detail) => detail.orderDetailId !== id));
-      alert("✅ Xóa chi tiết đơn hàng thành công!");
-    } catch (error) {
-      console.error("Failed to delete:", error);
-      alert("❌ Xóa chi tiết đơn hàng thất bại!");
-    }
+  const handleDelete = (id) => {
+    confirmAlert({
+      title: "Xác nhận xóa",
+      message: "Bạn có chắc chắn muốn xóa chi tiết đơn hàng này?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            try {
+              await OrderDetailService.deleteOrderDetail(id);
+              toast.success("Xóa chi tiết đơn hàng thành công!");
+              fetchAll(); // reload list
+            } catch (error) {
+              toast.error("Không thể xóa chi tiết đơn hàng!");
+              console.error("Error deleting order detail: ",error);
+            }
+          },
+        },
+        {
+          label: "Không",
+          onClick: () => toast.info("Đã hủy xóa."),
+        },
+      ],
+    });
   };
 
 // --- Clear Filter ---
@@ -219,6 +246,14 @@ export default function OrderDetailList() {
           <button>»</button>
         </div>
       </div>
+      {/* ✅ Modal Overlay */}
+            {showAddForm && (
+              <div className="modal-overlay">
+                <div className="modal-content">
+                  <OrderDetailForm onSuccess={handleFormSuccess} onCancel={handleCloseForm} />
+                </div>
+              </div>
+            )}
     </div>
   );
 }

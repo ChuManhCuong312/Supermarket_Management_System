@@ -33,7 +33,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             @Param("orderDate") LocalDate orderDate
     );
 
-
     // Active orders sorted by date
     List<Order> findByDeletedTypeIsNullOrderByOrderDateAsc();
     List<Order> findByDeletedTypeIsNullOrderByOrderDateDesc();

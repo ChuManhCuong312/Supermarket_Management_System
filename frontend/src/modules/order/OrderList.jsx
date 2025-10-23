@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "../../styles/order.css";
 import OrderService from "./orderService";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
+import { toast } from "react-toastify";
 
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
@@ -27,7 +30,7 @@ export default function OrderList() {
 
   const handleSearch = async () => {
     if (!customerId && !employeeId && !orderDate) {
-      alert("Vui lòng nhập ít nhất một tiêu chí tìm kiếm!");
+      toast.warn("Vui lòng nhập ít nhất một tiêu chí tìm kiếm!");
       return;
     }
 
@@ -81,6 +84,14 @@ export default function OrderList() {
        setOrders(sortedData);
      }
    };
+
+ const handleAdd = () => {
+    toast.info("Thêm mới (chưa có form)");
+  };
+
+  const handleEdit = (id) => {
+    toast.info(`Chỉnh sửa chi tiết đơn hàng ID: ${id}`);
+  };
 
   return (
     <div>
@@ -140,33 +151,8 @@ export default function OrderList() {
           <button className="search-button" onClick={handleSearch}>
             🔍 Tìm kiếm
           </button>
-          <button className="add-button">➕ Thêm mới</button>
-          <button
-            className="search-button"
-            onClick={() => setViewType("active")}
-            style={{
-              backgroundColor: viewType === "active" ? "#2d6b3d" : "#6b9d7a",
-            }}
-          >
-            ✅ Đang hoạt động
-          </button>
-          <button
-            className="search-button"
-            onClick={() => setViewType("hidden")}
-            style={{
-              backgroundColor: viewType === "hidden" ? "#2d6b3d" : "#6b9d7a",
-            }}
-          >
-            🙈 Ẩn
-          </button>
-          <button
-            className="search-button"
-            onClick={() => setViewType("canceled")}
-            style={{
-              backgroundColor: viewType === "canceled" ? "#2d6b3d" : "#6b9d7a",
-            }}
-          >
-            ❌ Đã hủy
+          <button className="add-button" onClick={handleAdd}>
+            ➕ Thêm mới
           </button>
         </div>
 
@@ -224,15 +210,13 @@ export default function OrderList() {
                           📝
                         </button>
 
-                        {/* Hide order */}
-                        <button className="icon-button hide-icon" title="Ẩn đơn hàng">
-                            🙈
-                        </button>
-
-                        {/* Cancel order */}
-                        <button className="icon-button cancel-icon" title="Hủy đơn hàng">
-                            ❌
-                        </button>
+                      <button
+                        className="icon-button delete-icon"
+                        onClick={() => handleDelete(detail.orderDetailId)}
+                        title="Xóa"
+                      >
+                        🗑️
+                      </button>
 
                       </div>
                     </td>

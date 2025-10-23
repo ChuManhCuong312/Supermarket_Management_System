@@ -31,6 +31,17 @@ public class OrderDetailController {
         }
     }
 
+    // GET /api/order-details/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getOrderDetailById(@PathVariable("id") Integer id) {
+        try {
+            OrderDetail orderDetail = orderDetailService.getOrderDetailById(id);
+            return ResponseEntity.ok(orderDetail);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     // Sorted: use query param 'sort=asc' or 'sort=desc'
     @GetMapping("/sorted/productid")
     public List<OrderDetail> getAllOrderDetailsSortedByProductId(

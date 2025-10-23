@@ -272,3 +272,43 @@ td {
 .list-icon::before {
   content: "☰";
 }
+
+  color: #ffd700;
+}
+
+.delete-icon {
+  color: #dc2626;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.pagination button:hover {
+  background-color: #f0f0f0;
+}
+
+.pagination button.active {
+  background-color: #2d6b3d;
+  color: white;
+  border-color: #2d6b3d;
+}
+
+.search-icon::before {
+  content: "🔍";
+}
+
+.list-icon::before {
+  content: "☰";
+}
