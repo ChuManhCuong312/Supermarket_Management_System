@@ -193,13 +193,41 @@ const cancelDelete = () => {
   }, [page]);
 
   return (
-    <div className="page">
-      {/* Header */}
-      <div className="header">
+      <>
+    {/* Header */}
+    <div className="header">
+      <div className="header-left">
         <span className="header-icon">👥</span>
         <h2 className="header-title">Quản lý khách hàng</h2>
-        <button onClick={() => navigate("/")} className="back-btn">← Trở về</button>
       </div>
+
+      <nav className="header-nav">
+        <button onClick={() => navigate("/")} className="back-btn">
+             Trang chủ
+        </button>
+        <button onClick={() => navigate("/products")} className="nav-btn">
+          📦 Sản phẩm
+        </button>
+        <button onClick={() => navigate("/employees")} className="nav-btn">
+          👨‍💼 Nhân viên
+        </button>
+        <button onClick={() => navigate("/inventory")} className="nav-btn">
+          📥 Nhập kho
+        </button>
+        <button onClick={() => navigate("/customers")} className="nav-btn active">
+          👥 Khách hàng
+        </button>
+        <button onClick={() => navigate("/suppliers")} className="nav-btn">
+          🏢 Nhà cung cấp
+        </button>
+        <button onClick={() => navigate("/orders")} className="nav-btn">
+          🛒 Đơn hàng
+        </button>
+        <button onClick={() => navigate("/order-details")} className="nav-btn">
+          📋 Chi tiết đơn hàng
+        </button>
+      </nav>
+    </div>
 
       {/* Filter */}
       <div className="filter">
@@ -405,6 +433,6 @@ const cancelDelete = () => {
           </div>
         </div>
       )}
-    </div>
+   </>
   );
 }
