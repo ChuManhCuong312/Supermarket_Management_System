@@ -1,5 +1,6 @@
 package com.supermarket.management.controller;
-
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,11 +10,11 @@ import com.supermarket.management.entity.Supplier;
 import com.supermarket.management.service.SupplierService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/api/suppliers")
+@CrossOrigin(origins = "*")
 public class SupplierController {
 
     private final SupplierService supplierService;
@@ -25,17 +26,34 @@ public class SupplierController {
 
     // GET /api/suppliers
     @GetMapping
-    public Page<Supplier> getSuppliersByPage(@RequestParam(defaultValue = "1") int page) {
-        int pageSize = 10;
-        Pageable pageable = PageRequest.of(page - 1, pageSize);
-        return supplierService.getSuppliers(pageable);
+    public ResponseEntity<Map<String, Object>> getAllSuppliers(
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "none") String sort,
+            @RequestParam(required = false, defaultValue = "companyName") String sortBy) {
+
+        int pageIndex = page - 1; // vì Pageable bắt đầu từ 0
+        Page<Supplier> supplierPage = supplierService.getAllSuppliers(pageIndex, size, sort, sortBy);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", supplierPage.getContent());
+        response.put("currentPage", supplierPage.getNumber());
+        response.put("totalItems", supplierPage.getTotalElements());
+        response.put("totalPages", supplierPage.getTotalPages());
+
+        return ResponseEntity.ok(response);
     }
+
 
     // POST /api/suppliers
     @PostMapping
-    public ResponseEntity<Supplier> createSupplier(@RequestBody Supplier supplier) {
-        Supplier saved = supplierService.createSupplier(supplier);
-        return ResponseEntity.ok(saved);
+    public ResponseEntity<?> createSupplier(@RequestBody Supplier supplier) {
+        try {
+            Supplier saved = supplierService.createSupplier(supplier);
+            return ResponseEntity.ok(saved);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     // PUT /api/suppliers/{id}
@@ -54,15 +72,34 @@ public class SupplierController {
 
     // SEARCH /api/suppliers/search
     @GetMapping("/search")
-    public ResponseEntity<Page<Supplier>> search(
+    public ResponseEntity<Map<String, Object>> searchSuppliers(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) String email,
-            @RequestParam(defaultValue = "0") int page) {
-        int pageSize=10;
-        Pageable pageable = PageRequest.of(page, pageSize);
-        Page<Supplier> results = supplierService.searchSuppliers(name, phone, email, pageable);
-        return ResponseEntity.ok(results);
-    }
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "none") String sort,
+            @RequestParam(defaultValue = "name") String sortBy) {
 
+        int pageIndex = page - 1;
+        Pageable pageable;
+
+        if ("desc".equalsIgnoreCase(sort)) {
+            pageable = PageRequest.of(pageIndex, size, Sort.by(Sort.Direction.DESC, sortBy));
+        } else if ("asc".equalsIgnoreCase(sort)) {
+            pageable = PageRequest.of(pageIndex, size, Sort.by(Sort.Direction.ASC, sortBy));
+        } else {
+            pageable = PageRequest.of(pageIndex, size);
+        }
+
+        Page<Supplier> results = supplierService.searchSuppliers(name, phone, email, pageable);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", results.getContent());
+        response.put("currentPage", results.getNumber() + 1); // trả về 1-based index
+        response.put("totalItems", results.getTotalElements());
+        response.put("totalPages", results.getTotalPages());
+
+        return ResponseEntity.ok(response);
+    }
 }

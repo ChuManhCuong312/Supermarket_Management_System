@@ -21,4 +21,7 @@ public interface SupplierRepository extends JpaRepository<Supplier, Integer> {
                                   @Param("phone") String phone,
                                   @Param("email") String email,
                                   Pageable pageable);
+
+    boolean existsByPhone(String phone);
+    boolean existsByEmail(String email);
 }
