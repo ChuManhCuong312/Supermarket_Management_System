@@ -60,6 +60,16 @@ const OrderDetailService = {
       throw error; // let the caller handle it
     }
   },
+
+   createOrderDetail: async (orderDetail) => {
+      try {
+        const response = await axiosClient.post(`${API_BASE}/add`, orderDetail);
+        return response.data;
+      } catch (error) {
+        console.error("Failed to create order detail:", error);
+        throw error;
+      }
+    },
 };
 
 export default OrderDetailService;

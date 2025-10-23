@@ -33,6 +33,11 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
+    public Order getActiveOrderById(Integer orderId) {
+        return orderRepository.findByOrderIdAndDeletedTypeIsNull(orderId)
+                .orElse(null); // return null if not found
+    }
+
     public List<Order> getOrdersSortedByDateAsc() {
         return orderRepository.findByDeletedTypeIsNullOrderByOrderDateAsc();
     }

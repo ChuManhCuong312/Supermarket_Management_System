@@ -25,6 +25,21 @@
             return orderService.getAllOrders();
         }
 
+        @GetMapping("/active/{orderId}")
+        public ResponseEntity<?> getActiveOrderById(@PathVariable Integer orderId) {
+            try {
+                Order order = orderService.getActiveOrderById(orderId);
+                if (order == null) {
+                    return new ResponseEntity<>("Active order not found with ID: " + orderId, HttpStatus.NOT_FOUND);
+                }
+                return new ResponseEntity<>(order, HttpStatus.OK);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ResponseEntity<>("Failed to fetch active order: " + e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
         // Sorted: use query param 'sort=asc' or 'sort=desc'
         @GetMapping("/sorted/buydate")
         public List<Order> getAllOrdersSortedByDate(@RequestParam(defaultValue = "asc") String sort) {

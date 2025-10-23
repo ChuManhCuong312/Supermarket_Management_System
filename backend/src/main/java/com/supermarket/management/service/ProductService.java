@@ -1,6 +1,8 @@
 package com.supermarket.management.service;
 
+import com.supermarket.management.entity.OrderDetail;
 import com.supermarket.management.entity.Product;
+import com.supermarket.management.exception.ResourceNotFoundException;
 import com.supermarket.management.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,12 @@ public class ProductService {
     // Lấy tất cả sản phẩm
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    // Search Product by ID
+    public Product getProductById(Integer id) {
+        return productRepository.findById(id) // <-- use instance, not class
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + id));
     }
 
     // Thêm sản phẩm mới

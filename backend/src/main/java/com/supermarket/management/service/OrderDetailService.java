@@ -28,6 +28,12 @@ public class OrderDetailService {
 
     public List<OrderDetail> getAllOrderDetails() {return orderDetailRepository.findAll();}
 
+    // Search OrderDetail by ID
+    public OrderDetail getOrderDetailById(Integer id) {
+        return orderDetailRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("OrderDetail not found with ID: " + id));
+    }
+
     public List<OrderDetail> getAllOrderDetailsSortedByProductIdAsc() {return orderDetailRepository.findAllByOrderByProductIdAsc();}
 
     public List<OrderDetail> getAllOrderDetailsSortedByProductIdDesc() {return orderDetailRepository.findAllByOrderByProductIdDesc();}
