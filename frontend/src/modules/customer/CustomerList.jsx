@@ -11,6 +11,12 @@ export default function CustomerList() {
     email: "",
     membershipType: "",
   });
+
+const [sortConfig, setSortConfig] = useState({
+    sort: "none",
+    sortBy: "name"
+  });
+
 const handleFilterChange = (key, value) => {
   setFilters({ ...filters, [key]: value });
 };
@@ -21,7 +27,6 @@ useEffect(() => {
 
   return () => clearTimeout(timeout);
 }, [filters]);
-
 
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -56,36 +61,72 @@ const [confirmDelete, setConfirmDelete] = useState({
 
   const fetchCustomers = async () => {
     try {
-      const response = await customerService.getAllCustomers(page + 1, itemsPerPage);
-      setCustomers(response.data);
-      setTotalPages(response.totalPages);
-      setTotalItems(response.totalItems);
-    } catch (err) {
-      console.error("Lỗi khi tải khách hàng:", err);
-    }
+          const response = await customerService.getAllCustomers(
+            page + 1,
+            itemsPerPage,
+            sortConfig.sort,
+            sortConfig.sortBy
+          );
+          setCustomers(response.data);
+          setTotalPages(response.totalPages);
+          setTotalItems(response.totalItems);
+        } catch (err) {
+          console.error("Lỗi khi tải khách hàng:", err);
+        }
   };
 
 const handleSearch = async (searchFilters) => {
-  const validParams = Object.fromEntries(
-    Object.entries(searchFilters).filter(([_, v]) => v && v.trim() !== "")
-  );
+    const validParams = Object.fromEntries(
+      Object.entries(searchFilters).filter(([_, v]) => v && v.trim() !== "")
+    );
 
-  try {
-    if (Object.keys(validParams).length === 0) {
-      fetchCustomers();
-      return;
+    try {
+      if (Object.keys(validParams).length === 0) {
+        fetchCustomers();
+        return;
+      }
+
+      const response = await customerService.searchCustomers(
+        validParams,
+        1,
+        itemsPerPage,
+        sortConfig.sort,
+        sortConfig.sortBy
+      );
+      setCustomers(response.data);
+      setTotalPages(response.totalPages);
+      setTotalItems(response.totalItems);
+      setPage(0);
+    } catch (err) {
+      console.error("Lỗi khi tìm kiếm:", err);
     }
+  };
 
-    const response = await customerService.searchCustomers(validParams, 1, itemsPerPage);
-    setCustomers(response.data);
-    setTotalPages(response.totalPages);
-    setTotalItems(response.totalItems);
-    setPage(0);
-  } catch (err) {
-    console.error("Lỗi khi tìm kiếm:", err);
-  }
+ const handleSort = (field) => {
+    setSortConfig(prev => {
+      if (prev.sortBy !== field) {
+        return { sort: "asc", sortBy: field };
+      }
+      if (prev.sort === "none") {
+        return { sort: "asc", sortBy: field };
+      } else if (prev.sort === "asc") {
+        return { sort: "desc", sortBy: field };
+      } else {
+        return { sort: "none", sortBy: field };
+      }
+  setPage(0);
+      return newSort;
+
+    });
+  };
+const renderSortIcon = (field) => {
+  if (sortConfig.sortBy !== field) return <span className="sort-icon none" />;
+
+  if (sortConfig.sort === "asc") return <span className="sort-icon asc active" />;
+  if (sortConfig.sort === "desc") return <span className="sort-icon desc active" />;
+
+  return <span className="sort-icon none" />;
 };
-
 
 const handleDelete = (id) => {
   const customer = customers.find(c => c.id === id);
@@ -191,43 +232,46 @@ const cancelDelete = () => {
   useEffect(() => {
     fetchCustomers();
   }, [page]);
+useEffect(() => {
+    fetchCustomers();
+}, [sortConfig]);
 
   return (
-      <>
-    {/* Header */}
-    <div className="header">
-      <div className="header-left">
-        <span className="header-icon">👥</span>
-        <h2 className="header-title">Quản lý khách hàng</h2>
-      </div>
+    <div className="page">
+      {/* Header */}
+      <div className="header">
+        <div className="header-left">
+          <span className="header-icon">👥</span>
+          <h2 className="header-title">Quản lý khách hàng</h2>
+        </div>
 
-      <nav className="header-nav">
-        <button onClick={() => navigate("/")} className="back-btn">
-             Trang chủ
-        </button>
-        <button onClick={() => navigate("/products")} className="nav-btn">
-          📦 Sản phẩm
-        </button>
-        <button onClick={() => navigate("/employees")} className="nav-btn">
-          👨‍💼 Nhân viên
-        </button>
-        <button onClick={() => navigate("/inventory")} className="nav-btn">
-          📥 Nhập kho
-        </button>
-        <button onClick={() => navigate("/customers")} className="nav-btn active">
-          👥 Khách hàng
-        </button>
-        <button onClick={() => navigate("/suppliers")} className="nav-btn">
-          🏢 Nhà cung cấp
-        </button>
-        <button onClick={() => navigate("/orders")} className="nav-btn">
-          🛒 Đơn hàng
-        </button>
-        <button onClick={() => navigate("/order-details")} className="nav-btn">
-          📋 Chi tiết đơn hàng
-        </button>
-      </nav>
-    </div>
+        <nav className="header-nav">
+          <button onClick={() => navigate("/")} className="back-btn">
+               Trang chủ
+          </button>
+          <button onClick={() => navigate("/products")} className="nav-btn">
+            📦 Sản phẩm
+          </button>
+          <button onClick={() => navigate("/employees")} className="nav-btn">
+            👨‍💼 Nhân viên
+          </button>
+          <button onClick={() => navigate("/inventory")} className="nav-btn">
+            📥 Nhập kho
+          </button>
+          <button onClick={() => navigate("/customers")} className="nav-btn active">
+            👥 Khách hàng
+          </button>
+          <button onClick={() => navigate("/suppliers")} className="nav-btn">
+            🏢 Nhà cung cấp
+          </button>
+          <button onClick={() => navigate("/orders")} className="nav-btn">
+            🛒 Đơn hàng
+          </button>
+          <button onClick={() => navigate("/order-details")} className="nav-btn">
+            📋 Chi tiết đơn hàng
+          </button>
+        </nav>
+      </div>
 
       {/* Filter */}
       <div className="filter">
@@ -271,44 +315,56 @@ const cancelDelete = () => {
 
       {/* Table */}
       <div className="table-container">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Tên</th>
-              <th>SĐT</th>
-              <th>Email</th>
-              <th>Địa chỉ</th>
-              <th>Điểm</th>
-              <th>Loại TV</th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {customers.length > 0 ? customers.map((c) => (
-              <tr key={c.id}>
-                <td>{c.id}</td>
-                <td>{c.name}</td>
-                <td>{c.phone}</td>
-                <td>{c.email}</td>
-                <td>{c.address}</td>
-                <td>{c.points}</td>
-                <td>{c.membershipType}</td>
-                <td>
-                  <div className="action-buttons">
-                    <button onClick={() => openEditForm(c)} className="edit-btn">✏️</button>
-                    <button onClick={() => handleDelete(c.id)} className="delete-btn">🗑️</button>
-                  </div>
-                </td>
-              </tr>
-            )) : (
-              <tr>
-                <td colSpan="8" className="no-data">Không có dữ liệu khách hàng</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th
+                      className="sortable-header"
+                      onClick={() => handleSort("name")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      Tên {renderSortIcon("name")}
+                    </th>
+                    <th>SĐT</th>
+                    <th>Email</th>
+                    <th>Địa chỉ</th>
+                    <th
+                      className="sortable-header"
+                      onClick={() => handleSort("points")}
+                      style={{ cursor: "pointer" }}
+                    >
+                      Điểm {renderSortIcon("points")}
+                    </th>
+                    <th>Loại TV</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {customers.length > 0 ? customers.map((c) => (
+                    <tr key={c.id}>
+                      <td>{c.id}</td>
+                      <td>{c.name}</td>
+                      <td>{c.phone}</td>
+                      <td>{c.email}</td>
+                      <td>{c.address}</td>
+                      <td>{c.points}</td>
+                      <td>{c.membershipType}</td>
+                      <td>
+                        <div className="action-buttons">
+                          <button onClick={() => openEditForm(c)} className="edit-btn">✏️</button>
+                          <button onClick={() => handleDelete(c.id)} className="delete-btn">🗑️</button>
+                        </div>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan="8" className="no-data">Không có dữ liệu khách hàng</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
       {/* Pagination */}
       <div className="pagination">
@@ -433,6 +489,6 @@ const cancelDelete = () => {
           </div>
         </div>
       )}
-   </>
+    </div>
   );
 }

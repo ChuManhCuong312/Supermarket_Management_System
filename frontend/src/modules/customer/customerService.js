@@ -44,16 +44,23 @@ const customerService = {
   },
 
   // Tìm kiếm khách hàng
-  searchCustomers: async (filters, page = 1, size = 10) => {
-    try {
-      const res = await axiosClient.get("/customers/search", {
-        params: { ...filters, page, size }
-      });
-      return res.data;
-    } catch (err) {
-      throw err;
+searchCustomers: async (params, page = 1, size = 10, sort = "none", sortBy = "name") => {
+  const res = await axiosClient.get('/customers/search', {
+    params: {
+      ...params,
+      page,
+      size,
+      sort,
+      sortBy
     }
-  }
+  });
+  return {
+    data: res.data.data,
+    totalPages: res.data.totalPages,
+    totalItems: res.data.totalItems,
+    currentPage: res.data.currentPage
+  };
+}
 };
 
 export default customerService;

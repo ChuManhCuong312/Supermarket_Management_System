@@ -15,7 +15,7 @@ body, .page {
   justify-content: space-between;
   background-color: #2e7d32;
   color: white;
-  padding: 14px 28px;
+  padding: 24px 28px;
   font-weight: 600;
   font-size: 18px;
   width: 100%;
@@ -26,16 +26,16 @@ body, .page {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .header-icon {
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .header-title {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -50,9 +50,9 @@ body, .page {
 }
 
 .nav-btn {
-  padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
+padding: 4px 8px;
+border: none;
+background: none;
   color: white;
   border-radius: 6px;
   cursor: pointer;
@@ -133,6 +133,41 @@ body, .page {
   box-sizing: border-box;
   border-bottom: none;
 }
+/* Sort icon styles */
+.sortable-header {
+  user-select: none;
+  position: relative;
+  color: white;
+}
+
+.sort-icon {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: transform 0.2s, color 0.2s;
+  color: #ffffffcc; /* mờ nhẹ khi chưa active */
+}
+
+.sort-icon.active {
+  color: #ffd700;  /* vàng nổi bật */
+}
+
+.sortable-header:hover .sort-icon {
+  color: #ffffff; /* trắng sáng */
+}
+
+.sort-icon.asc::after {
+  content: "▲";
+}
+
+.sort-icon.desc::after {
+  content: "▼";
+}
+
+.sort-icon.none::after {
+  content: "⇅";
+}
 
 /* ======= LƯỚI FORM/INPUT ======= */
 .form-grid {
@@ -210,12 +245,12 @@ body, .page {
 }
 
 .table th {
-  background: #66bb6a;
+  background: #388e3c;
   font-weight: 700;
   padding: 12px 10px;
   text-align: center;
   border: 1px solid #81c784;
-  color: #1b5e20;
+  color: white;
 }
 
 .table td {
