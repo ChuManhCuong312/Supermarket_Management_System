@@ -188,27 +188,84 @@ const handleSaveEmployee = async (e) => {
   }, [page]);
 
   return (
-    <div className="page">
-      {/* Header */}
-      <div className="header">
-        <span className="header-icon">👨‍💼</span>
-        <h2 className="header-title">Quản lý nhân viên</h2>
-        <button onClick={() => navigate("/")} className="back-btn">← Trở về</button>
-      </div>
+     <>
+        {/* Header */}
+        <div className="header">
+          <div className="header-left">
+            <span className="header-icon">👥</span>
+            <h2 className="header-title">Quản lý khách hàng</h2>
+          </div>
 
-      {/* Filter */}
-      <div className="filter">
-        <div className="filter-grid">
-          <input placeholder="Tên nhân viên" value={filters.name} onChange={e => handleFilterChange("name", e.target.value)} />
-          <input placeholder="Chức vụ" value={filters.position} onChange={e => handleFilterChange("position", e.target.value)} />
-          <input placeholder="SĐT" value={filters.phone} onChange={e => handleFilterChange("phone", e.target.value)} />
-          <input placeholder="Email" value={filters.email} onChange={e => handleFilterChange("email", e.target.value)} />
+          <nav className="header-nav">
+            <button onClick={() => navigate("/")} className="back-btn">
+                 Trang chủ
+            </button>
+            <button onClick={() => navigate("/products")} className="nav-btn">
+              📦 Sản phẩm
+            </button>
+            <button onClick={() => navigate("/employees")} className="nav-btn active">
+              👨‍💼 Nhân viên
+            </button>
+            <button onClick={() => navigate("/inventory")} className="nav-btn">
+              📥 Nhập kho
+            </button>
+            <button onClick={() => navigate("/customers")} className="nav-btn">
+              👥 Khách hàng
+            </button>
+            <button onClick={() => navigate("/suppliers")} className="nav-btn">
+              🏢 Nhà cung cấp
+            </button>
+            <button onClick={() => navigate("/orders")} className="nav-btn">
+              🛒 Đơn hàng
+            </button>
+            <button onClick={() => navigate("/order-details")} className="nav-btn">
+              📋 Chi tiết đơn hàng
+            </button>
+          </nav>
         </div>
-        <div className="filter-buttons">
-          <button onClick={() => handleSearch(filters)} className="btn search-btn">🔍 Tìm kiếm</button>
-          <button onClick={() => setShowAddBox(true)} className="btn add-btn">➕ Thêm mới</button>
+
+        {/* Filter */}
+        <div className="filter">
+          <div className="filter-grid">
+            <input
+              placeholder="Tên nhân viên"
+              value={filters.name}
+              onChange={(e) => handleFilterChange("name", e.target.value)}
+            />
+            <input
+              placeholder="SĐT"
+              value={filters.position}
+              onChange={(e) => handleFilterChange("phone", e.target.value)}
+            />
+            <input
+              placeholder="Email"
+              value={filters.email}
+              onChange={(e) => handleFilterChange("email", e.target.value)}
+            />
+            <select
+              value={filters.position}
+              onChange={(e) => handleFilterChange("position", e.target.value)}
+            >
+              <option value="">Tất cả loại</option>
+              <option value="Bán hàng">Bán hàng</option>
+              <option value="Bảo vệ">Bảo vệ</option>
+              <option value="Quản lý">Quản lý</option>
+              <option value="Thu ngân">Thu ngân</option>
+              <option value="Kho">Kho</option>
+
+            </select>
+          </div>
+
+          <div className="filter-buttons">
+            <button onClick={() => handleSearch(filters)} className="btn search-btn">
+              🔍 Tìm kiếm
+            </button>
+            <button onClick={() => setShowAddBox(true)} className="btn add-btn">
+              ➕ Thêm mới
+            </button>
+          </div>
         </div>
-      </div>
+
 
       {/* Stats */}
       <div style={{ padding: "10px 20px", color: "#666", fontSize: "14px", background: "#f1f8e9" }}>
@@ -385,8 +442,8 @@ const handleSaveEmployee = async (e) => {
           </div>
         </div>
       )}
-    </div>
-  );
+    </>
+);
 }
 
 
