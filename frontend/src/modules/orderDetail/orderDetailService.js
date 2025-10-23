@@ -70,6 +70,15 @@ const OrderDetailService = {
         throw error;
       }
     },
+   updateOrderDetail: async (id, updatedDetail) => {
+     try {
+       const response = await axiosClient.put(`${API_BASE}/update/${id}`, updatedDetail);
+       return response.data;
+     } catch (error) {
+       console.error("Failed to update order detail:", error);
+       throw error;
+     }
+   },
 };
 
 export default OrderDetailService;
