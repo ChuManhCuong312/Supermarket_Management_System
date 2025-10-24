@@ -95,7 +95,6 @@ export default function ImportList() {
     const handleFilterChange = (key, value) => setFilters({ ...filters, [key]: value });
     const handleNewChange = (key, value) => setNewImport({ ...newImport, [key]: value });
 
-    // ✅ Handle Edit - converts backend snake_case to frontend camelCase
     const handleEdit = (importItem) => {
         setIsEditing(true);
         setEditingId(importItem.importId);
@@ -106,7 +105,7 @@ export default function ImportList() {
             status: importItem.status || "",
             note: importItem.note || "",
         });
-        setErrors({}); // Clear any previous errors
+        setErrors({});
         setShowAddBox(true);
     };
 
