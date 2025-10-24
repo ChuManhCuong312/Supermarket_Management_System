@@ -9,59 +9,102 @@ import { toast } from "react-toastify";
 export default function OrderDetailList() {
   const [orderDetails, setOrderDetails] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [originalOrderDetails, setOriginalOrderDetails] = useState([]);
   const [sortConfig, setSortConfig] = useState({ field: "", direction: "asc" });
+
   const [searchOrderId, setSearchOrderId] = useState("");
   const [searchProductId, setSearchProductId] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchCriteria, setSearchCriteria] = useState({ orderId: "", productId: "" });
+  const [originalSearchResults, setOriginalSearchResults] = useState([]);
+
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingDetail, setEditingDetail] = useState(null);
 
- const fetchAll = async () => {
-    setLoading(true);
-    const data = await OrderDetailService.getAll();
-    setOrderDetails(data);
-    setLoading(false);
-  };
+ const fetchAll = async (pageNum = page) => {
+   setLoading(true);
+   try {
+     let data;
+     if (isSearching) {
+       data = await OrderDetailService.searchOrderDetailsByPage(
+         searchCriteria.orderId || null,
+         searchCriteria.productId || null,
+         pageNum,
+         size
+       );
+       setOriginalSearchResults(data.content); // ✅ cache filtered results
+     } else {
+       data = await OrderDetailService.getOrderDetailsByPage(pageNum, size);
+       setOriginalOrderDetails(data.content); // ✅ cache full list
+     }
+
+     setOrderDetails(data.content);
+     setTotalPages(data.totalPages);
+     setPage(data.number);
+   } catch (error) {
+     toast.error("❌ Lỗi khi tải danh sách chi tiết đơn hàng");
+     console.error("Failed to load order details:", error);
+   } finally {
+     setLoading(false);
+   }
+ };
+
 
   useEffect(() => {
-    fetchAll();
-  }, []);
+    fetchAll(page);
+  }, [page, size, isSearching, searchCriteria]);
 
-  const handleSort = async (field) => {
-    let newDirection =
-      sortConfig.field === field && sortConfig.direction === "asc"
-        ? "desc"
-        : "asc";
-    setSortConfig({ field, direction: newDirection });
 
-      const sortedData = [...orderDetails].sort((a, b) => {
-        if (a[field] < b[field]) return newDirection === "asc" ? -1 : 1;
-        if (a[field] > b[field]) return newDirection === "asc" ? 1 : -1;
-        return 0;
-      });
-      setOrderDetails(sortedData);
-    };
+const handleSort = (field) => {
+  let newDirection;
+
+  if (sortConfig.field !== field) {
+    newDirection = "asc";
+  } else if (sortConfig.direction === "asc") {
+    newDirection = "desc";
+  } else if (sortConfig.direction === "desc") {
+    newDirection = ""; // reset
+  }
+
+  setSortConfig({ field: newDirection ? field : "", direction: newDirection });
+
+  if (!newDirection) {
+    // ✅ Restore from correct cache
+    if (isSearching) {
+      setOrderDetails(originalSearchResults);
+    } else {
+      setOrderDetails(originalOrderDetails);
+    }
+    return;
+  }
+
+  const sortedData = [...orderDetails].sort((a, b) => {
+    if (a[field] < b[field]) return newDirection === "asc" ? -1 : 1;
+    if (a[field] > b[field]) return newDirection === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  setOrderDetails(sortedData);
+};
 
   // --- Search ---
-    const handleSearch = async () => {
+    const handleSearch = () => {
       if (!searchOrderId && !searchProductId) {
         toast.warn("Vui lòng nhập ít nhất Mã đơn hoặc Mã sản phẩm để tìm kiếm!");
         return;
       }
 
-      setLoading(true);
-      try {
-        const data = await OrderDetailService.searchOrderDetails(
-          searchOrderId || null,
-          searchProductId || null
-        );
-        setOrderDetails(data);
-      } catch (error) {
-        toast.warn("Lỗi thêm chi tiết đơn!");
-        console.error("Error searching order details:", error);
-      } finally {
-        setLoading(false);
-      }
+      setSearchCriteria({ orderId: searchOrderId, productId: searchProductId });
+      setIsSearching(true);
+      setSortConfig({ field: "", direction: "" }); // ✅ reset sort
+      setPage(0);
     };
+
 
 const handleAdd = () => {
     setEditingDetail(null); // ✅ clear previous edit data
@@ -113,8 +156,10 @@ const handleAdd = () => {
   const handleClearFilter = () => {
     setSearchOrderId("");
     setSearchProductId("");
-    setSortConfig({ field: "", direction: "asc" });
-    fetchAll(); // reload full list
+    setSearchCriteria({ orderId: "", productId: "" });
+    setIsSearching(false);
+    setSortConfig({ field: "", direction: "" }); // ✅ reset sort
+    setPage(0);
   };
 
   return (
@@ -242,14 +287,38 @@ const handleAdd = () => {
 
         {/* ===== Pagination ===== */}
         <div className="pagination">
-          <button>«</button>
-          <button>‹</button>
-          <button className="active">1</button>
-          <button>2</button>
-          <button>›</button>
-          <button>»</button>
+          <button onClick={() => setPage(0)} disabled={page === 0}>«</button>
+          <button onClick={() => setPage(page - 1)} disabled={page === 0}>‹</button>
+
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i}
+              className={i === page ? "active" : ""}
+              onClick={() => setPage(i)}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button onClick={() => setPage(page + 1)} disabled={page + 1 >= totalPages}>›</button>
+          <button onClick={() => setPage(totalPages - 1)} disabled={page + 1 >= totalPages}>»</button>
+
+          <select
+            value={size}
+            onChange={(e) => {
+              setSize(parseInt(e.target.value));
+              setPage(0); // Reset to first page when page size changes
+            }}
+            style={{ marginLeft: "10px" }}
+          >
+            <option value={5}>5 / trang</option>
+            <option value={10}>10 / trang</option>
+            <option value={20}>20 / trang</option>
+          </select>
         </div>
+
       </div>
+
       {/* ✅ Modal Overlay */}
             {showAddForm && (
               <div className="modal-overlay">
