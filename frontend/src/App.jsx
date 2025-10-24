@@ -13,7 +13,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/dashboard" element={<h1>Dashboard</h1>} />
+         <Route path="/" element={<h1>Trang chính</h1>} />
         <Route path="/customers" element={<CustomerList />} />
         <Route path="/employees" element={<EmployeeList />} />
         <Route path="/orders" element={<OrderList />} />
