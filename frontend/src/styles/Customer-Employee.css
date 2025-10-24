@@ -471,31 +471,26 @@ body, .page {
 .close-btn:hover {
   color: #e53935;
 }
-
 .form-modal-body {
   padding: 24px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
-
 .form-group {
   display: flex;
   flex-direction: column;
 }
-
 .form-group label {
   font-weight: 600;
   font-size: 15px;
   color: #2e7d32;
   margin-bottom: 8px;
 }
-
 .form-group .required {
   color: #e53935;
   margin-left: 2px;
 }
-
 .form-group input,
 .form-group select {
   width: 100%;
@@ -507,14 +502,12 @@ body, .page {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
 }
-
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
   border-color: #43a047;
   box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.2);
 }
-
 .form-modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -523,7 +516,6 @@ body, .page {
   border-top: 2px solid #c8e6c9;
   background: #f9f9f9;
 }
-
 .btn-cancel {
   background: #e0e0e0;
   color: #333;
@@ -534,11 +526,9 @@ body, .page {
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .btn-cancel:hover {
   background: #d1d5db;
 }
-
 .btn-save {
   background: #43a047;
   color: white;
@@ -549,7 +539,6 @@ body, .page {
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .btn-save:hover {
   background: #388e3c;
 }
