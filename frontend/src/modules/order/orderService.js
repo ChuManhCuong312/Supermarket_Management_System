@@ -67,6 +67,16 @@ const OrderService = {
     }
   },
 
+  createOrder: async (orderData) => {
+    try {
+      const response = await axiosClient.post(`${API_BASE}/add`, orderData);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to create order:", error);
+      throw error;
+    }
+  },
+
 };
 
 export default OrderService;

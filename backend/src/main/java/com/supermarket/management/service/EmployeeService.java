@@ -1,5 +1,7 @@
 package com.supermarket.management.service;
 
+import com.supermarket.management.entity.OrderDetail;
+import com.supermarket.management.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -149,5 +151,11 @@ public class EmployeeService {
         if (employee.getPhone() != null) employee.setPhone(employee.getPhone().trim());
         if (employee.getEmail() != null) employee.setEmail(employee.getEmail().trim());
         if (employee.getShift() != null) employee.setShift(employee.getShift().trim());
+    }
+
+    // Search Employee by ID
+    public Employee getEmployeeById(Integer id) {
+        return employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + id));
     }
 }

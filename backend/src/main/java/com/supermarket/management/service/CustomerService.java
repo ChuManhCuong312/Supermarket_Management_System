@@ -2,6 +2,8 @@ package com.supermarket.management.service;
 
 
 import com.supermarket.management.entity.Customer;
+import com.supermarket.management.entity.Employee;
+import com.supermarket.management.exception.ResourceNotFoundException;
 import com.supermarket.management.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
@@ -134,6 +136,12 @@ public class CustomerService {
         customer.setName(customer.getName() != null ? customer.getName().trim() : null);
         customer.setEmail(customer.getEmail() != null ? customer.getEmail().trim() : null);
         customer.setAddress(customer.getAddress() != null ? customer.getAddress().trim() : null);
+    }
+
+    // Search Customer by ID
+    public Customer getCustomerById(Integer id) {
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + id));
     }
 }
 

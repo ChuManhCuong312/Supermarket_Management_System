@@ -112,7 +112,8 @@
 }
 
 .search-button,
-.add-button {
+.add-button,
+.archive-button {
   padding: 10px 25px;
   border: none;
   border-radius: 5px;
@@ -127,7 +128,8 @@
 }
 
 .search-button:hover,
-.add-button:hover {
+.add-button:hover,
+.archive-button{
   opacity: 0.9;
 }
 
@@ -312,3 +314,73 @@ td {
 .list-icon::before {
   content: "☰";
 }
+
+/* ===== Modal Styles ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background-color: white;
+  padding: 25px 30px;
+  border-radius: 10px;
+  width: 400px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.25s ease;
+}
+
+.modal-box h2 {
+  color: #2d6b3d;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-form input {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* ===== 2-column layout for form ===== */
+.modal-form.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 16px; /* row-gap, column-gap */
+}
+
+.modal-form.grid-2 input {
+  width: 100%;
+}
+
