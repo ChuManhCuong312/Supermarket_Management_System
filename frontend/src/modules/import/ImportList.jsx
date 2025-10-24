@@ -222,13 +222,6 @@ export default function ImportList() {
                     <span className="header-icon">📥</span>
                     <h2 className="header-title">Quản lý nhập kho</h2>
                 </div>
-
-                <nav className="header-nav">
-                    <button onClick={() => navigate("/")} className="nav-btn">🏠 Trang chủ</button>
-                    <button onClick={() => navigate("/employees")} className="nav-btn">👨‍💼 Nhân viên</button>
-                    <button onClick={() => navigate("/inventory")} className="nav-btn active">📥 Nhập kho</button>
-                    <button onClick={() => navigate("/suppliers")} className="nav-btn">🏢 Nhà cung cấp</button>
-                </nav>
             </div>
 
             {/* Search and Filter Section */}
