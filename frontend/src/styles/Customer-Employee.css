@@ -17,7 +17,7 @@ body, .page {
   color: white;
   padding: 24px 28px;
   font-weight: 600;
-  font-size: 18px;
+  font-size: 20px;
   width: 100%;
   box-sizing: border-box;
   gap: 2rem;
@@ -35,14 +35,14 @@ body, .page {
 
 .header-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 25px;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .header-nav {
   display: flex;
-  gap: 8px;
+  gap: 27px; /* ✅ Tăng từ 8px lên 24px để dãn cách rộng hơn */
   flex-wrap: wrap;
   flex: 1;
   justify-content: center;
@@ -50,13 +50,13 @@ body, .page {
 }
 
 .nav-btn {
-padding: 4px 8px;
-border: none;
-background: none;
+  padding: 10px 20px; /* ✅ Tăng từ 4px 8px lên 10px 20px để nút to hơn nhiều */
+  border: none;
+  background: none;
   color: white;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px; /* ✅ Tăng từ 14px lên 16px */
   font-weight: 500;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -78,13 +78,14 @@ background: none;
 .back-btn {
   background: #e5e7eb;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   color: #1b5e20;
   transition: background 0.2s ease;
   white-space: nowrap;
+  font-size: 16px;
 }
 
 .back-btn:hover {
