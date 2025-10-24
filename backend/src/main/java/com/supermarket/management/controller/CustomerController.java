@@ -2,6 +2,7 @@ package com.supermarket.management.controller;
 
 
 import com.supermarket.management.entity.Customer;
+import com.supermarket.management.entity.Employee;
 import com.supermarket.management.repository.CustomerRepository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Sort;
@@ -108,6 +109,16 @@ public class CustomerController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Lỗi server: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCustomerById(@PathVariable("id") Integer id) {
+        try {
+            Customer customer = customerService.getCustomerById(id);
+            return ResponseEntity.ok(customer);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

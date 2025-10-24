@@ -68,15 +68,21 @@ public class OrderDetailService {
         product.setStock(product.getStock() - orderDetail.getQuantity());
         productRepository.save(product);
 
-        // Update order total
+        // Update order total - FIX: Calculate total from ALL order details
         Order order = orderRepository.findById(orderDetail.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        BigDecimal newTotal = order.getTotalAmount().add(total);
 
-        // Apply discount if any
+        // Get all order details for this order and sum them up
+        List<OrderDetail> allDetails = orderDetailRepository.findByOrderId(order.getOrderId());
+        BigDecimal subtotal = allDetails.stream()
+                .map(OrderDetail::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Apply discount to the SUBTOTAL, not the previously discounted total
+        BigDecimal newTotal = subtotal;
         if (order.getDiscount() != null && order.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal discountRate = order.getDiscount().divide(BigDecimal.valueOf(100));
-            newTotal = newTotal.subtract(newTotal.multiply(discountRate));
+            newTotal = subtotal.subtract(subtotal.multiply(discountRate));
         }
 
         order.setTotalAmount(newTotal);
