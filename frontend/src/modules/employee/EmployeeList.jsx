@@ -268,7 +268,7 @@ const handleSaveEmployee = async (e) => {
             />
             <input
               placeholder="SĐT"
-              value={filters.position}
+              value={filters.phone}
               onChange={(e) => handleFilterChange("phone", e.target.value)}
             />
             <input
