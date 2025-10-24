@@ -255,7 +255,7 @@ useEffect(() => {
           <button onClick={() => navigate("/employees")} className="nav-btn">
             👨‍💼 Nhân viên
           </button>
-          <button onClick={() => navigate("/inventory")} className="nav-btn">
+          <button onClick={() => navigate("/imports")} className="nav-btn">
             📥 Nhập kho
           </button>
           <button onClick={() => navigate("/customers")} className="nav-btn active">
