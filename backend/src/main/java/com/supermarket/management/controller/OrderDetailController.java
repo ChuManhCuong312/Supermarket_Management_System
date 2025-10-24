@@ -3,6 +3,9 @@ package com.supermarket.management.controller;
 import com.supermarket.management.entity.OrderDetail;
 import com.supermarket.management.service.OrderDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -105,4 +108,27 @@ public class OrderDetailController {
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    // Pagination API
+    @GetMapping("/page")
+    public ResponseEntity<Page<OrderDetail>> getPagedOrderDetails(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<OrderDetail> orderDetails = orderDetailService.getOrderDetailsByPage(page, size);
+        return ResponseEntity.ok(orderDetails);
+    }
+
+    @GetMapping("/search/page")
+    public ResponseEntity<Page<OrderDetail>> searchOrderDetailsByPage(
+            @RequestParam(required = false) Integer orderId,
+            @RequestParam(required = false) Integer productId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<OrderDetail> result = orderDetailService.searchByCriteria(orderId, productId, pageable);
+        return ResponseEntity.ok(result);
+    }
+
 }

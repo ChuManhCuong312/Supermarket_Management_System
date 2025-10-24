@@ -1,6 +1,8 @@
 package com.supermarket.management.repository;
 
 import com.supermarket.management.entity.OrderDetail;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,5 +29,14 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
     List<OrderDetail> findAllByOrderByTotalPriceAsc();
     List<OrderDetail> findAllByOrderByTotalPriceDesc();
 
+    Page<OrderDetail> findAll(Pageable pageable);
 
+    @Query("SELECT od FROM OrderDetail od WHERE " +
+            "(:orderId IS NULL OR od.orderId = :orderId) AND " +
+            "(:productId IS NULL OR od.productId = :productId)")
+    Page<OrderDetail> findByCriteria(
+            @Param("orderId") Integer orderId,
+            @Param("productId") Integer productId,
+            Pageable pageable
+    );
 }

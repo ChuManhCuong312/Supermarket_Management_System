@@ -8,6 +8,9 @@ import com.supermarket.management.repository.OrderDetailRepository;
 import com.supermarket.management.repository.OrderRepository;
 import com.supermarket.management.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -187,4 +190,12 @@ public class OrderDetailService {
     public List<OrderDetail> searchOrderDetails(Integer orderId, Integer productId) {
         return orderDetailRepository.searchOrderDetails(orderId, productId);
     }
+
+    public Page<OrderDetail> getOrderDetailsByPage(int page, int size) {
+        return orderDetailRepository.findAll(PageRequest.of(page, size));
+    }
+    public Page<OrderDetail> searchByCriteria(Integer orderId, Integer productId, Pageable pageable) {
+        return orderDetailRepository.findByCriteria(orderId, productId, pageable);
+    }
+
 }

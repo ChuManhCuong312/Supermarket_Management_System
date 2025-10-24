@@ -70,6 +70,7 @@ const OrderDetailService = {
         throw error;
       }
     },
+
    updateOrderDetail: async (id, updatedDetail) => {
      try {
        const response = await axiosClient.put(`${API_BASE}/update/${id}`, updatedDetail);
@@ -79,6 +80,33 @@ const OrderDetailService = {
        throw error;
      }
    },
+
+   // Get paginated order details
+     getOrderDetailsByPage: async (page = 0, size = 10) => {
+       try {
+         const response = await axiosClient.get(`${API_BASE}/page?page=${page}&size=${size}`);
+         return response.data;
+       } catch (error) {
+         console.error("Failed to get paginated order details:", error);
+         throw error;
+       }
+     },
+     // Search order with paginated order details
+     searchOrderDetailsByPage: async (orderId, productId, page = 0, size = 10) => {
+       try {
+         const params = {};
+         if (orderId) params.orderId = orderId;
+         if (productId) params.productId = productId;
+         params.page = page;
+         params.size = size;
+
+         const response = await axiosClient.get(`${API_BASE}/search/page`, { params });
+         return response.data;
+       } catch (error) {
+         console.error("Failed to search paginated order details:", error);
+         throw error;
+       }
+     },
 };
 
 export default OrderDetailService;
