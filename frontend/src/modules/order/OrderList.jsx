@@ -97,10 +97,10 @@ export default function OrderList() {
     <div>
 
       <div className="header">
-        <h1>Quản lý Đơn hàng</h1>
-        <button className="back-button">
-          <span>←</span> Trở lại
-        </button>
+        <div className="header-left">
+          <span className="header-icon">🛒</span>
+          <h2 className="header-title">Quản lý đơn hàng</h2>
+        </div>
       </div>
 
       <div className="content">
