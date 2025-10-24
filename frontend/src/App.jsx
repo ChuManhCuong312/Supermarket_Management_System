@@ -1,5 +1,6 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
 import CustomerList from "./modules/customer/CustomerList";
 import EmployeeList from "./modules/employee/EmployeeList";
 import OrderList from "./modules/order/OrderList";
@@ -11,9 +12,10 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
-    <Router>
+    <>
       <Routes>
-         <Route path="/dashboard" element={<h1>Dashboard</h1>} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/customers" element={<CustomerList />} />
         <Route path="/employees" element={<EmployeeList />} />
         <Route path="/orders" element={<OrderList />} />
@@ -22,6 +24,6 @@ export default function App() {
         <Route path="/suppliers" element={<SupplierList />} />
       </Routes>
       <ToastContainer position="top-right" autoClose={2000} />
-    </Router>
+    </>
   );
 }
