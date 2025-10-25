@@ -400,6 +400,18 @@ body, .page {
 .add-btn:hover {
   background-color: #388e3c;
 }
+.clear-filter {
+  color: #999;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 5px;
+  display: inline-block;
+  margin-right: auto;
+}
+
+.clear-filter:hover {
+  text-decoration: underline;
+}
 
 /* ======= ICON TRONG HEADER ======= */
 .header-icon {
