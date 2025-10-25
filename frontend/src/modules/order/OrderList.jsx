@@ -4,6 +4,7 @@ import OrderService from "./orderService";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { toast } from "react-toastify";
+import OrderForm from "./OrderForm";
 
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
@@ -16,6 +17,8 @@ export default function OrderList() {
   const [customerId, setCustomerId] = useState("");
   const [employeeId, setEmployeeId] = useState("");
   const [orderDate, setOrderDate] = useState("");
+
+  const [showForm, setShowForm] = useState(false);
 
   const fetchAllOrders = async () => {
       setLoading(true);
@@ -66,17 +69,32 @@ export default function OrderList() {
      const hasActiveFilters = customerId || employeeId || orderDate;
 
      if (hasActiveFilters) {
-       // Local sort only
+       // Local sort with proper date handling
        const sortedData = [...orders].sort((a, b) => {
-         if (a[field] < b[field]) return newDirection === "asc" ? -1 : 1;
-         if (a[field] > b[field]) return newDirection === "asc" ? 1 : -1;
+         let aValue = a[field];
+         let bValue = b[field];
+
+         // Handle field name mismatch: buyDate in sort but orderDate in data
+         if (field === "buyDate") {
+           aValue = a["orderDate"] || a["buyDate"];
+           bValue = b["orderDate"] || b["buyDate"];
+         }
+
+         // Convert to Date objects if sorting by date
+         if (field === "buyDate" || field === "orderDate") {
+           aValue = new Date(aValue);
+           bValue = new Date(bValue);
+         }
+
+         if (aValue < bValue) return newDirection === "asc" ? -1 : 1;
+         if (aValue > bValue) return newDirection === "asc" ? 1 : -1;
          return 0;
        });
        setOrders(sortedData);
      } else {
        // Server-side sort when no filters are active
        let sortedData = [];
-       if (field === "buyDate") {
+       if (field === "buyDate" || field === "orderDate") {
          sortedData = await OrderService.getSortedByBuyDate(newDirection);
        } else if (field === "totalAmount") {
          sortedData = await OrderService.getSortedByTotalAmount(newDirection);
@@ -86,8 +104,8 @@ export default function OrderList() {
    };
 
  const handleAdd = () => {
-    toast.info("Thêm mới (chưa có form)");
-  };
+   setShowForm(true);
+ };
 
   const handleEdit = (id) => {
     toast.info(`Chỉnh sửa chi tiết đơn hàng ID: ${id}`);
@@ -154,8 +172,19 @@ export default function OrderList() {
           <button className="add-button" onClick={handleAdd}>
             ➕ Thêm mới
           </button>
+          <button className="archive-button" onClick={handleAdd}>
+                      🗃️ Xem đơn hàng lưu trữ
+                    </button>
         </div>
-
+        {showForm && (
+          <OrderForm
+            onSuccess={() => {
+              setShowForm(false);
+              fetchAllOrders(); // refresh list
+            }}
+            onCancel={() => setShowForm(false)}
+          />
+        )}
         {/* --- Table --- */}
         {loading ? (
           <p>Đang tải dữ liệu...</p>

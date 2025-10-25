@@ -1,6 +1,7 @@
 package com.supermarket.management.controller;
 
 import com.supermarket.management.entity.Employee;
+import com.supermarket.management.entity.OrderDetail;
 import com.supermarket.management.service.EmployeeService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -96,6 +97,16 @@ public class EmployeeController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi server: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getEmployeeById(@PathVariable("id") Integer id) {
+        try {
+            Employee employee = employeeService.getEmployeeById(id);
+            return ResponseEntity.ok(employee);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

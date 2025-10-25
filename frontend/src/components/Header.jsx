@@ -22,18 +22,18 @@ function Header() {
       backgroundColor: "#fff"
     }}>
       <h1 style={{ margin: 0, fontSize: 20, color: "#1976d2" }}>
-        Supermarket Management
+        🏪 Supermarket Management
       </h1>
       
       <nav style={{ display: "flex", gap: "8px" }}>
         <NavLink to="/dashboard" style={linkStyle}>
-          Trang chủ
+          Dashboard
         </NavLink>
         <NavLink to="/customers" style={linkStyle}>
           Khách hàng
         </NavLink>
         <NavLink to="/employees" style={linkStyle}>
-          Nhân Viên
+          Nhân viên
         </NavLink>
         <NavLink to="/suppliers" style={linkStyle}>
           Nhà cung cấp
@@ -46,6 +46,9 @@ function Header() {
         </NavLink>
         <NavLink to="/order-details" style={linkStyle}>
           Chi tiết đơn hàng
+        </NavLink>
+        <NavLink to="/reports" style={linkStyle}>
+          Báo cáo
         </NavLink>
       </nav>
     </header>
