@@ -77,6 +77,16 @@ const OrderService = {
     }
   },
 
+  updateOrder: async (orderId, orderData) => {
+    try {
+      const response = await axiosClient.put(`${API_BASE}/update/${orderId}`, orderData);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to update order:", error);
+      throw error;
+    }
+  },
+
 };
 
 export default OrderService;
