@@ -427,6 +427,8 @@ const handleSaveEmployee = async (e) => {
                     placeholder="Nhập lương"
                     value={newEmployee.salary}
                     onChange={e => handleNewChange("salary", e.target.value)}
+                      onKeyDown={e => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
+                      min="0"
                   />
                 </div>
                 <div className="form-group">
