@@ -56,21 +56,21 @@ INSERT INTO customer (name, phone, email, address, membership_type, points) VALU
 
 -- EMPLOYEE
 INSERT INTO employee (name, position, phone, email, salary, shift) VALUES
-('Nguyễn Văn Nam', 'Thu ngân', '0901122334', 'namnguyen@gmail.vn', 8500000, 'Ca sáng'),
-('Trần Thị Hòa', 'Bán hàng', '0912233445', 'hoatran@gmail.vn', 7800000, 'Ca chiều'),
-('Phạm Văn Dũng', 'Quản lý', '0923344556', 'dungpham@gmail.vn', 15000000, 'Cả ngày'),
-('Lê Thị Mai', 'Bán hàng', '0934455667', 'maile@gmail.vn', 7800000, 'Ca tối'),
-('Nguyễn Văn Tài', 'Kho hàng', '0945566778', 'tainguyen@gmail.vn', 9000000, 'Ca sáng'),
-('Vũ Hồng Sơn', 'Bảo vệ', '0956677889', 'sonvu@gmail.vn', 6500000, 'Ca đêm'),
-('Trần Quốc Huy', 'Thu ngân', '0967788990', 'huytran@gmail.vn', 8200000, 'Ca chiều'),
-('Lê Thanh Hà', 'Bán hàng', '0978899001', 'hale@gmail.vn', 7800000, 'Ca sáng'),
-('Phan Minh Tuấn', 'Quản lý', '0989900112', 'tuanphan@gmail.vn', 15500000, 'Cả ngày'),
-('Đỗ Hồng Phúc', 'Kho hàng', '0990011223', 'phucdo@gmail.vn', 9100000, 'Ca tối'),
-('Nguyễn Thị Thu', 'Thu ngân', '0901123456', 'thunguyen@gmail.vn', 8300000, 'Ca sáng'),
-('Phạm Anh Duy', 'Bảo vệ', '0912234567', 'duypham@gmail.vn', 6700000, 'Ca tối'),
-('Lê Thị Hương', 'Bán hàng', '0923345678', 'huongle@gmail.vn', 7700000, 'Ca chiều'),
-('Trần Đức Mạnh', 'Kho hàng', '0934456789', 'manhtran@gmail.vn', 8900000, 'Ca sáng'),
-('Nguyễn Phương Thảo', 'Thu ngân', '0945567890', 'thaonguyen@gmail.vn', 8400000, 'Ca tối');
+('Nguyễn Văn Nam', 'Thu ngân', '0901122334', 'namnguyen@gmail.com', 8500000, 'Ca sáng'),
+('Trần Thị Hòa', 'Bán hàng', '0912233445', 'hoatran@gmail.com', 7800000, 'Ca chiều'),
+('Phạm Văn Dũng', 'Quản lý', '0923344556', 'dungpham@gmail.com', 15000000, 'Cả ngày'),
+('Lê Thị Mai', 'Bán hàng', '0934455667', 'maile@gmail.com', 7800000, 'Ca tối'),
+('Nguyễn Văn Tài', 'Kho hàng', '0945566778', 'tainguyen@gmail.com', 9000000, 'Ca sáng'),
+('Vũ Hồng Sơn', 'Bảo vệ', '0956677889', 'sonvu@gmail.com', 6500000, 'Ca đêm'),
+('Trần Quốc Huy', 'Thu ngân', '0967788990', 'huytran@gmail.com', 8200000, 'Ca chiều'),
+('Lê Thanh Hà', 'Bán hàng', '0978899001', 'hale@gmail.com', 7800000, 'Ca sáng'),
+('Phan Minh Tuấn', 'Quản lý', '0989900112', 'tuanphan@gmail.com', 15500000, 'Cả ngày'),
+('Đỗ Hồng Phúc', 'Kho hàng', '0990011223', 'phucdo@gmail.com', 9100000, 'Ca tối'),
+('Nguyễn Thị Thu', 'Thu ngân', '0901123456', 'thunguyen@gmail.com', 8300000, 'Ca sáng'),
+('Phạm Anh Duy', 'Bảo vệ', '0912234567', 'duypham@gmail.com', 6700000, 'Ca tối'),
+('Lê Thị Hương', 'Bán hàng', '0923345678', 'huongle@gmail.com', 7700000, 'Ca chiều'),
+('Trần Đức Mạnh', 'Kho hàng', '0934456789', 'manhtran@gmail.com', 8900000, 'Ca sáng'),
+('Nguyễn Phương Thảo', 'Thu ngân', '0945567890', 'thaonguyen@gmail.com', 8400000, 'Ca tối');
 
 -- ORDERS
 INSERT INTO orders (customer_id, employee_id, order_date, total_amount, discount) VALUES

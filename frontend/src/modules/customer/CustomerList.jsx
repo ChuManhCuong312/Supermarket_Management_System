@@ -276,6 +276,16 @@ useEffect(() => {
           </select>
         </div>
         <div className="filter-buttons">
+        <button
+        onClick={() => {
+          setFilters({
+             name: "",
+             phone: "",
+             email: "",
+          });
+          handleSearch({});
+        }}
+          className="clear-filter" >✕ clear filter</button>
          <button onClick={() => handleSearch(filters)} className="btn search-btn">🔍 Tìm kiếm</button>
           <button onClick={openAddForm} className="btn add-btn">➕ Thêm mới</button>
         </div>
