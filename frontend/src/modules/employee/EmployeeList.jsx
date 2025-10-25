@@ -291,6 +291,19 @@ const handleSaveEmployee = async (e) => {
           </div>
 
           <div className="filter-buttons">
+              <button
+                onClick={() => {
+                  setFilters({
+                    name: "",
+                    phone: "",
+                    email: "",
+                  });
+                  handleSearch({});
+                }}
+                className="clear-filter"
+              >
+                ✕ clear filter
+              </button>
             <button onClick={() => handleSearch(filters)} className="btn search-btn">
               🔍 Tìm kiếm
             </button>
