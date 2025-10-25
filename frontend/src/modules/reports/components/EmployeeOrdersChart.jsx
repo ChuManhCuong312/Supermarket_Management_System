@@ -233,7 +233,7 @@ export default function EmployeeOrdersChart({ dateRange }) {
               </span>
             </div>
             <div className="breakdown-item">
-              <span className="breakdown-label">Cần cải thiện (<70%):</span>
+              <span className="breakdown-label">Cần cải thiện (&lt;70%):</span>
               <span className="breakdown-value">
                 {employeesData.filter(emp => emp.performance < 70).length} người
               </span>

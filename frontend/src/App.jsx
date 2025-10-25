@@ -11,6 +11,7 @@ import SupplierList from "./modules/supplier/SupplierList";
 import ReportsList from "./modules/reports/ReportsList";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ProductList from "./modules/product/ProductList"
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="employees" element={<EmployeeList />} />
           <Route path="orders" element={<OrderList />} />
           <Route path="order-details" element={<OrderDetailList />} />
+          <Route path="products" element={<ProductList />} />
           <Route path="imports" element={<ImportList />} />
           <Route path="suppliers" element={<SupplierList />} />
           <Route path="reports" element={<ReportsList />} />
