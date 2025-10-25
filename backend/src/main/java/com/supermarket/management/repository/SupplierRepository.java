@@ -24,4 +24,5 @@ public interface SupplierRepository extends JpaRepository<Supplier, Integer> {
 
     boolean existsByPhone(String phone);
     boolean existsByEmail(String email);
+    List<Supplier> findByCompanyNameContainingIgnoreCase(String companyName);
 }

@@ -10,6 +10,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.List;
+
 @Service
 public class SupplierService {
 
@@ -137,6 +141,15 @@ public class SupplierService {
         if (supplier.getContactPerson() != null) {
             supplier.setContactPerson(supplier.getContactPerson().trim());
         }
+    }
+    public List<Supplier> searchByCompanyName(String name) {
+        if (name == null || name.isBlank()) {
+            return Collections.emptyList();
+        }
+        return supplierRepository.findByCompanyNameContainingIgnoreCase(name.trim());
+    }
+    public List<Supplier> getAllSuppliers() {
+        return supplierRepository.findAll();
     }
 
 }

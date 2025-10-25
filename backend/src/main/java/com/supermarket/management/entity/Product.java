@@ -50,5 +50,6 @@ public class Product {
     public Integer getStock() {return stock;}
     public void setStock(Integer stock) {this.stock = stock;}
     public Supplier getSupplier() {return supplier;}
-    public void setSupplier(Supplier stock) {this.supplier = supplier;}
+    public void setSupplier(Supplier supplier) {this.supplier = supplier;}
+
 }

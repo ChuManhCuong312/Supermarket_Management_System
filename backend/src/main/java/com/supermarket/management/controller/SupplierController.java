@@ -1,6 +1,8 @@
 package com.supermarket.management.controller;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -102,4 +104,30 @@ public class SupplierController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/quicksearch")
+    public ResponseEntity<List<Map<String, Object>>> searchSuppliers(
+            @RequestParam(required = false) String companyName) {
+
+        List<Supplier> suppliers;
+
+        if (companyName == null || companyName.isBlank()) {
+            suppliers = supplierService.getAllSuppliers();
+        } else {
+            suppliers = supplierService.searchByCompanyName(companyName);
+        }
+
+        List<Map<String, Object>> result = suppliers.stream()
+                .map(s -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("supplierId", s.getSupplierId());
+                    map.put("companyName", s.getCompanyName());
+                    return map;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
+
+
 }
