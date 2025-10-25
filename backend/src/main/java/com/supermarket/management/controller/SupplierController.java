@@ -104,7 +104,7 @@ public class SupplierController {
         return ResponseEntity.ok(response);
     }
 
-    // GET /api/suppliers/{id}
+    // Tìm item theo ID
     @GetMapping("/{id}")
     public ResponseEntity<Supplier> getSupplierById(@PathVariable Integer id) {
         Supplier supplier = supplierService.getSupplierById(id);

@@ -132,6 +132,14 @@ export default function ImportList() {
         setSelectedSupplier(null);
         setSuppliers([]);
         setShowSupplierDropdown(false);
+        setNewImport({
+            supplierId: "",
+            importDate: "",
+            totalAmount: "",
+            status: "",
+            note: "",
+        });
+        setErrors({});
     };
 
     // Fetch Imports
@@ -168,6 +176,7 @@ export default function ImportList() {
         } catch (err) {
             if (err.response?.status === 404) {
                 setImports([]);
+                showModal("⚠️ Không tìm thấy", `Không tìm thấy phiếu nhập với ID ${searchId}`, "error");
             } else {
                 showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
             }
@@ -219,6 +228,12 @@ export default function ImportList() {
         e.preventDefault();
         setErrors({});
 
+        // Validate supplier selection
+        if (!newImport.supplierId || !selectedSupplier) {
+            showModal("⚠️ Cảnh báo", "Vui lòng chọn nhà cung cấp từ danh sách", "error");
+            return;
+        }
+
         try {
             const payload = {
                 supplier_id: parseInt(newImport.supplierId),
@@ -236,17 +251,7 @@ export default function ImportList() {
                 showModal("✓ Thành công", "Thêm mới phiếu nhập thành công!", "success");
             }
 
-            setShowAddBox(false);
-            setIsEditing(false);
-            setEditingId(null);
-            setNewImport({
-                supplierId: "",
-                importDate: "",
-                totalAmount: "",
-                status: "",
-                note: "",
-            });
-
+            handleCloseModal();
             fetchImports();
         } catch (err) {
             console.error("Error saving import:", err);
@@ -434,6 +439,10 @@ export default function ImportList() {
                             status: "Pending",
                             note: "",
                         });
+                        setSupplierSearchTerm('');
+                        setSelectedSupplier(null);
+                        setSuppliers([]);
+                        setShowSupplierDropdown(false);
                         setErrors({});
                         setShowAddBox(true);
                     }}
@@ -550,7 +559,6 @@ export default function ImportList() {
                                             }}
                                             onFocus={() => setShowSupplierDropdown(true)}
                                             placeholder="Tìm kiếm nhà cung cấp theo tên..."
-                                            required
                                             autoComplete="off"
                                         />
 
@@ -686,7 +694,7 @@ export default function ImportList() {
                 </div>
             )}
 
-            {/* Modal thông báo */}
+            {/* Modal thông báo  */}
             {modal.isOpen && (
                 <div className="modal-overlay" onClick={closeModal}>
                     <div className={`modal-content modal-${modal.type}`} onClick={(e) => e.stopPropagation()}>
