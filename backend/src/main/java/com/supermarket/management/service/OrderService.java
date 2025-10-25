@@ -9,6 +9,9 @@ import com.supermarket.management.exception.ResourceNotFoundException;
 import com.supermarket.management.repository.OrderDetailRepository;
 import com.supermarket.management.repository.OrderRepository;
 import com.supermarket.management.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -184,5 +187,44 @@ public class OrderService {
 
     public List<Order> searchOrders(Integer customerId, Integer employeeId, LocalDate orderDate) {
         return orderRepository.searchActiveOrders(customerId, employeeId, orderDate);
+    }
+
+    public Page<Order> getActiveOrdersByPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return orderRepository.findActiveOrders(pageable);
+    }
+
+    /**
+     * Get deleted orders with pagination (deletedType IS NOT NULL)
+     */
+    public Page<Order> getDeletedOrdersByPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return orderRepository.findDeletedOrders(pageable);
+    }
+
+    /**
+     * Search active orders with pagination
+     */
+    public Page<Order> searchActiveOrdersByPage(
+            Integer customerId,
+            Integer employeeId,
+            LocalDate orderDate,
+            int page,
+            int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return orderRepository.searchActiveOrders(customerId, employeeId, orderDate, pageable);
+    }
+
+    /**
+     * Search deleted orders with pagination
+     */
+    public Page<Order> searchDeletedOrdersByPage(
+            Integer customerId,
+            Integer employeeId,
+            LocalDate orderDate,
+            int page,
+            int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return orderRepository.searchDeletedOrders(customerId, employeeId, orderDate, pageable);
     }
 }
