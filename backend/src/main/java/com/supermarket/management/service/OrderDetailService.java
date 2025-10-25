@@ -134,21 +134,24 @@ public class OrderDetailService {
 
         orderDetailRepository.save(existingDetail);
 
-        // Recalculate order total
+        // Recalculate order total - FIX: Only sum order details for THIS order
         Order order = orderRepository.findById(existingDetail.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        BigDecimal recalculatedTotal = orderDetailRepository.findAll().stream()
-                .filter(od -> od.getOrderId().equals(order.getOrderId()))
+
+        // Get all order details for this specific order
+        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(order.getOrderId());
+        BigDecimal subtotal = orderDetails.stream()
                 .map(OrderDetail::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Apply discount
+        // Apply discount to subtotal
+        BigDecimal finalTotal = subtotal;
         if (order.getDiscount() != null && order.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal discountRate = order.getDiscount().divide(BigDecimal.valueOf(100));
-            recalculatedTotal = recalculatedTotal.subtract(recalculatedTotal.multiply(discountRate));
+            finalTotal = subtotal.subtract(subtotal.multiply(discountRate));
         }
 
-        order.setTotalAmount(recalculatedTotal);
+        order.setTotalAmount(finalTotal);
         orderRepository.save(order);
 
         return existingDetail;
@@ -174,19 +177,21 @@ public class OrderDetailService {
         // Delete the order detail
         orderDetailRepository.delete(existingDetail);
 
-        // Recalculate total for the order
-        BigDecimal recalculatedTotal = orderDetailRepository.findAll().stream()
-                .filter(od -> od.getOrderId().equals(order.getOrderId()))
+        // FIX: Recalculate total from order details for THIS specific order only
+        List<OrderDetail> remainingDetails = orderDetailRepository.findByOrderId(order.getOrderId());
+
+        BigDecimal subtotal = remainingDetails.stream()
                 .map(OrderDetail::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Apply discount if any
+        // Apply discount to subtotal
+        BigDecimal finalTotal = subtotal;
         if (order.getDiscount() != null && order.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal discountRate = order.getDiscount().divide(BigDecimal.valueOf(100));
-            recalculatedTotal = recalculatedTotal.subtract(recalculatedTotal.multiply(discountRate));
+            finalTotal = subtotal.subtract(subtotal.multiply(discountRate));
         }
 
-        order.setTotalAmount(recalculatedTotal);
+        order.setTotalAmount(finalTotal);
         orderRepository.save(order);
 
         // return deleted detail for response

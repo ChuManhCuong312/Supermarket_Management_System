@@ -1,4 +1,5 @@
 package com.supermarket.management.controller;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import com.supermarket.management.service.SupplierService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Sort;
+import com.supermarket.management.exception.ResourceNotFoundException;
 
 @RestController
 @RequestMapping("/api/suppliers")
@@ -104,6 +106,18 @@ public class SupplierController {
 
         return ResponseEntity.ok(response);
     }
+
+    // Tìm item theo ID
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getSupplierById(@PathVariable Integer id) {
+        try {
+            Supplier supplier = supplierService.getSupplierById(id);
+            return ResponseEntity.ok(supplier);
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(404).body(ex.getMessage());
+        }
+    }
+
 
     @GetMapping("/quicksearch")
     public ResponseEntity<List<Map<String, Object>>> searchSuppliers(

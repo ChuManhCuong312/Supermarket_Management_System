@@ -3,12 +3,10 @@ import org.springframework.data.domain.Sort;
 import com.supermarket.management.entity.Supplier;
 import com.supermarket.management.repository.SupplierRepository;
 import org.springframework.stereotype.Service;
-
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
-
+import com.supermarket.management.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
@@ -150,6 +148,11 @@ public class SupplierService {
     }
     public List<Supplier> getAllSuppliers() {
         return supplierRepository.findAll();
+    }
+
+    public Supplier getSupplierById(Integer id) {
+        return supplierRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with id: " + id));
     }
 
 }

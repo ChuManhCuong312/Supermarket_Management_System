@@ -5,6 +5,7 @@ import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { toast } from "react-toastify";
 import OrderForm from "./OrderForm";
+import OrderEditForm from "./OrderEditForm";
 
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
@@ -19,6 +20,8 @@ export default function OrderList() {
   const [orderDate, setOrderDate] = useState("");
 
   const [showForm, setShowForm] = useState(false);
+
+  const [editingOrderId, setEditingOrderId] = useState(null);
 
   const fetchAllOrders = async () => {
       setLoading(true);
@@ -58,15 +61,38 @@ export default function OrderList() {
   };
 
   // === SORT BY DATE or TOTAL AMOUNT ===
+   // === SORT BY DATE or TOTAL AMOUNT === (3-state: asc → desc → none)
    const handleSort = async (field) => {
-     let newDirection =
-       sortConfig.field === field && sortConfig.direction === "asc"
-         ? "desc"
-         : "asc";
-     setSortConfig({ field, direction: newDirection });
+     let newDirection;
+
+     // 3-state cycle: no sort → asc → desc → no sort
+     if (sortConfig.field !== field) {
+       newDirection = "asc";
+     } else if (sortConfig.direction === "asc") {
+       newDirection = "desc";
+     } else if (sortConfig.direction === "desc") {
+       newDirection = ""; // reset to no sort
+     } else {
+       newDirection = "asc";
+     }
+
+     setSortConfig({ field: newDirection ? field : "", direction: newDirection });
 
      // Check if user has active filters
      const hasActiveFilters = customerId || employeeId || orderDate;
+
+     if (!newDirection) {
+       // Reset to original data
+       if (hasActiveFilters) {
+         // Re-search to get original filtered data
+         const data = await OrderService.searchOrders(customerId, employeeId, orderDate);
+         setOrders(data);
+       } else {
+         // Reload all orders
+         fetchAllOrders();
+       }
+       return;
+     }
 
      if (hasActiveFilters) {
        // Local sort with proper date handling
@@ -107,18 +133,18 @@ export default function OrderList() {
    setShowForm(true);
  };
 
-  const handleEdit = (id) => {
-    toast.info(`Chỉnh sửa chi tiết đơn hàng ID: ${id}`);
+  const handleEdit = (orderId) => {
+    setEditingOrderId(orderId);
   };
 
   return (
     <div>
 
       <div className="header">
-        <h1>Quản lý Đơn hàng</h1>
-        <button className="back-button">
-          <span>←</span> Trở lại
-        </button>
+        <div className="header-left">
+          <span className="header-icon">🛒</span>
+          <h2 className="header-title">Quản lý đơn hàng</h2>
+        </div>
       </div>
 
       <div className="content">
@@ -185,6 +211,16 @@ export default function OrderList() {
             onCancel={() => setShowForm(false)}
           />
         )}
+    {editingOrderId && (
+      <OrderEditForm
+        orderId={editingOrderId}
+        onSuccess={() => {
+          setEditingOrderId(null);
+          fetchAllOrders();
+        }}
+        onCancel={() => setEditingOrderId(null)}
+      />
+    )}
         {/* --- Table --- */}
         {loading ? (
           <p>Đang tải dữ liệu...</p>
@@ -198,21 +234,21 @@ export default function OrderList() {
                 <th>Mã KH</th>
                 <th>Mã NV</th>
                 <th
-                    className={`sortable ${
-                        sortConfig.field === "buyDate" ? sortConfig.direction : ""
-                    }`}
-                        onClick={() => handleSort("buyDate")}
-                    >
-                        Ngày mua
-                    </th>
-                 <th
-                    className={`sortable ${
-                        sortConfig.field === "totalAmount" ? sortConfig.direction : ""
-                    }`}
-                        onClick={() => handleSort("totalAmount")}
-                    >
-                        Tổng tiền
-                    </th>
+                  className={`sortable ${
+                    sortConfig.field === "buyDate" && sortConfig.direction ? sortConfig.direction : ""
+                  }`}
+                  onClick={() => handleSort("buyDate")}
+                >
+                  Ngày mua
+                </th>
+                <th
+                  className={`sortable ${
+                    sortConfig.field === "totalAmount" && sortConfig.direction ? sortConfig.direction : ""
+                  }`}
+                  onClick={() => handleSort("totalAmount")}
+                >
+                  Tổng tiền
+                </th>
                 <th>Giảm giá</th>
                 <th>Thao tác</th>
               </tr>
@@ -235,7 +271,11 @@ export default function OrderList() {
                     <td>{order.discount}%</td>
                     <td>
                       <div className="actions">
-                        <button className="icon-button edit-icon" title="Sửa">
+                        <button
+                          className="icon-button edit-icon"
+                          onClick={() => handleEdit(order.orderId)}
+                          title="Sửa"
+                        >
                           📝
                         </button>
 

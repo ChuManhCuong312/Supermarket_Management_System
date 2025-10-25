@@ -96,19 +96,20 @@ public class OrderService {
             existingOrder.setDiscount(updatedOrder.getDiscount());
         }
 
-        // Recalculate total amount from order details
-        BigDecimal recalculatedTotal = orderDetailRepository.findAll().stream()
-                .filter(od -> od.getOrderId().equals(orderId))
+        // FIX: Recalculate total from THIS order's details only
+        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderId);
+        BigDecimal subtotal = orderDetails.stream()
                 .map(OrderDetail::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Apply discount if any
+        // Apply discount to subtotal
+        BigDecimal finalTotal = subtotal;
         if (existingOrder.getDiscount() != null && existingOrder.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal discountRate = existingOrder.getDiscount().divide(BigDecimal.valueOf(100));
-            recalculatedTotal = recalculatedTotal.subtract(recalculatedTotal.multiply(discountRate));
+            finalTotal = subtotal.subtract(subtotal.multiply(discountRate));
         }
 
-        existingOrder.setTotalAmount(recalculatedTotal);
+        existingOrder.setTotalAmount(finalTotal);
 
         // Save and return
         return orderRepository.save(existingOrder);

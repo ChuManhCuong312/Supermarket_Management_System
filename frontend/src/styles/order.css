@@ -1,4 +1,4 @@
-/* src/styles/orderdetail.css */
+/* src/styles/order.css */
 
 * {
   margin: 0;
@@ -6,26 +6,7 @@
   box-sizing: border-box;
 }
 
-.orderdetail-container {
-  font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
-  padding: 20px;
-}
-
-.breadcrumb {
-  color: #7c3aed;
-  font-size: 14px;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.breadcrumb::before {
-  content: "◆";
-  font-size: 12px;
-}
-
+/* Header Styles */
 .header {
   background-color: #2d6b3d;
   color: white;
@@ -36,9 +17,20 @@
   border-radius: 5px 5px 0 0;
 }
 
-.header h1 {
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-icon {
+  font-size: 28px;
+}
+
+.header-title {
   font-size: 24px;
   font-weight: bold;
+  margin: 0;
 }
 
 .back-button {
@@ -64,6 +56,7 @@
   border-radius: 0 0 5px 5px;
 }
 
+/* Search Section */
 .search-section {
   display: flex;
   gap: 20px;
@@ -104,6 +97,7 @@
   text-decoration: underline;
 }
 
+/* Button Group */
 .button-group {
   display: flex;
   gap: 10px;
@@ -129,10 +123,11 @@
 
 .search-button:hover,
 .add-button:hover,
-.archive-button{
+.archive-button:hover {
   opacity: 0.9;
 }
 
+/* Table Styles */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -151,15 +146,16 @@ th {
   border: 1px solid #4a8759;
 }
 
+/* Sortable columns with 3-state arrows */
 th.sortable {
   position: relative;
   cursor: pointer;
   user-select: none;
-  padding-right: 18px;
+  padding-right: 25px;
 }
 
 th.sortable::after {
-  content: "▲\A▼"; /* Up and down arrows stacked */
+  content: "▲\A▼";
   white-space: pre;
   position: absolute;
   right: 5px;
@@ -168,46 +164,37 @@ th.sortable::after {
   font-size: 11px;
   line-height: 10px;
   color: #bbb;
-  opacity: 0.5;
+  opacity: 0.4;
   text-align: center;
   transition: all 0.3s ease;
 }
 
-/* ASCENDING → up arrow bright, down arrow dim */
 th.sortable.asc::after {
   content: "▲\A▼";
-  color: #07f40e; /* bright green for up arrow */
+  background: linear-gradient(to bottom, #07f40e 50%, #999 50%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   text-shadow: 0 0 6px rgba(76, 175, 80, 0.7);
   opacity: 1;
 }
 
-/* DESCENDING → down arrow bright, up arrow dim */
 th.sortable.desc::after {
   content: "▲\A▼";
-  color: #e53935; /* bright red for down arrow */
+  background: linear-gradient(to bottom, #999 50%, #ef0400 50%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   text-shadow: 0 0 6px rgba(229, 57, 53, 0.7);
   opacity: 1;
 }
 
-/* Add subtle difference between arrows for visual clarity */
-th.sortable.asc::after {
-  background: linear-gradient(to bottom, #06f40e 50%, #999 50%);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-th.sortable.desc::after {
-  background: linear-gradient(to bottom, #999 50%, #ef0400 50%);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* No sorting → both arrows faded */
 th.sortable:not(.asc):not(.desc)::after {
   color: #aaa;
   opacity: 0.4;
   text-shadow: none;
 }
+
 tbody tr {
   border-bottom: 1px solid #ddd;
 }
@@ -242,6 +229,7 @@ td {
   color: #dc2626;
 }
 
+/* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
@@ -275,112 +263,338 @@ td {
   content: "☰";
 }
 
-  color: #ffd700;
-}
-
-.delete-icon {
-  color: #dc2626;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-  margin-top: 20px;
-}
-
-.pagination button {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  background-color: white;
-  cursor: pointer;
-  border-radius: 3px;
-}
-
-.pagination button:hover {
-  background-color: #f0f0f0;
-}
-
-.pagination button.active {
-  background-color: #2d6b3d;
-  color: white;
-  border-color: #2d6b3d;
-}
-
-.search-icon::before {
-  content: "🔍";
-}
-
-.list-icon::before {
-  content: "☰";
-}
-
-/* ===== Modal Styles ===== */
+/* ===== Order Form Modal Styles ===== */
+/* Modal Overlay */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.45);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 20px;
 }
 
-.modal-box {
-  background-color: white;
-  padding: 25px 30px;
-  border-radius: 10px;
-  width: 400px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.25);
-  animation: fadeIn 0.25s ease;
+/* Modal Content */
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 30px;
 }
 
-.modal-box h2 {
-  color: #2d6b3d;
-  margin-bottom: 15px;
-  text-align: center;
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  color: #333;
+  font-size: 24px;
+  border-bottom: 2px solid #4CAF50;
+  padding-bottom: 10px;
 }
 
-.modal-form {
+.modal-content h3 {
+  color: #333;
+  font-size: 20px;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+/* Order Form */
+.order-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
 }
 
-.modal-form input {
-  padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+/* Form Group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #555;
   font-size: 14px;
 }
 
-.modal-buttons {
+.form-group input,
+.form-group select {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 15px;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #999;
+}
+
+/* Section Divider */
+.order-form hr {
+  margin: 20px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+/* Order Detail Item */
+.order-detail-item {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.order-detail-header {
   display: flex;
   justify-content: space-between;
-  margin-top: 15px;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.order-detail-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
 }
-/* ===== 2-column layout for form ===== */
-.modal-form.grid-2 {
+
+.remove-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.remove-btn:hover {
+  background: #cc0000;
+}
+
+/* Product Input Grid */
+.product-input-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px 16px; /* row-gap, column-gap */
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 10px;
 }
 
-.modal-form.grid-2 input {
+.product-input-grid > div {
+  min-width: 0;
+}
+
+.product-input-grid label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+  font-size: 14px;
+}
+
+.product-input-grid input {
   width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
 }
 
+.product-input-grid input[readonly] {
+  background-color: #f0f0f0;
+  text-align: right;
+  color: #333;
+}
+
+/* Item Total */
+.item-total {
+  text-align: right;
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+}
+
+/* Add Product Button */
+.add-product-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  transition: background-color 0.3s;
+}
+
+.add-product-btn:hover {
+  background-color: #45a049;
+}
+
+.add-product-btn:active {
+  transform: scale(0.98);
+}
+
+/* Order Summary */
+.order-summary {
+  background-color: #e3f2fd;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.order-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.order-summary-note {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+  text-align: right;
+  font-weight: normal;
+}
+
+/* Form Buttons */
+.form-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.save-btn,
+.cancel-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.save-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.save-btn:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cancel-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #da190b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.save-btn:active,
+.cancel-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 20px;
+    max-width: 100%;
+  }
+
+  .modal-content h2 {
+    font-size: 20px;
+  }
+
+  .modal-content h3 {
+    font-size: 18px;
+  }
+
+  .product-input-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .form-buttons {
+    flex-direction: column;
+  }
+
+  .save-btn,
+  .cancel-btn {
+    width: 100%;
+  }
+
+  .order-detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .remove-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 10px;
+  }
+
+  .modal-content {
+    padding: 15px;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 14px;
+  }
+
+  .order-summary-row {
+    font-size: 16px;
+  }
+}
