@@ -18,21 +18,17 @@ export default function ImportList() {
 
     const [searchId, setSearchId] = useState("");
     const [isSearching, setIsSearching] = useState(false);
-    const [suppliers, setSuppliers] = useState([]);
-    const [supplierSearchTerm, setSupplierSearchTerm] = useState('');
-    const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
-    const [selectedSupplier, setSelectedSupplier] = useState(null);
-
-    // Cache supplier details to avoid repeated API calls
-    const [supplierCache, setSupplierCache] = useState({});
 
     const [newImport, setNewImport] = useState({
         supplierId: "",
+        supplierName: "",
         importDate: "",
         totalAmount: "",
         status: "",
         note: "",
     });
+
+    const [supplierSuggestions, setSupplierSuggestions] = useState([]);
 
     const [showAddBox, setShowAddBox] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -45,109 +41,13 @@ export default function ImportList() {
     const [modal, setModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
     const navigate = useNavigate();
 
-    // Fetch supplier details by ID
-    const fetchSupplierById = async (supplierId) => {
-        // Check cache first
-        if (supplierCache[supplierId]) {
-            return supplierCache[supplierId];
-        }
+    const [supplierNames, setSupplierNames] = useState({});
 
-        try {
-            const response = await axios.get(`http://localhost:8080/api/suppliers/${supplierId}`);
-            const supplierData = response.data;
-
-            // Update cache
-            setSupplierCache(prev => ({
-                ...prev,
-                [supplierId]: supplierData
-            }));
-
-            return supplierData;
-        } catch (error) {
-            console.error(`Error fetching supplier ${supplierId}:`, error);
-            return null;
-        }
-    };
-
-    // Enrich imports with supplier details
-    const enrichImportsWithSupplierData = async (importsList) => {
-        const enrichedImports = await Promise.all(
-            importsList.map(async (importItem) => {
-                if (importItem.supplier_id) {
-                    const supplierData = await fetchSupplierById(importItem.supplier_id);
-                    return {
-                        ...importItem,
-                        supplierName: supplierData?.name || 'N/A',
-                        supplierCompany: supplierData?.companyName || 'N/A'
-                    };
-                }
-                return {
-                    ...importItem,
-                    supplierName: 'N/A',
-                    supplierCompany: 'N/A'
-                };
-            })
-        );
-        return enrichedImports;
-    };
-
-    // Search suppliers for dropdown
-    const searchSuppliers = async (searchTerm) => {
-        try {
-            const response = await fetch(
-                `http://localhost:8080/api/suppliers/search?name=${encodeURIComponent(searchTerm)}&page=0`
-            );
-            const data = await response.json();
-            setSuppliers(data.content || []);
-        } catch (error) {
-            console.error('Error searching suppliers:', error);
-            setSuppliers([]);
-        }
-    };
-
-    // Debounce search
-    useEffect(() => {
-        if (supplierSearchTerm.length >= 2) {
-            const timer = setTimeout(() => {
-                searchSuppliers(supplierSearchTerm);
-            }, 300);
-            return () => clearTimeout(timer);
-        } else {
-            setSuppliers([]);
-        }
-    }, [supplierSearchTerm]);
-
-    // Handle supplier selection
-    const handleSelectSupplier = (supplier) => {
-        setSelectedSupplier(supplier);
-        setSupplierSearchTerm(supplier.companyName || supplier.name);
-        setShowSupplierDropdown(false);
-        handleNewChange("supplierId", supplier.supplier_id);
-    };
-
-    // Reset modal
-    const handleCloseModal = () => {
-        setShowAddBox(false);
-        setSupplierSearchTerm('');
-        setSelectedSupplier(null);
-        setSuppliers([]);
-        setShowSupplierDropdown(false);
-        setNewImport({
-            supplierId: "",
-            importDate: "",
-            totalAmount: "",
-            status: "",
-            note: "",
-        });
-        setErrors({});
-    };
-
-    // Fetch Imports
+    // === Fetch Imports ===
     const fetchImports = async () => {
         try {
             const data = await importService.getAll(page, 10);
-            const enrichedData = await enrichImportsWithSupplierData(data.imports);
-            setImports(enrichedData);
+            setImports(data.imports);
             setTotalItems(data.totalItems);
             setTotalPages(data.totalPages);
             setIsSearching(false);
@@ -157,7 +57,34 @@ export default function ImportList() {
         }
     };
 
-    // Search by ID
+    // === Fetch Supplier Names ===
+    useEffect(() => {
+        const fetchSupplierNames = async () => {
+            const uniqueIds = [...new Set(imports.map(i => i.supplier_id))].filter(id => id && !supplierNames[id]);
+            if (uniqueIds.length === 0) return;
+
+            try {
+                const responses = await Promise.all(
+                    uniqueIds.map(id => axios.get(`http://localhost:8080/api/suppliers/${id}`))
+                );
+                const newNames = {};
+                responses.forEach((res, index) => {
+                    const id = uniqueIds[index];
+                    newNames[id] = res.data.companyName || "Không xác định";
+                });
+                setSupplierNames(prev => ({ ...prev, ...newNames }));
+            } catch (err) {
+                console.error("Lỗi khi tải tên nhà cung cấp:", err);
+                showModal("❌ Lỗi", "Không thể tải tên nhà cung cấp", "error");
+            }
+        };
+
+        if (imports.length > 0) {
+            fetchSupplierNames();
+        }
+    }, [imports, supplierNames]);
+
+    // === Search by ID ===
     const handleSearchById = async () => {
         if (!searchId || searchId.trim() === "") {
             showModal("⚠️ Cảnh báo", "Vui lòng nhập ID cần tìm", "error");
@@ -167,16 +94,16 @@ export default function ImportList() {
         try {
             const response = await axios.get(`http://localhost:8080/api/imports/${searchId}`);
             if (response.data) {
-                const enrichedData = await enrichImportsWithSupplierData([response.data]);
-                setImports(enrichedData);
+                setImports([response.data]); // Show only the searched item
                 setIsSearching(true);
                 setTotalPages(1);
                 setTotalItems(1);
+
             }
         } catch (err) {
             if (err.response?.status === 404) {
+                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập với ID: ${searchId}`, "error");
                 setImports([]);
-                showModal("⚠️ Không tìm thấy", `Không tìm thấy phiếu nhập với ID ${searchId}`, "error");
             } else {
                 showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
             }
@@ -184,7 +111,7 @@ export default function ImportList() {
         }
     };
 
-    // Clear search
+    // === Clear search and reload all ===
     const handleClearSearch = () => {
         setSearchId("");
         setIsSearching(false);
@@ -196,45 +123,74 @@ export default function ImportList() {
         fetchImports();
     }, [page]);
 
+    // === Handlers ===
     const handleFilterChange = (key, value) => setFilters({ ...filters, [key]: value });
     const handleNewChange = (key, value) => setNewImport({ ...newImport, [key]: value });
 
-    const handleEdit = (importItem) => {
+    const handleSupplierSearch = async (e) => {
+        const value = e.target.value;
+        setNewImport({ ...newImport, supplierName: value, supplierId: "" }); // Reset ID when typing
+
+        if (value.length >= 2) {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/suppliers/search?name=${encodeURIComponent(value)}`);
+                setSupplierSuggestions(response.data.data || []);
+            } catch (err) {
+                console.error("Lỗi khi tìm kiếm nhà cung cấp:", err);
+                showModal("❌ Lỗi", "Không thể tìm kiếm nhà cung cấp", "error");
+            }
+        } else {
+            setSupplierSuggestions([]);
+        }
+    };
+
+    const handleSelectSupplier = (supplier) => {
+        setNewImport({
+            ...newImport,
+            supplierId: supplier.supplierId.toString(),
+            supplierName: supplier.companyName,
+        });
+        setSupplierSuggestions([]);
+    };
+
+    const handleEdit = async (importItem) => {
+        let supplierName = supplierNames[importItem.supplier_id];
+        if (!supplierName) {
+            try {
+                const res = await axios.get(`http://localhost:8080/api/suppliers/${importItem.supplier_id}`);
+                supplierName = res.data.companyName || "Không xác định";
+                setSupplierNames(prev => ({ ...prev, [importItem.supplier_id]: supplierName }));
+            } catch (err) {
+                console.error("Lỗi khi tải tên nhà cung cấp cho chỉnh sửa:", err);
+                supplierName = "Không xác định";
+            }
+        }
+
         setIsEditing(true);
         setEditingId(importItem.importId);
         setNewImport({
             supplierId: importItem.supplier_id?.toString() || "",
+            supplierName: supplierName,
             importDate: importItem.import_date || "",
             totalAmount: importItem.total_amount?.toString() || "",
             status: importItem.status || "",
             note: importItem.note || "",
         });
-
-        // Pre-fill supplier search with company name
-        if (importItem.supplierCompany && importItem.supplierCompany !== 'N/A') {
-            setSupplierSearchTerm(importItem.supplierCompany);
-            setSelectedSupplier({
-                supplier_id: importItem.supplier_id,
-                name: importItem.supplierName,
-                companyName: importItem.supplierCompany
-            });
-        }
-
         setErrors({});
         setShowAddBox(true);
     };
 
     const handleSaveImport = async (e) => {
         e.preventDefault();
-        setErrors({});
+        setErrors({}); // reset lỗi cũ
 
-        // Validate supplier selection
-        if (!newImport.supplierId || !selectedSupplier) {
-            showModal("⚠️ Cảnh báo", "Vui lòng chọn nhà cung cấp từ danh sách", "error");
+        if (!newImport.supplierId) {
+            setErrors({ supplierName: "Vui lòng chọn nhà cung cấp từ danh sách gợi ý" });
             return;
         }
 
         try {
+            // ✅ Convert frontend camelCase to backend snake_case
             const payload = {
                 supplier_id: parseInt(newImport.supplierId),
                 import_date: newImport.importDate,
@@ -251,14 +207,28 @@ export default function ImportList() {
                 showModal("✓ Thành công", "Thêm mới phiếu nhập thành công!", "success");
             }
 
-            handleCloseModal();
-            fetchImports();
+            // Reset form
+            setShowAddBox(false);
+            setIsEditing(false);
+            setEditingId(null);
+            setNewImport({
+                supplierId: "",
+                supplierName: "",
+                importDate: "",
+                totalAmount: "",
+                status: "",
+                note: "",
+            });
+            setSupplierSuggestions([]);
+
+            fetchImports(); // load lại danh sách
         } catch (err) {
             console.error("Error saving import:", err);
             if (err.response?.status === 400 && err.response?.data?.details) {
+                // ✅ Map backend snake_case errors to frontend camelCase
                 const backendErrors = err.response.data.details;
                 const mappedErrors = {
-                    supplierId: backendErrors.supplier_id,
+                    supplierName: backendErrors.supplier_id,
                     importDate: backendErrors.import_date,
                     totalAmount: backendErrors.total_amount,
                     status: backendErrors.status,
@@ -271,6 +241,7 @@ export default function ImportList() {
         }
     };
 
+    // ✅ Delete function
     const handleDelete = async (id) => {
         if (!window.confirm("Bạn có chắc muốn xoá phiếu nhập này?")) return;
         try {
@@ -289,8 +260,7 @@ export default function ImportList() {
             const endDate = new Date().toISOString().split("T")[0];
             const newOrder = sortDate === "asc" ? "desc" : "asc";
             const data = await importService.filterByDate(startDate, endDate, newOrder);
-            const enrichedData = await enrichImportsWithSupplierData(data);
-            setImports(enrichedData);
+            setImports(data);
             setSortDate(newOrder);
         } catch (err) {
             console.error("Sort error:", err);
@@ -304,8 +274,7 @@ export default function ImportList() {
             const maxAmount = 999999999;
             const newOrder = sortAmount === "asc" ? "desc" : "asc";
             const data = await importService.filterByAmount(minAmount, maxAmount, newOrder);
-            const enrichedData = await enrichImportsWithSupplierData(data);
-            setImports(enrichedData);
+            setImports(data);
             setSortAmount(newOrder);
         } catch (err) {
             console.error("Sort error:", err);
@@ -322,43 +291,22 @@ export default function ImportList() {
 
     const closeModal = () => setModal({ isOpen: false, title: "", message: "", type: "info" });
 
+    // === Render ===
     return (
         <>
             {/* Header */}
             <div className="header">
-                <div className="header">
-                    <div className="header-left">
-                        <span className="header-icon">📥</span>
-                        <h2 className="header-title">Quản lý nhập kho</h2>
-                    </div>
-
-                    <nav className="header-nav">
-                        <button onClick={() => navigate("/")} className="back-btn">
-                            Trang chủ
-                        </button>
-                        <button onClick={() => navigate("/products")} className="nav-btn">
-                            📦 Sản phẩm
-                        </button>
-                        <button onClick={() => navigate("/employees")} className="nav-btn">
-                            👨‍💼 Nhân viên
-                        </button>
-                        <button onClick={() => navigate("/imports")} className="nav-btn active">
-                            📥 Nhập kho
-                        </button>
-                        <button onClick={() => navigate("/customers")} className="nav-btn">
-                            👥 Khách hàng
-                        </button>
-                        <button onClick={() => navigate("/suppliers")} className="nav-btn">
-                            🏢 Nhà cung cấp
-                        </button>
-                        <button onClick={() => navigate("/orders")} className="nav-btn">
-                            🛒 Đơn hàng
-                        </button>
-                        <button onClick={() => navigate("/order-details")} className="nav-btn">
-                            📋 Chi tiết đơn hàng
-                        </button>
-                    </nav>
+                <div className="header-left">
+                    <span className="header-icon">📥</span>
+                    <h2 className="header-title">Quản lý nhập kho</h2>
                 </div>
+
+                <nav className="header-nav">
+                    <button onClick={() => navigate("/")} className="nav-btn">🏠 Trang chủ</button>
+                    <button onClick={() => navigate("/employees")} className="nav-btn">👨‍💼 Nhân viên</button>
+                    <button onClick={() => navigate("/inventory")} className="nav-btn active">📥 Nhập kho</button>
+                    <button onClick={() => navigate("/suppliers")} className="nav-btn">🏢 Nhà cung cấp</button>
+                </nav>
             </div>
 
             {/* Search and Filter Section */}
@@ -373,6 +321,7 @@ export default function ImportList() {
                 gap: '1rem',
                 flexWrap: 'wrap'
             }}>
+                {/* Search by ID */}
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -428,22 +377,21 @@ export default function ImportList() {
                     )}
                 </div>
 
+                {/* Add Button */}
                 <button
                     onClick={() => {
                         setIsEditing(false);
                         setEditingId(null);
                         setNewImport({
                             supplierId: "",
+                            supplierName: "",
                             importDate: "",
                             totalAmount: "",
                             status: "Pending",
                             note: "",
                         });
-                        setSupplierSearchTerm('');
-                        setSelectedSupplier(null);
-                        setSuppliers([]);
-                        setShowSupplierDropdown(false);
                         setErrors({});
+                        setSupplierSuggestions([]);
                         setShowAddBox(true);
                     }}
                     className="btn add-btn"
@@ -461,8 +409,8 @@ export default function ImportList() {
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>ID NCC</th>
-                            <th>Tên công ty</th>
+                            <th>ID Nhà cung cấp</th>
+                            <th>Tên Nhà cung cấp</th>
                             <th
                                 style={{ cursor: "pointer", userSelect: "none" }}
                                 onClick={handleSortByDate}
@@ -491,7 +439,7 @@ export default function ImportList() {
                             <tr key={i.importId}>
                                 <td>{i.importId}</td>
                                 <td>{i.supplier_id}</td>
-                                <td>{i.supplierCompany}</td>
+                                <td>{supplierNames[i.supplier_id] || "Đang tải..."}</td>
                                 <td>{new Date(i.import_date).toLocaleDateString("vi-VN")}</td>
                                 <td>{parseFloat(i.total_amount)?.toLocaleString("vi-VN")} ₫</td>
                                 <td>
@@ -539,97 +487,38 @@ export default function ImportList() {
 
             {/* Modal Add/Edit */}
             {showAddBox && (
-                <div className="modal-overlay" onClick={handleCloseModal}>
+                <div className="modal-overlay" onClick={() => setShowAddBox(false)}>
                     <div className="form-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="form-modal-header">
                             <h3>{isEditing ? "Chỉnh sửa phiếu nhập" : "Thêm phiếu nhập mới"}</h3>
-                            <button className="close-btn" onClick={handleCloseModal}>✕</button>
+                            <button className="close-btn" onClick={() => setShowAddBox(false)}>✕</button>
                         </div>
                         <form onSubmit={handleSaveImport}>
                             <div className="form-modal-body">
                                 <div className="form-group">
-                                    <label>Nhà cung cấp <span className="required">*</span></label>
-                                    <div className="supplier-search-container" style={{ position: 'relative' }}>
-                                        <input
-                                            type="text"
-                                            value={supplierSearchTerm}
-                                            onChange={(e) => {
-                                                setSupplierSearchTerm(e.target.value);
-                                                setShowSupplierDropdown(true);
-                                            }}
-                                            onFocus={() => setShowSupplierDropdown(true)}
-                                            placeholder="Tìm kiếm nhà cung cấp theo tên..."
-                                            autoComplete="off"
-                                        />
-
-                                        {showSupplierDropdown && suppliers.length > 0 && (
-                                            <div className="supplier-dropdown" style={{
-                                                position: 'absolute',
-                                                top: '100%',
-                                                left: 0,
-                                                right: 0,
-                                                maxHeight: '200px',
-                                                overflowY: 'auto',
-                                                backgroundColor: 'white',
-                                                border: '1px solid #ddd',
-                                                borderRadius: '4px',
-                                                marginTop: '4px',
-                                                zIndex: 1000,
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                                            }}>
-                                                {suppliers.map(supplier => (
-                                                    <div
-                                                        key={supplier.supplier_id}
-                                                        className="supplier-item"
-                                                        onClick={() => handleSelectSupplier(supplier)}
-                                                        style={{
-                                                            padding: '10px 12px',
-                                                            cursor: 'pointer',
-                                                            borderBottom: '1px solid #f0f0f0'
-                                                        }}
-                                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                                                    >
-                                                        <div style={{ fontWeight: '500' }}>{supplier.name}</div>
-                                                        <div style={{ fontSize: '12px', color: '#666' }}>
-                                                            {supplier.companyName && `${supplier.companyName} - `}ID: {supplier.supplier_id}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {showSupplierDropdown && supplierSearchTerm.length >= 2 && suppliers.length === 0 && (
-                                            <div style={{
-                                                position: 'absolute',
-                                                top: '100%',
-                                                left: 0,
-                                                right: 0,
-                                                padding: '10px',
-                                                backgroundColor: 'white',
-                                                border: '1px solid #ddd',
-                                                borderRadius: '4px',
-                                                marginTop: '4px',
-                                                color: '#999'
-                                            }}>
-                                                Không tìm thấy nhà cung cấp
-                                            </div>
-                                        )}
-                                    </div>
-                                    {selectedSupplier && (
-                                        <div style={{
-                                            marginTop: '8px',
-                                            padding: '8px',
-                                            backgroundColor: '#f0f9ff',
-                                            borderRadius: '4px',
-                                            fontSize: '14px'
-                                        }}>
-                                            <strong>Đã chọn:</strong> {selectedSupplier.name} (ID: {selectedSupplier.supplier_id})
-                                        </div>
+                                    <label>Tên Nhà cung cấp <span className="required">*</span></label>
+                                    <input
+                                        type="text"
+                                        value={newImport.supplierName}
+                                        onChange={handleSupplierSearch}
+                                        placeholder="Nhập tên nhà cung cấp để tìm kiếm"
+                                        required
+                                    />
+                                    {errors.supplierName && <p className="error-text">{errors.supplierName}</p>}
+                                    {supplierSuggestions.length > 0 && (
+                                        <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0', border: '1px solid #ddd', maxHeight: '150px', overflowY: 'auto' }}>
+                                            {supplierSuggestions.map(supplier => (
+                                                <li
+                                                    key={supplier.supplierId}
+                                                    onClick={() => handleSelectSupplier(supplier)}
+                                                    style={{ padding: '0.5rem', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                                                >
+                                                    {supplier.companyName} ({supplier.supplierId})
+                                                </li>
+                                            ))}
+                                        </ul>
                                     )}
-                                    {errors.supplierId && <p className="error-text">{errors.supplierId}</p>}
                                 </div>
-
                                 <div className="form-group">
                                     <label>Ngày nhập <span className="required">*</span></label>
                                     <input
@@ -640,7 +529,6 @@ export default function ImportList() {
                                     />
                                     {errors.importDate && <p className="error-text">{errors.importDate}</p>}
                                 </div>
-
                                 <div className="form-group">
                                     <label>Tổng tiền (₫) <span className="required">*</span></label>
                                     <input
@@ -653,7 +541,6 @@ export default function ImportList() {
                                     />
                                     {errors.totalAmount && <p className="error-text">{errors.totalAmount}</p>}
                                 </div>
-
                                 <div className="form-group">
                                     <label>Trạng thái <span className="required">*</span></label>
                                     <select
@@ -668,7 +555,6 @@ export default function ImportList() {
                                     </select>
                                     {errors.status && <p className="error-text">{errors.status}</p>}
                                 </div>
-
                                 <div className="form-group">
                                     <label>Ghi chú</label>
                                     <textarea
@@ -680,9 +566,8 @@ export default function ImportList() {
                                     {errors.note && <p className="error-text">{errors.note}</p>}
                                 </div>
                             </div>
-
                             <div className="form-modal-footer">
-                                <button type="button" className="btn-cancel" onClick={handleCloseModal}>
+                                <button type="button" className="btn-cancel" onClick={() => setShowAddBox(false)}>
                                     Hủy
                                 </button>
                                 <button type="submit" className="btn-save">
@@ -694,7 +579,7 @@ export default function ImportList() {
                 </div>
             )}
 
-            {/* Modal thông báo  */}
+            {/* Modal thông báo */}
             {modal.isOpen && (
                 <div className="modal-overlay" onClick={closeModal}>
                     <div className={`modal-content modal-${modal.type}`} onClick={(e) => e.stopPropagation()}>
