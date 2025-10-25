@@ -106,9 +106,13 @@ public class SupplierController {
 
     // Tìm item theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<Supplier> getSupplierById(@PathVariable Integer id) {
-        Supplier supplier = supplierService.getSupplierById(id);
-        return ResponseEntity.ok(supplier);
+    public ResponseEntity<?> getSupplierById(@PathVariable Integer id) {
+        try {
+            Supplier supplier = supplierService.getSupplierById(id);
+            return ResponseEntity.ok(supplier);
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.status(404).body(ex.getMessage());
+        }
     }
 
 }
