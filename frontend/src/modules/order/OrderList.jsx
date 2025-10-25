@@ -15,71 +15,103 @@ export default function OrderList() {
   const [viewType, setViewType] = useState("active"); // active | deleted
   const [sortConfig, setSortConfig] = useState({ field: "", direction: "asc" });
 
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
   // Search fields
   const [customerId, setCustomerId] = useState("");
   const [employeeId, setEmployeeId] = useState("");
   const [orderDate, setOrderDate] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchCriteria, setSearchCriteria] = useState({ customerId: "", employeeId: "", orderDate: "" });
+
+  // Cache for original data (for sorting)
+  const [originalOrders, setOriginalOrders] = useState([]);
+  const [originalSearchResults, setOriginalSearchResults] = useState([]);
 
   const [showForm, setShowForm] = useState(false);
   const [editingOrderId, setEditingOrderId] = useState(null);
   const [deletingOrderId, setDeletingOrderId] = useState(null);
 
-  const fetchAllOrders = async () => {
+  const fetchAllOrders = async (pageNum = page) => {
     setLoading(true);
-    if (viewType === "active") {
-      const data = await OrderService.getActiveOrders();
-      setOrders(data);
-    } else {
-      const data = await OrderService.getDeletedOrders();
-      setOrders(data);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchAllOrders();
-  }, [viewType]);
-
-  const handleSearch = async () => {
-    if (!customerId && !employeeId && !orderDate) {
-      toast.warn("Vui lòng nhập ít nhất một tiêu chí tìm kiếm!");
-      return;
-    }
-
-    setLoading(true);
+    setError(null);
     try {
-      // Only search in active orders, deleted orders don't have search API
-      if (viewType === "active") {
-        const data = await OrderService.searchOrders(customerId, employeeId, orderDate);
-        setOrders(data);
+      let data;
+
+      if (isSearching) {
+        // Search with pagination
+        if (viewType === "active") {
+          data = await OrderService.searchActiveOrdersByPage(
+            searchCriteria.customerId || null,
+            searchCriteria.employeeId || null,
+            searchCriteria.orderDate || null,
+            pageNum,
+            size
+          );
+        } else {
+          data = await OrderService.searchDeletedOrdersByPage(
+            searchCriteria.customerId || null,
+            searchCriteria.employeeId || null,
+            searchCriteria.orderDate || null,
+            pageNum,
+            size
+          );
+        }
+        setOriginalSearchResults(data.content);
       } else {
-        // For deleted view, filter locally
-        const allDeletedOrders = await OrderService.getDeletedOrders();
-        const filtered = allDeletedOrders.filter(order => {
-          const matchCustomer = !customerId || order.customerId?.toString() === customerId;
-          const matchEmployee = !employeeId || order.employeeId?.toString() === employeeId;
-          const matchDate = !orderDate || order.orderDate === orderDate;
-          return matchCustomer && matchEmployee && matchDate;
-        });
-        setOrders(filtered);
+        // Normal pagination
+        if (viewType === "active") {
+          data = await OrderService.getActiveOrdersByPage(pageNum, size);
+        } else {
+          data = await OrderService.getDeletedOrdersByPage(pageNum, size);
+        }
+        setOriginalOrders(data.content);
       }
+
+      setOrders(data.content);
+      setTotalPages(data.totalPages);
+      setTotalElements(data.totalElements);
+      setPage(data.number);
     } catch (err) {
-      console.error("Error searching orders:", err);
-      setError("Không thể tìm kiếm đơn hàng.");
+      console.error("Error fetching orders:", err);
+      setError("Không thể tải danh sách đơn hàng.");
+      toast.error("❌ Lỗi khi tải danh sách đơn hàng");
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchAllOrders(page);
+  }, [page, size, viewType, isSearching, searchCriteria]);
+
+  const handleSearch = () => {
+    if (!customerId && !employeeId && !orderDate) {
+      toast.warn("⚠️ Vui lòng nhập ít nhất một tiêu chí tìm kiếm!");
+      return;
+    }
+
+    setSearchCriteria({ customerId, employeeId, orderDate });
+    setIsSearching(true);
+    setSortConfig({ field: "", direction: "asc" });
+    setPage(0); // Reset to first page
   };
 
   const handleClearFilter = () => {
     setCustomerId("");
     setEmployeeId("");
     setOrderDate("");
+    setSearchCriteria({ customerId: "", employeeId: "", orderDate: "" });
+    setIsSearching(false);
     setSortConfig({ field: "", direction: "asc" });
-    fetchAllOrders();
+    setPage(0);
   };
 
-  const handleSort = async (field) => {
+  const handleSort = (field) => {
     let newDirection;
 
     if (sortConfig.field !== field) {
@@ -88,53 +120,41 @@ export default function OrderList() {
       newDirection = "desc";
     } else if (sortConfig.direction === "desc") {
       newDirection = "";
-    } else {
-      newDirection = "asc";
     }
 
     setSortConfig({ field: newDirection ? field : "", direction: newDirection });
 
-    const hasActiveFilters = customerId || employeeId || orderDate;
-
     if (!newDirection) {
-      if (hasActiveFilters) {
-        const data = await OrderService.searchOrders(customerId, employeeId, orderDate);
-        setOrders(data);
+      // Reset sort - restore from cache
+      if (isSearching) {
+        setOrders(originalSearchResults);
       } else {
-        fetchAllOrders();
+        setOrders(originalOrders);
       }
       return;
     }
 
-    if (hasActiveFilters) {
-      const sortedData = [...orders].sort((a, b) => {
-        let aValue = a[field];
-        let bValue = b[field];
+    // Sort current page data
+    const sortedData = [...orders].sort((a, b) => {
+      let aValue = a[field];
+      let bValue = b[field];
 
-        if (field === "buyDate") {
-          aValue = a["orderDate"] || a["buyDate"];
-          bValue = b["orderDate"] || b["buyDate"];
-        }
-
-        if (field === "buyDate" || field === "orderDate") {
-          aValue = new Date(aValue);
-          bValue = new Date(bValue);
-        }
-
-        if (aValue < bValue) return newDirection === "asc" ? -1 : 1;
-        if (aValue > bValue) return newDirection === "asc" ? 1 : -1;
-        return 0;
-      });
-      setOrders(sortedData);
-    } else {
-      let sortedData = [];
-      if (field === "buyDate" || field === "orderDate") {
-        sortedData = await OrderService.getSortedByBuyDate(newDirection);
-      } else if (field === "totalAmount") {
-        sortedData = await OrderService.getSortedByTotalAmount(newDirection);
+      if (field === "buyDate") {
+        aValue = a["orderDate"] || a["buyDate"];
+        bValue = b["orderDate"] || b["buyDate"];
       }
-      setOrders(sortedData);
-    }
+
+      if (field === "buyDate" || field === "orderDate") {
+        aValue = new Date(aValue);
+        bValue = new Date(bValue);
+      }
+
+      if (aValue < bValue) return newDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return newDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setOrders(sortedData);
   };
 
   const handleAdd = () => {
@@ -180,7 +200,10 @@ export default function OrderList() {
     setCustomerId("");
     setEmployeeId("");
     setOrderDate("");
+    setSearchCriteria({ customerId: "", employeeId: "", orderDate: "" });
+    setIsSearching(false);
     setSortConfig({ field: "", direction: "asc" });
+    setPage(0);
   };
 
   const getStatusLabel = (deletedType) => {
@@ -298,111 +321,177 @@ export default function OrderList() {
 
         {/* --- Table --- */}
         {loading ? (
-          <p>Đang tải dữ liệu...</p>
+          <div style={{ textAlign: "center", padding: "40px" }}>
+            <p>Đang tải dữ liệu...</p>
+          </div>
         ) : error ? (
-          <p style={{ color: "red" }}>{error}</p>
+          <div style={{ textAlign: "center", padding: "40px", color: "red" }}>
+            <p>{error}</p>
+          </div>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Mã KH</th>
-                <th>Mã NV</th>
-                <th
-                  className={`sortable ${
-                    sortConfig.field === "buyDate" && sortConfig.direction ? sortConfig.direction : ""
-                  }`}
-                  onClick={() => handleSort("buyDate")}
-                >
-                  Ngày mua
-                </th>
-                <th
-                  className={`sortable ${
-                    sortConfig.field === "totalAmount" && sortConfig.direction ? sortConfig.direction : ""
-                  }`}
-                  onClick={() => handleSort("totalAmount")}
-                >
-                  Tổng tiền
-                </th>
-                <th>Giảm giá</th>
-                {viewType === "deleted" && <th>Trạng thái</th>}
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.length === 0 ? (
+          <>
+            <table>
+              <thead>
                 <tr>
-                  <td colSpan={viewType === "deleted" ? "9" : "8"} style={{ textAlign: "center" }}>
-                    {viewType === "active" ? "Không có đơn hàng nào." : "Không có đơn hàng đã xóa."}
-                  </td>
+                  <th>ID</th>
+                  <th>Mã KH</th>
+                  <th>Mã NV</th>
+                  <th
+                    className={`sortable ${
+                      sortConfig.field === "buyDate" && sortConfig.direction ? sortConfig.direction : ""
+                    }`}
+                    onClick={() => handleSort("buyDate")}
+                  >
+                    Ngày mua
+                  </th>
+                  <th
+                    className={`sortable ${
+                      sortConfig.field === "totalAmount" && sortConfig.direction ? sortConfig.direction : ""
+                    }`}
+                    onClick={() => handleSort("totalAmount")}
+                  >
+                    Tổng tiền
+                  </th>
+                  <th>Giảm giá</th>
+                  {viewType === "deleted" && <th>Trạng thái</th>}
+                  <th>Thao tác</th>
                 </tr>
-              ) : (
-                orders.map((order) => (
-                  <tr key={order.orderId}>
-                    <td>{order.orderId}</td>
-                    <td>{order.customerId}</td>
-                    <td>{order.employeeId}</td>
-                    <td>{order.orderDate}</td>
-                    <td>{order.totalAmount?.toLocaleString()}</td>
-                    <td>{order.discount}%</td>
-                    {viewType === "deleted" && (
-                      <td>
-                        <span style={{
-                          backgroundColor: getStatusColor(order.deletedType),
-                          color: "white",
-                          padding: "4px 8px",
-                          borderRadius: "4px",
-                          fontSize: "12px",
-                          fontWeight: "bold"
-                        }}>
-                          {getStatusLabel(order.deletedType)}
-                        </span>
-                      </td>
-                    )}
-                    <td>
-                      <div className="actions">
-                        {viewType === "active" ? (
-                          <>
-                            <button
-                              className="icon-button edit-icon"
-                              onClick={() => handleEdit(order.orderId)}
-                              title="Sửa"
-                            >
-                              📝
-                            </button>
-                            <button
-                              className="icon-button delete-icon"
-                              onClick={() => handleDelete(order.orderId)}
-                              title="Xóa"
-                            >
-                              🗑️
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            className="icon-button"
-                            onClick={() => handleRestore(order.orderId)}
-                            title="Khôi phục"
-                            style={{ color: "#4CAF50", fontSize: "20px" }}
-                          >
-                            ↩️
-                          </button>
-                        )}
-                      </div>
+              </thead>
+              <tbody>
+                {orders.length === 0 ? (
+                  <tr>
+                    <td colSpan={viewType === "deleted" ? "8" : "7"} style={{ textAlign: "center" }}>
+                      {isSearching
+                        ? "Không tìm thấy đơn hàng nào."
+                        : viewType === "active"
+                          ? "Không có đơn hàng nào."
+                          : "Không có đơn hàng đã xóa."}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  orders.map((order) => (
+                    <tr key={order.orderId}>
+                      <td>{order.orderId}</td>
+                      <td>{order.customerId}</td>
+                      <td>{order.employeeId}</td>
+                      <td>{order.orderDate}</td>
+                      <td>{order.totalAmount?.toLocaleString()}đ</td>
+                      <td>{order.discount}%</td>
+                      {viewType === "deleted" && (
+                        <td>
+                          <span style={{
+                            backgroundColor: getStatusColor(order.deletedType),
+                            color: "white",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                            fontSize: "12px",
+                            fontWeight: "bold"
+                          }}>
+                            {getStatusLabel(order.deletedType)}
+                          </span>
+                        </td>
+                      )}
+                      <td>
+                        <div className="actions">
+                          {viewType === "active" ? (
+                            <>
+                              <button
+                                className="icon-button edit-icon"
+                                onClick={() => handleEdit(order.orderId)}
+                                title="Sửa"
+                              >
+                                📝
+                              </button>
+                              <button
+                                className="icon-button delete-icon"
+                                onClick={() => handleDelete(order.orderId)}
+                                title="Xóa"
+                              >
+                                🗑️
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              className="icon-button"
+                              onClick={() => handleRestore(order.orderId)}
+                              title="Khôi phục"
+                              style={{ color: "#4CAF50", fontSize: "20px" }}
+                            >
+                              ↩️
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </>
         )}
 
-        {/* --- Pagination Placeholder (future use) --- */}
+        {/* --- Pagination Controls --- */}
         <div className="pagination">
-          <button>«</button>
-          <button className="active">1</button>
-          <button>2</button>
-          <button>»</button>
+          {/* First page button */}
+          <button
+            onClick={() => setPage(0)}
+            disabled={page === 0}
+            title="Trang đầu"
+          >
+            «
+          </button>
+
+          {/* Previous page button */}
+          <button
+            onClick={() => setPage(page - 1)}
+            disabled={page === 0}
+            title="Trang trước"
+          >
+            ‹
+          </button>
+
+          {/* Page numbers */}
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i}
+              className={i === page ? "active" : ""}
+              onClick={() => setPage(i)}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          {/* Next page button */}
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page + 1 >= totalPages}
+            title="Trang sau"
+          >
+            ›
+          </button>
+
+          {/* Last page button */}
+          <button
+            onClick={() => setPage(totalPages - 1)}
+            disabled={page + 1 >= totalPages}
+            title="Trang cuối"
+          >
+            »
+          </button>
+
+          {/* Page size selector */}
+          <select
+            value={size}
+            onChange={(e) => {
+              setSize(parseInt(e.target.value));
+              setPage(0); // Reset to first page when changing size
+            }}
+            style={{ marginLeft: "10px" }}
+          >
+            <option value={5}>5 / trang</option>
+            <option value={10}>10 / trang</option>
+            <option value={20}>20 / trang</option>
+          </select>
         </div>
       </div>
     </div>

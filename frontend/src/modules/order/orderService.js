@@ -133,6 +133,98 @@ const OrderService = {
         throw error;
       }
     },
+
+    // ========================================
+      // NEW: PAGINATION METHODS FOR ACTIVE ORDERS
+      // ========================================
+
+      /**
+       * Get active orders with pagination (deletedType IS NULL)
+       * @param {number} page - Page number (default: 0)
+       * @param {number} size - Page size (default: 10)
+       * @returns {Promise<Object>} Page object with content, totalPages, etc.
+       */
+      getActiveOrdersByPage: async (page = 0, size = 10) => {
+        try {
+          const response = await axiosClient.get(`${API_BASE}/active/page`, {
+            params: { page, size }
+          });
+          return response.data;
+        } catch (error) {
+          console.error("Failed to get paginated active orders:", error);
+          throw error;
+        }
+      },
+
+      /**
+       * Search active orders with pagination
+       * @param {number} customerId - Customer ID (optional)
+       * @param {number} employeeId - Employee ID (optional)
+       * @param {string} orderDate - Order date in format yyyy-MM-dd (optional)
+       * @param {number} page - Page number (default: 0)
+       * @param {number} size - Page size (default: 10)
+       * @returns {Promise<Object>} Page object with filtered results
+       */
+      searchActiveOrdersByPage: async (customerId, employeeId, orderDate, page = 0, size = 10) => {
+        try {
+          const params = { page, size };
+          if (customerId) params.customerId = customerId;
+          if (employeeId) params.employeeId = employeeId;
+          if (orderDate) params.orderDate = orderDate;
+
+          const response = await axiosClient.get(`${API_BASE}/active/search/page`, { params });
+          return response.data;
+        } catch (error) {
+          console.error("Failed to search paginated active orders:", error);
+          throw error;
+        }
+      },
+
+      // ========================================
+      // NEW: PAGINATION METHODS FOR DELETED ORDERS
+      // ========================================
+
+      /**
+       * Get deleted orders with pagination (deletedType IS NOT NULL)
+       * @param {number} page - Page number (default: 0)
+       * @param {number} size - Page size (default: 10)
+       * @returns {Promise<Object>} Page object with content, totalPages, etc.
+       */
+      getDeletedOrdersByPage: async (page = 0, size = 10) => {
+        try {
+          const response = await axiosClient.get(`${API_BASE}/deleted/page`, {
+            params: { page, size }
+          });
+          return response.data;
+        } catch (error) {
+          console.error("Failed to get paginated deleted orders:", error);
+          throw error;
+        }
+      },
+
+      /**
+       * Search deleted orders with pagination
+       * @param {number} customerId - Customer ID (optional)
+       * @param {number} employeeId - Employee ID (optional)
+       * @param {string} orderDate - Order date in format yyyy-MM-dd (optional)
+       * @param {number} page - Page number (default: 0)
+       * @param {number} size - Page size (default: 10)
+       * @returns {Promise<Object>} Page object with filtered results
+       */
+      searchDeletedOrdersByPage: async (customerId, employeeId, orderDate, page = 0, size = 10) => {
+        try {
+          const params = { page, size };
+          if (customerId) params.customerId = customerId;
+          if (employeeId) params.employeeId = employeeId;
+          if (orderDate) params.orderDate = orderDate;
+
+          const response = await axiosClient.get(`${API_BASE}/deleted/search/page`, { params });
+          return response.data;
+        } catch (error) {
+          console.error("Failed to search paginated deleted orders:", error);
+          throw error;
+        }
+      },
 };
 
 export default OrderService;

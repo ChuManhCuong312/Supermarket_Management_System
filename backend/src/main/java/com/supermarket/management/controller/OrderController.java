@@ -5,6 +5,7 @@
     import  com.supermarket.management.entity.Order;
     import com.supermarket.management.service.OrderService;
     import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.data.domain.Page;
     import org.springframework.http.HttpStatus;
     import org.springframework.http.ResponseEntity;
     import org.springframework.web.bind.annotation.*;
@@ -138,6 +139,102 @@
                 e.printStackTrace();
                 return new ResponseEntity<>("Failed to search orders: " + e.getMessage(),
                         HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        @GetMapping("/active/page")
+        public ResponseEntity<Page<Order>> getActiveOrdersByPage(
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "10") int size
+        ) {
+            Page<Order> orders = orderService.getActiveOrdersByPage(page, size);
+            return ResponseEntity.ok(orders);
+        }
+
+        /**
+         * GET /api/orders/deleted/page
+         * Get deleted orders with pagination (deletedType IS NOT NULL)
+         *
+         * @param page Page number (default: 0)
+         * @param size Page size (default: 10)
+         * @return Paginated list of deleted orders (canceled or hidden)
+         */
+        @GetMapping("/deleted/page")
+        public ResponseEntity<Page<Order>> getDeletedOrdersByPage(
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "10") int size
+        ) {
+            Page<Order> orders = orderService.getDeletedOrdersByPage(page, size);
+            return ResponseEntity.ok(orders);
+        }
+
+        /**
+         * GET /api/orders/active/search/page
+         * Search active orders with pagination
+         *
+         * @param customerId Customer ID (optional)
+         * @param employeeId Employee ID (optional)
+         * @param orderDate  Order date in format yyyy-MM-dd (optional)
+         * @param page       Page number (default: 0)
+         * @param size       Page size (default: 10)
+         * @return Paginated search results for active orders
+         */
+        @GetMapping("/active/search/page")
+        public ResponseEntity<Page<Order>> searchActiveOrdersByPage(
+                @RequestParam(required = false) Integer customerId,
+                @RequestParam(required = false) Integer employeeId,
+                @RequestParam(required = false) String orderDate,
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "10") int size
+        ) {
+            try {
+                LocalDate date = null;
+                if (orderDate != null && !orderDate.isEmpty()) {
+                    date = LocalDate.parse(orderDate);
+                }
+
+                Page<Order> orders = orderService.searchActiveOrdersByPage(
+                        customerId, employeeId, date, page, size
+                );
+                return ResponseEntity.ok(orders);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.badRequest().build();
+            }
+        }
+
+        /**
+         * GET /api/orders/deleted/search/page
+         * Search deleted orders with pagination
+         *
+         * @param customerId Customer ID (optional)
+         * @param employeeId Employee ID (optional)
+         * @param orderDate  Order date in format yyyy-MM-dd (optional)
+         * @param page       Page number (default: 0)
+         * @param size       Page size (default: 10)
+         * @return Paginated search results for deleted orders
+         */
+        @GetMapping("/deleted/search/page")
+        public ResponseEntity<Page<Order>> searchDeletedOrdersByPage(
+                @RequestParam(required = false) Integer customerId,
+                @RequestParam(required = false) Integer employeeId,
+                @RequestParam(required = false) String orderDate,
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "10") int size
+        ) {
+            try {
+                LocalDate date = null;
+                if (orderDate != null && !orderDate.isEmpty()) {
+                    date = LocalDate.parse(orderDate);
+                }
+
+                Page<Order> orders = orderService.searchDeletedOrdersByPage(
+                        customerId, employeeId, date, page, size
+                );
+                return ResponseEntity.ok(orders);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.badRequest().build();
             }
         }
     }
