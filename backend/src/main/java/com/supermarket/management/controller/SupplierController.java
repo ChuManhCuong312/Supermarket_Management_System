@@ -1,4 +1,5 @@
 package com.supermarket.management.controller;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import com.supermarket.management.service.SupplierService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Sort;
+import com.supermarket.management.exception.ResourceNotFoundException;
 
 @RestController
 @RequestMapping("/api/suppliers")
@@ -43,7 +45,6 @@ public class SupplierController {
 
         return ResponseEntity.ok(response);
     }
-
 
     // POST /api/suppliers
     @PostMapping
@@ -102,4 +103,12 @@ public class SupplierController {
 
         return ResponseEntity.ok(response);
     }
+
+    // GET /api/suppliers/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<Supplier> getSupplierById(@PathVariable Integer id) {
+        Supplier supplier = supplierService.getSupplierById(id);
+        return ResponseEntity.ok(supplier);
+    }
+
 }

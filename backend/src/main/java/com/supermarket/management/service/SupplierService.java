@@ -1,15 +1,16 @@
 package com.supermarket.management.service;
+
 import org.springframework.data.domain.Sort;
 import com.supermarket.management.entity.Supplier;
 import com.supermarket.management.repository.SupplierRepository;
 import org.springframework.stereotype.Service;
 
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
-
+import com.supermarket.management.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class SupplierService {
 
@@ -116,8 +117,7 @@ public class SupplierService {
                 name != null ? name : "",
                 phone != null ? phone : "",
                 email != null ? email : "",
-                pageable != null ? pageable : PageRequest.of(0, 10)
-        );
+                pageable != null ? pageable : PageRequest.of(0, 10));
     }
 
     // Ví dụ hàm trim dữ liệu Supplier (tương tự trimCustomer)
@@ -137,6 +137,11 @@ public class SupplierService {
         if (supplier.getContactPerson() != null) {
             supplier.setContactPerson(supplier.getContactPerson().trim());
         }
+    }
+
+    public Supplier getSupplierById(Integer id) {
+        return supplierRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with id: " + id));
     }
 
 }
