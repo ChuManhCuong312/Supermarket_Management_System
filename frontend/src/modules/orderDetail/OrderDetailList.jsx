@@ -26,88 +26,83 @@ export default function OrderDetailList() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingDetail, setEditingDetail] = useState(null);
 
- const fetchAll = async (pageNum = page) => {
-   setLoading(true);
-   try {
-     let data;
-     if (isSearching) {
-       data = await OrderDetailService.searchOrderDetailsByPage(
-         searchCriteria.orderId || null,
-         searchCriteria.productId || null,
-         pageNum,
-         size
-       );
-       setOriginalSearchResults(data.content); // ✅ cache filtered results
-     } else {
-       data = await OrderDetailService.getOrderDetailsByPage(pageNum, size);
-       setOriginalOrderDetails(data.content); // ✅ cache full list
-     }
+  const fetchAll = async (pageNum = page) => {
+    setLoading(true);
+    try {
+      let data;
+      if (isSearching) {
+        data = await OrderDetailService.searchOrderDetailsByPage(
+          searchCriteria.orderId || null,
+          searchCriteria.productId || null,
+          pageNum,
+          size
+        );
+        setOriginalSearchResults(data.content);
+      } else {
+        data = await OrderDetailService.getOrderDetailsByPageWithOrderInfo(pageNum, size);
+        setOriginalOrderDetails(data.content);
+      }
 
-     setOrderDetails(data.content);
-     setTotalPages(data.totalPages);
-     setPage(data.number);
-   } catch (error) {
-     toast.error("❌ Lỗi khi tải danh sách chi tiết đơn hàng");
-     console.error("Failed to load order details:", error);
-   } finally {
-     setLoading(false);
-   }
- };
-
+      setOrderDetails(data.content);
+      setTotalPages(data.totalPages);
+      setPage(data.number);
+    } catch (error) {
+      toast.error("❌ Lỗi khi tải danh sách chi tiết đơn hàng");
+      console.error("Failed to load order details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchAll(page);
   }, [page, size, isSearching, searchCriteria]);
 
+  const handleSort = (field) => {
+    let newDirection;
 
-const handleSort = (field) => {
-  let newDirection;
-
-  if (sortConfig.field !== field) {
-    newDirection = "asc";
-  } else if (sortConfig.direction === "asc") {
-    newDirection = "desc";
-  } else if (sortConfig.direction === "desc") {
-    newDirection = ""; // reset
-  }
-
-  setSortConfig({ field: newDirection ? field : "", direction: newDirection });
-
-  if (!newDirection) {
-    // ✅ Restore from correct cache
-    if (isSearching) {
-      setOrderDetails(originalSearchResults);
-    } else {
-      setOrderDetails(originalOrderDetails);
+    if (sortConfig.field !== field) {
+      newDirection = "asc";
+    } else if (sortConfig.direction === "asc") {
+      newDirection = "desc";
+    } else if (sortConfig.direction === "desc") {
+      newDirection = "";
     }
-    return;
-  }
 
-  const sortedData = [...orderDetails].sort((a, b) => {
-    if (a[field] < b[field]) return newDirection === "asc" ? -1 : 1;
-    if (a[field] > b[field]) return newDirection === "asc" ? 1 : -1;
-    return 0;
-  });
+    setSortConfig({ field: newDirection ? field : "", direction: newDirection });
 
-  setOrderDetails(sortedData);
-};
-
-  // --- Search ---
-    const handleSearch = () => {
-      if (!searchOrderId && !searchProductId) {
-        toast.warn("Vui lòng nhập ít nhất Mã đơn hoặc Mã sản phẩm để tìm kiếm!");
-        return;
+    if (!newDirection) {
+      if (isSearching) {
+        setOrderDetails(originalSearchResults);
+      } else {
+        setOrderDetails(originalOrderDetails);
       }
+      return;
+    }
 
-      setSearchCriteria({ orderId: searchOrderId, productId: searchProductId });
-      setIsSearching(true);
-      setSortConfig({ field: "", direction: "" }); // ✅ reset sort
-      setPage(0);
-    };
+    const sortedData = [...orderDetails].sort((a, b) => {
+      if (a[field] < b[field]) return newDirection === "asc" ? -1 : 1;
+      if (a[field] > b[field]) return newDirection === "asc" ? 1 : -1;
+      return 0;
+    });
 
+    setOrderDetails(sortedData);
+  };
 
-const handleAdd = () => {
-    setEditingDetail(null); // ✅ clear previous edit data
+  const handleSearch = () => {
+    if (!searchOrderId && !searchProductId) {
+      toast.warn("Vui lòng nhập ít nhất Mã đơn hoặc Mã sản phẩm để tìm kiếm!");
+      return;
+    }
+
+    setSearchCriteria({ orderId: searchOrderId, productId: searchProductId });
+    setIsSearching(true);
+    setSortConfig({ field: "", direction: "" });
+    setPage(0);
+  };
+
+  const handleAdd = () => {
+    setEditingDetail(null);
     setShowAddForm(true);
   };
 
@@ -122,11 +117,22 @@ const handleAdd = () => {
   };
 
   const handleEdit = (detail) => {
-    setEditingDetail(detail); // store the clicked detail
-    setShowAddForm(true);     // show the modal
+    // Check if order is active before allowing edit
+    if (!detail.isOrderActive) {
+      toast.error("❌ Không thể chỉnh sửa chi tiết của đơn hàng đã bị hủy hoặc ẩn!");
+      return;
+    }
+    setEditingDetail(detail);
+    setShowAddForm(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (detail) => {
+    // Check if order is active before allowing delete
+    if (!detail.isOrderActive) {
+      toast.error("❌ Không thể xóa chi tiết của đơn hàng đã bị hủy hoặc ẩn!");
+      return;
+    }
+
     confirmAlert({
       title: "Xác nhận xóa",
       message: "Bạn có chắc chắn muốn xóa chi tiết đơn hàng này?",
@@ -135,12 +141,12 @@ const handleAdd = () => {
           label: "Có",
           onClick: async () => {
             try {
-              await OrderDetailService.deleteOrderDetail(id);
+              await OrderDetailService.deleteOrderDetail(detail.orderDetailId);
               toast.success("Xóa chi tiết đơn hàng thành công!");
-              fetchAll(); // reload list
+              fetchAll();
             } catch (error) {
               toast.error("Không thể xóa chi tiết đơn hàng!");
-              console.error("Error deleting order detail: ",error);
+              console.error("Error deleting order detail: ", error);
             }
           },
         },
@@ -152,14 +158,30 @@ const handleAdd = () => {
     });
   };
 
-// --- Clear Filter ---
   const handleClearFilter = () => {
     setSearchOrderId("");
     setSearchProductId("");
     setSearchCriteria({ orderId: "", productId: "" });
     setIsSearching(false);
-    setSortConfig({ field: "", direction: "" }); // ✅ reset sort
+    setSortConfig({ field: "", direction: "" });
     setPage(0);
+  };
+
+  const getOrderStatusBadge = (detail) => {
+    if (!detail.orderInfo) {
+      return null;
+    }
+
+    const deletedType = detail.orderInfo.deletedType;
+
+    if (deletedType === null || deletedType === undefined) {
+      return <span className="badge badge-active">Hoạt động</span>;
+    } else if (deletedType === "CANCEL") {
+      return <span className="badge badge-canceled">Đã hủy</span>;
+    } else if (deletedType === "HIDE") {
+      return <span className="badge badge-hidden">Đã ẩn</span>;
+    }
+    return <span className="badge badge-unknown">{deletedType}</span>;
   };
 
   return (
@@ -185,7 +207,7 @@ const handleAdd = () => {
               onChange={(e) => setSearchOrderId(e.target.value)}
             />
             <span className="clear-filter" onClick={handleClearFilter}>
-                        ✖ Clear Filter
+              ✖ Clear Filter
             </span>
           </div>
 
@@ -218,6 +240,7 @@ const handleAdd = () => {
             <tr>
               <th>ID</th>
               <th>Mã đơn</th>
+
               <th
                 className={`sortable ${
                   sortConfig.field === "productId" ? sortConfig.direction : ""
@@ -242,13 +265,16 @@ const handleAdd = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: "center" }}>
+                <td colSpan="8" style={{ textAlign: "center" }}>
                   Đang tải dữ liệu...
                 </td>
               </tr>
             ) : orderDetails.length > 0 ? (
               orderDetails.map((detail) => (
-                <tr key={detail.orderDetailId}>
+                <tr
+                  key={detail.orderDetailId}
+                  className={!detail.isOrderActive ? "inactive-order-row" : ""}
+                >
                   <td>{detail.orderDetailId}</td>
                   <td>{detail.orderId}</td>
                   <td>{detail.productId}</td>
@@ -257,27 +283,35 @@ const handleAdd = () => {
                   <td>{detail.totalPrice}</td>
                   <td>
                     <div className="actions">
-                      <button
-                        className="icon-button edit-icon"
-                        onClick={() => handleEdit(detail)}
-                        title="Sửa"
-                      >
-                        📝
-                      </button>
-                      <button
-                        className="icon-button delete-icon"
-                        onClick={() => handleDelete(detail.orderDetailId)}
-                        title="Xóa"
-                      >
-                        🗑️
-                      </button>
+                      {detail.isOrderActive ? (
+                        <>
+                          <button
+                            className="icon-button edit-icon"
+                            onClick={() => handleEdit(detail)}
+                            title="Sửa"
+                          >
+                            📝
+                          </button>
+                          <button
+                            className="icon-button delete-icon"
+                            onClick={() => handleDelete(detail)}
+                            title="Xóa"
+                          >
+                            🗑️
+                          </button>
+                        </>
+                      ) : (
+                        <span className="no-action" title="Đơn hàng đã bị hủy/ẩn">
+
+                        </span>
+                      )}
                     </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="7" style={{ textAlign: "center" }}>
+                <td colSpan="8" style={{ textAlign: "center" }}>
                   Không có dữ liệu.
                 </td>
               </tr>
@@ -307,7 +341,7 @@ const handleAdd = () => {
             value={size}
             onChange={(e) => {
               setSize(parseInt(e.target.value));
-              setPage(0); // Reset to first page when page size changes
+              setPage(0);
             }}
             style={{ marginLeft: "10px" }}
           >
@@ -320,18 +354,17 @@ const handleAdd = () => {
       </div>
 
       {/* ✅ Modal Overlay */}
-            {showAddForm && (
-              <div className="modal-overlay">
-                  <div className="modal-content">
-                    <OrderDetailForm
-                      initialData={editingDetail}  // <-- prefill form if editing
-                      onSuccess={handleFormSuccess}
-                      onCancel={handleCloseForm}
-                    />
-                  </div>
-                </div>
-            )}
+      {showAddForm && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <OrderDetailForm
+              initialData={editingDetail}
+              onSuccess={handleFormSuccess}
+              onCancel={handleCloseForm}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-

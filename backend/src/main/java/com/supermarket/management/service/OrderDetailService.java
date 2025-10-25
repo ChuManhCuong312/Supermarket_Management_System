@@ -47,6 +47,17 @@ public class OrderDetailService {
 
     @Transactional
     public OrderDetail createOrderDetail(OrderDetail orderDetail) {
+        // ✅ First, check if the order exists and is active (deletedType = null)
+        Order order = orderRepository.findById(orderDetail.getOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        // ✅ Validate that order is active (not canceled or hidden)
+        if (order.getDeletedType() != null) {
+            throw new IllegalStateException(
+                    "Không thể thêm đơn hàng đã xóa"
+            );
+        }
+
         // Get product
         Product product = productRepository.findById(orderDetail.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -68,17 +79,13 @@ public class OrderDetailService {
         product.setStock(product.getStock() - orderDetail.getQuantity());
         productRepository.save(product);
 
-        // Update order total - FIX: Calculate total from ALL order details
-        Order order = orderRepository.findById(orderDetail.getOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-
-        // Get all order details for this order and sum them up
+        // Update order total - Calculate total from ALL order details
         List<OrderDetail> allDetails = orderDetailRepository.findByOrderId(order.getOrderId());
         BigDecimal subtotal = allDetails.stream()
                 .map(OrderDetail::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Apply discount to the SUBTOTAL, not the previously discounted total
+        // Apply discount to the SUBTOTAL
         BigDecimal newTotal = subtotal;
         if (order.getDiscount() != null && order.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal discountRate = order.getDiscount().divide(BigDecimal.valueOf(100));
@@ -92,110 +99,105 @@ public class OrderDetailService {
     }
 
     @Transactional
-    public OrderDetail updateOrderDetail(Integer orderDetailId, OrderDetail updatedDetail) {
-        // Find existing order detail
-        OrderDetail existingDetail = orderDetailRepository.findById(orderDetailId)
-                .orElseThrow(() -> new ResourceNotFoundException("OrderDetail not found"));
+    public OrderDetail updateOrderDetail(Integer id, OrderDetail updatedDetail) {
+        OrderDetail existing = orderDetailRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order detail not found"));
 
-        // Find old product and restore its stock
-        Product oldProduct = productRepository.findById(existingDetail.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Old product not found"));
-        oldProduct.setStock(oldProduct.getStock() + existingDetail.getQuantity());
-        productRepository.save(oldProduct);
-
-        // If product changed, load new product
-        Product newProduct;
-        if (!existingDetail.getProductId().equals(updatedDetail.getProductId())) {
-            newProduct = productRepository.findById(updatedDetail.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("New product not found"));
-        } else {
-            newProduct = oldProduct;
-        }
-
-        // Check stock for new quantity
-        if (newProduct.getStock() < updatedDetail.getQuantity()) {
-            throw new IllegalArgumentException("Not enough stock for product: " + newProduct.getName());
-        }
-
-        // Update unit price and total price
-        updatedDetail.setUnitPrice(newProduct.getPrice());
-        BigDecimal newTotal = newProduct.getPrice().multiply(BigDecimal.valueOf(updatedDetail.getQuantity()));
-        updatedDetail.setTotalPrice(newTotal);
-
-        // Reduce new product stock
-        newProduct.setStock(newProduct.getStock() - updatedDetail.getQuantity());
-        productRepository.save(newProduct);
-
-        // Update order detail fields
-        existingDetail.setProductId(updatedDetail.getProductId());
-        existingDetail.setQuantity(updatedDetail.getQuantity());
-        existingDetail.setUnitPrice(updatedDetail.getUnitPrice());
-        existingDetail.setTotalPrice(updatedDetail.getTotalPrice());
-
-        orderDetailRepository.save(existingDetail);
-
-        // Recalculate order total - FIX: Only sum order details for THIS order
-        Order order = orderRepository.findById(existingDetail.getOrderId())
+        // ✅ Check if the order is active before allowing update
+        Order order = orderRepository.findById(existing.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // Get all order details for this specific order
-        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(order.getOrderId());
-        BigDecimal subtotal = orderDetails.stream()
+        if (order.getDeletedType() != null) {
+            throw new IllegalStateException(
+                    "Không thể thêm đơn hàng đã xóa"
+
+            );
+        }
+
+        // Get product and restore stock from old quantity
+        Product product = productRepository.findById(existing.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        // Restore old stock
+        product.setStock(product.getStock() + existing.getQuantity());
+
+        // Check if new quantity is available
+        if (product.getStock() < updatedDetail.getQuantity()) {
+            throw new IllegalArgumentException("Not enough stock for product: " + product.getName());
+        }
+
+        // Update order detail fields
+        existing.setQuantity(updatedDetail.getQuantity());
+        existing.setUnitPrice(product.getPrice());
+        BigDecimal total = product.getPrice().multiply(BigDecimal.valueOf(updatedDetail.getQuantity()));
+        existing.setTotalPrice(total);
+
+        // Save updated detail
+        OrderDetail saved = orderDetailRepository.save(existing);
+
+        // Deduct new stock
+        product.setStock(product.getStock() - updatedDetail.getQuantity());
+        productRepository.save(product);
+
+        // Recalculate order total
+        List<OrderDetail> allDetails = orderDetailRepository.findByOrderId(order.getOrderId());
+        BigDecimal subtotal = allDetails.stream()
                 .map(OrderDetail::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Apply discount to subtotal
-        BigDecimal finalTotal = subtotal;
+        BigDecimal newTotal = subtotal;
         if (order.getDiscount() != null && order.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal discountRate = order.getDiscount().divide(BigDecimal.valueOf(100));
-            finalTotal = subtotal.subtract(subtotal.multiply(discountRate));
+            newTotal = subtotal.subtract(subtotal.multiply(discountRate));
         }
 
-        order.setTotalAmount(finalTotal);
+        order.setTotalAmount(newTotal);
         orderRepository.save(order);
 
-        return existingDetail;
+        return saved;
     }
 
     @Transactional
-    public OrderDetail deleteOrderDetail(Integer orderDetailId) {
-        // Find existing order detail
-        OrderDetail existingDetail = orderDetailRepository.findById(orderDetailId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order detail not found with ID: " + orderDetailId));
+    public OrderDetail deleteOrderDetail(Integer id) {
+        OrderDetail orderDetail = orderDetailRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order detail not found"));
+
+        // ✅ Check if the order is active before allowing to delete
+        Order order = orderRepository.findById(orderDetail.getOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (order.getDeletedType() != null) {
+            throw new IllegalStateException(
+                    "Không thể thêm đơn hàng đã xóa"
+            );
+        }
 
         // Restore product stock
-        Product product = productRepository.findById(existingDetail.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found for ID: " + existingDetail.getProductId()));
+        Product product = productRepository.findById(orderDetail.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        product.setStock(product.getStock() + existingDetail.getQuantity());
+        product.setStock(product.getStock() + orderDetail.getQuantity());
         productRepository.save(product);
 
-        // Get the parent order
-        Order order = orderRepository.findById(existingDetail.getOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found for ID: " + existingDetail.getOrderId()));
+        // Delete order detail
+        orderDetailRepository.delete(orderDetail);
 
-        // Delete the order detail
-        orderDetailRepository.delete(existingDetail);
-
-        // FIX: Recalculate total from order details for THIS specific order only
+        // Recalculate order total
         List<OrderDetail> remainingDetails = orderDetailRepository.findByOrderId(order.getOrderId());
-
         BigDecimal subtotal = remainingDetails.stream()
                 .map(OrderDetail::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Apply discount to subtotal
-        BigDecimal finalTotal = subtotal;
+        BigDecimal newTotal = subtotal;
         if (order.getDiscount() != null && order.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal discountRate = order.getDiscount().divide(BigDecimal.valueOf(100));
-            finalTotal = subtotal.subtract(subtotal.multiply(discountRate));
+            newTotal = subtotal.subtract(subtotal.multiply(discountRate));
         }
 
-        order.setTotalAmount(finalTotal);
+        order.setTotalAmount(newTotal);
         orderRepository.save(order);
 
-        // return deleted detail for response
-        return existingDetail;
+        return orderDetail;
     }
 
     public List<OrderDetail> searchOrderDetails(Integer orderId, Integer productId) {

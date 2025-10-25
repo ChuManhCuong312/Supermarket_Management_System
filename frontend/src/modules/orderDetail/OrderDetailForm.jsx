@@ -27,101 +27,123 @@ export default function OrderDetailForm({ initialData, onSuccess, onCancel }) {
     }
   }, [initialData]);
 
-  // Fetch initial first-10 orders & products
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const ordersRes = await axiosClient.get("http://localhost:8080/api/orders/active");
-        setOrders(Array.isArray(ordersRes.data) ? ordersRes.data.slice(0, 10) : []);
+  // Fetch initial active orders & products
+    useEffect(() => {
+      const fetchInitialData = async () => {
+        try {
+          // Fetch only active orders (deletedType = null)
+          const ordersRes = await axiosClient.get("/orders/active");
+          setOrders(Array.isArray(ordersRes.data) ? ordersRes.data.slice(0, 10) : []);
 
-        const productsRes = await axiosClient.get("http://localhost:8080/api/products");
-        setProducts(Array.isArray(productsRes.data) ? productsRes.data.slice(0, 10) : []);
-      } catch (error) {
-        toast.error("❌ Lỗi khi tải danh sách đơn hoặc sản phẩm");
-        console.error(error);
+          const productsRes = await axiosClient.get("/products");
+          setProducts(Array.isArray(productsRes.data) ? productsRes.data.slice(0, 10) : []);
+        } catch (error) {
+          toast.error("❌ Lỗi khi tải danh sách đơn hoặc sản phẩm");
+          console.error(error);
+        }
+      };
+
+      fetchInitialData();
+    }, []);
+
+  // Handle input changes + dynamic fetch for single order/product id
+    const handleChange = async (e) => {
+      const { name } = e.target;
+      const rawValue = e.target.value ?? "";
+      const value = rawValue.trim();
+
+      // update input text immediately
+      setFormData((prev) => ({ ...prev, [name]: value }));
+
+      // if user types an orderId not in current `orders` list, fetch it
+      if (name === "orderId" && value !== "") {
+        const intId = parseInt(value, 10);
+        if (!Number.isNaN(intId) && !orders.find((o) => Number(o.orderId) === intId)) {
+          try {
+            // Fetch single active order by ID
+            const res = await axiosClient.get(`/orders/active/${intId}`);
+            // Check if the order is active
+            if (res?.data) {
+              if (res.data.deletedType !== null && res.data.deletedType !== undefined) {
+                toast.error("❌ Đơn hàng này đã bị hủy hoặc ẩn. Vui lòng chọn đơn hàng khác!");
+                setFormData((prev) => ({ ...prev, orderId: "" }));
+                return;
+              }
+              setOrders((prev) => {
+                if (prev.find((p) => Number(p.orderId) === Number(res.data.orderId))) return prev;
+                return [...prev, res.data];
+              });
+            }
+          } catch (err) {
+            console.debug("Order not found or not active:", value, err?.response?.status);
+            if (err?.response?.status === 404) {
+              toast.warn("⚠️ Không tìm thấy đơn hàng hoạt động với mã này");
+            }
+          }
+        }
+      }
+
+      // same behavior for productId: fetch single product if typed and not in list
+      if (name === "productId" && value !== "") {
+        const intId = parseInt(value, 10);
+        if (!Number.isNaN(intId) && !products.find((p) => Number(p.productId) === intId)) {
+          try {
+            const res = await axiosClient.get(`/products/${intId}`);
+            if (res?.data) {
+              setProducts((prev) => {
+                if (prev.find((p) => Number(p.productId) === Number(res.data.productId))) return prev;
+                return [...prev, res.data];
+              });
+            }
+          } catch (err) {
+            console.debug("Product not found:", value, err?.response?.status);
+          }
+        }
       }
     };
 
-    fetchInitialData();
-  }, []);
 
-  // Handle input changes + dynamic fetch for single order/product id
-  const handleChange = async (e) => {
-    const { name } = e.target;
-    const rawValue = e.target.value ?? "";
-    const value = rawValue.trim();
+ // submit handler (create or update)
+   const handleSubmit = async (e) => {
+     e.preventDefault();
 
-    // update input text immediately
-    setFormData((prev) => ({ ...prev, [name]: value }));
+     // Validate that the order is active before submitting
+     const selectedOrder = orders.find(o => Number(o.orderId) === Number(formData.orderId));
+     if (selectedOrder && selectedOrder.deletedType !== null && selectedOrder.deletedType !== undefined) {
+       toast.error("❌ Không thể thao tác trên đơn hàng đã bị hủy hoặc ẩn!");
+       return;
+     }
 
-    // if user types an orderId not in current `orders` list, fetch it
-    if (name === "orderId" && value !== "") {
-      const intId = parseInt(value, 10);
-      if (!Number.isNaN(intId) && !orders.find((o) => Number(o.orderId) === intId)) {
-        try {
-          // endpoint you said exists: GET /api/orders/active/{orderId}
-          const res = await axiosClient.get(`http://localhost:8080/api/orders/active/${intId}`);
-          // only append if server returned an object
-          if (res?.data) {
-            setOrders((prev) => {
-              // avoid duplicates
-              if (prev.find((p) => Number(p.orderId) === Number(res.data.orderId))) return prev;
-              return [...prev, res.data];
-            });
-            // optionally auto-fill the input as the fetched id (already set above)
-            // setFormData(prev => ({ ...prev, orderId: String(res.data.orderId) }));
-          }
-        } catch (err) {
-          // not found or server error — warn in console but don't block user
-          console.debug("Order not found:", value, err?.response?.status);
-        }
-      }
-    }
+     try {
+       const payload = {
+         orderId: parseInt(formData.orderId, 10),
+         productId: parseInt(formData.productId, 10),
+         quantity: parseInt(formData.quantity, 10),
+       };
 
-    // same behavior for productId: fetch single product if typed and not in list
-    if (name === "productId" && value !== "") {
-      const intId = parseInt(value, 10);
-      if (!Number.isNaN(intId) && !products.find((p) => Number(p.productId) === intId)) {
-        try {
-          const res = await axiosClient.get(`http://localhost:8080/api/products/${intId}`);
-          if (res?.data) {
-            setProducts((prev) => {
-              if (prev.find((p) => Number(p.productId) === Number(res.data.productId))) return prev;
-              return [...prev, res.data];
-            });
-            // setFormData(prev => ({ ...prev, productId: String(res.data.productId) }));
-          }
-        } catch (err) {
-          console.debug("Product not found:", value, err?.response?.status);
-        }
-      }
-    }
-  };
+       if (initialData?.orderDetailId) {
+         await OrderDetailService.updateOrderDetail(initialData.orderDetailId, payload);
+         toast.success("✅ Cập nhật chi tiết đơn hàng thành công!");
+       } else {
+         await OrderDetailService.createOrderDetail(payload);
+         toast.success("✅ Thêm chi tiết đơn hàng thành công!");
+       }
 
-  // submit handler (create or update)
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const payload = {
-        orderId: parseInt(formData.orderId, 10),
-        productId: parseInt(formData.productId, 10),
-        quantity: parseInt(formData.quantity, 10),
-      };
-
-      if (initialData?.orderDetailId) {
-        await OrderDetailService.updateOrderDetail(initialData.orderDetailId, payload);
-        toast.success("✅ Cập nhật chi tiết đơn hàng thành công!");
-      } else {
-        await OrderDetailService.createOrderDetail(payload);
-        toast.success("✅ Thêm chi tiết đơn hàng thành công!");
-      }
-
-      if (onSuccess) onSuccess();
-    } catch (error) {
-      console.error(error);
-      toast.error("❌ Lỗi khi lưu chi tiết đơn hàng!");
-    }
-  };
+       if (onSuccess) onSuccess();
+     } catch (error) {
+       console.error(error);
+       // Better error message extraction
+       let errorMsg = "Lỗi không xác định";
+       if (error?.response?.data) {
+         errorMsg = typeof error.response.data === 'string'
+           ? error.response.data
+           : error.response.data.message || JSON.stringify(error.response.data);
+       } else if (error?.message) {
+         errorMsg = error.message;
+       }
+       toast.error(`❌ ${errorMsg}`);
+     }
+   };
 
   return (
     <div className="modal-overlay">

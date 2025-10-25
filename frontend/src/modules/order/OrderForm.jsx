@@ -46,6 +46,13 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
   // Handle initial data for edit mode
   useEffect(() => {
     if (initialData) {
+      // Check if order is active (deletedType is null)
+      if (initialData.deletedType !== null && initialData.deletedType !== undefined) {
+        toast.error("❌ Không thể chỉnh sửa đơn hàng đã bị hủy hoặc ẩn!");
+        if (onCancel) onCancel();
+        return;
+      }
+
       setFormData({
         customerId: initialData.customerId?.toString() ?? "",
         employeeId: initialData.employeeId?.toString() ?? "",
@@ -69,7 +76,7 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
       setCustomerInput("");
       setEmployeeInput("");
     }
-  }, [initialData]);
+  }, [initialData, onCancel]);
 
   const handleCustomerChange = async (e) => {
     const value = e.target.value;
@@ -203,6 +210,14 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
     if (!formData.customerId || !formData.employeeId) {
       toast.error("❌ Vui lòng chọn khách hàng và nhân viên hợp lệ!");
       return;
+    }
+
+    // Double-check if editing an active order
+    if (initialData?.orderId) {
+      if (initialData.deletedType !== null && initialData.deletedType !== undefined) {
+        toast.error("❌ Không thể cập nhật đơn hàng đã bị hủy hoặc ẩn!");
+        return;
+      }
     }
 
     const validOrderDetails = orderDetails.filter(
