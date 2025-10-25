@@ -32,6 +32,20 @@ const OrderService = {
     }
   },
 
+    // NEW: Get all deleted orders (canceled + hidden)
+    getDeletedOrders: async () => {
+      try {
+        const [canceled, hidden] = await Promise.all([
+          axiosClient.get(`${API_BASE}/canceled`),
+          axiosClient.get(`${API_BASE}/hidden`)
+        ]);
+        return [...canceled.data, ...hidden.data];
+      } catch (error) {
+        console.error("Failed to fetch deleted orders:", error);
+        return [];
+      }
+    },
+
   getSortedByBuyDate: async (sort = "asc") => {
     try {
       const response = await axiosClient.get(`${API_BASE}/sorted/buydate?sort=${sort}`);
@@ -87,6 +101,38 @@ const OrderService = {
     }
   },
 
+   // NEW: Cancel order (restore stock)
+    cancelOrder: async (orderId) => {
+      try {
+        const response = await axiosClient.delete(`${API_BASE}/cancel/${orderId}`);
+        return response.data;
+      } catch (error) {
+        console.error("Failed to cancel order:", error);
+        throw error;
+      }
+    },
+
+    // NEW: Hide order (don't restore stock)
+    hideOrder: async (orderId) => {
+      try {
+        const response = await axiosClient.delete(`${API_BASE}/hide/${orderId}`);
+        return response.data;
+      } catch (error) {
+        console.error("Failed to hide order:", error);
+        throw error;
+      }
+    },
+
+    // NEW: Restore order
+    restoreOrder: async (orderId) => {
+      try {
+        const response = await axiosClient.put(`${API_BASE}/restore/${orderId}`);
+        return response.data;
+      } catch (error) {
+        console.error("Failed to restore order:", error);
+        throw error;
+      }
+    },
 };
 
 export default OrderService;

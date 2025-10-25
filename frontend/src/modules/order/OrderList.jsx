@@ -6,12 +6,13 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { toast } from "react-toastify";
 import OrderForm from "./OrderForm";
 import OrderEditForm from "./OrderEditForm";
+import DeleteOrderModal from "./DeleteOrderModal";
 
 export default function OrderList() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewType, setViewType] = useState("active"); // active | hidden | canceled
+  const [viewType, setViewType] = useState("active"); // active | deleted
   const [sortConfig, setSortConfig] = useState({ field: "", direction: "asc" });
 
   // Search fields
@@ -20,19 +21,24 @@ export default function OrderList() {
   const [orderDate, setOrderDate] = useState("");
 
   const [showForm, setShowForm] = useState(false);
-
   const [editingOrderId, setEditingOrderId] = useState(null);
+  const [deletingOrderId, setDeletingOrderId] = useState(null);
 
   const fetchAllOrders = async () => {
-      setLoading(true);
+    setLoading(true);
+    if (viewType === "active") {
       const data = await OrderService.getActiveOrders();
       setOrders(data);
-      setLoading(false);
-    };
+    } else {
+      const data = await OrderService.getDeletedOrders();
+      setOrders(data);
+    }
+    setLoading(false);
+  };
 
-    useEffect(() => {
-      fetchAllOrders();
-    }, []);
+  useEffect(() => {
+    fetchAllOrders();
+  }, [viewType]);
 
   const handleSearch = async () => {
     if (!customerId && !employeeId && !orderDate) {
@@ -42,8 +48,21 @@ export default function OrderList() {
 
     setLoading(true);
     try {
-      const data = await OrderService.searchOrders(customerId, employeeId, orderDate);
-      setOrders(data);
+      // Only search in active orders, deleted orders don't have search API
+      if (viewType === "active") {
+        const data = await OrderService.searchOrders(customerId, employeeId, orderDate);
+        setOrders(data);
+      } else {
+        // For deleted view, filter locally
+        const allDeletedOrders = await OrderService.getDeletedOrders();
+        const filtered = allDeletedOrders.filter(order => {
+          const matchCustomer = !customerId || order.customerId?.toString() === customerId;
+          const matchEmployee = !employeeId || order.employeeId?.toString() === employeeId;
+          const matchDate = !orderDate || order.orderDate === orderDate;
+          return matchCustomer && matchEmployee && matchDate;
+        });
+        setOrders(filtered);
+      }
     } catch (err) {
       console.error("Error searching orders:", err);
       setError("Không thể tìm kiếm đơn hàng.");
@@ -57,93 +76,133 @@ export default function OrderList() {
     setEmployeeId("");
     setOrderDate("");
     setSortConfig({ field: "", direction: "asc" });
-    fetchAllOrders(); // reload the default view (active, hidden, or canceled)
+    fetchAllOrders();
   };
 
-  // === SORT BY DATE or TOTAL AMOUNT ===
-   // === SORT BY DATE or TOTAL AMOUNT === (3-state: asc → desc → none)
-   const handleSort = async (field) => {
-     let newDirection;
+  const handleSort = async (field) => {
+    let newDirection;
 
-     // 3-state cycle: no sort → asc → desc → no sort
-     if (sortConfig.field !== field) {
-       newDirection = "asc";
-     } else if (sortConfig.direction === "asc") {
-       newDirection = "desc";
-     } else if (sortConfig.direction === "desc") {
-       newDirection = ""; // reset to no sort
-     } else {
-       newDirection = "asc";
-     }
+    if (sortConfig.field !== field) {
+      newDirection = "asc";
+    } else if (sortConfig.direction === "asc") {
+      newDirection = "desc";
+    } else if (sortConfig.direction === "desc") {
+      newDirection = "";
+    } else {
+      newDirection = "asc";
+    }
 
-     setSortConfig({ field: newDirection ? field : "", direction: newDirection });
+    setSortConfig({ field: newDirection ? field : "", direction: newDirection });
 
-     // Check if user has active filters
-     const hasActiveFilters = customerId || employeeId || orderDate;
+    const hasActiveFilters = customerId || employeeId || orderDate;
 
-     if (!newDirection) {
-       // Reset to original data
-       if (hasActiveFilters) {
-         // Re-search to get original filtered data
-         const data = await OrderService.searchOrders(customerId, employeeId, orderDate);
-         setOrders(data);
-       } else {
-         // Reload all orders
-         fetchAllOrders();
-       }
-       return;
-     }
+    if (!newDirection) {
+      if (hasActiveFilters) {
+        const data = await OrderService.searchOrders(customerId, employeeId, orderDate);
+        setOrders(data);
+      } else {
+        fetchAllOrders();
+      }
+      return;
+    }
 
-     if (hasActiveFilters) {
-       // Local sort with proper date handling
-       const sortedData = [...orders].sort((a, b) => {
-         let aValue = a[field];
-         let bValue = b[field];
+    if (hasActiveFilters) {
+      const sortedData = [...orders].sort((a, b) => {
+        let aValue = a[field];
+        let bValue = b[field];
 
-         // Handle field name mismatch: buyDate in sort but orderDate in data
-         if (field === "buyDate") {
-           aValue = a["orderDate"] || a["buyDate"];
-           bValue = b["orderDate"] || b["buyDate"];
-         }
+        if (field === "buyDate") {
+          aValue = a["orderDate"] || a["buyDate"];
+          bValue = b["orderDate"] || b["buyDate"];
+        }
 
-         // Convert to Date objects if sorting by date
-         if (field === "buyDate" || field === "orderDate") {
-           aValue = new Date(aValue);
-           bValue = new Date(bValue);
-         }
+        if (field === "buyDate" || field === "orderDate") {
+          aValue = new Date(aValue);
+          bValue = new Date(bValue);
+        }
 
-         if (aValue < bValue) return newDirection === "asc" ? -1 : 1;
-         if (aValue > bValue) return newDirection === "asc" ? 1 : -1;
-         return 0;
-       });
-       setOrders(sortedData);
-     } else {
-       // Server-side sort when no filters are active
-       let sortedData = [];
-       if (field === "buyDate" || field === "orderDate") {
-         sortedData = await OrderService.getSortedByBuyDate(newDirection);
-       } else if (field === "totalAmount") {
-         sortedData = await OrderService.getSortedByTotalAmount(newDirection);
-       }
-       setOrders(sortedData);
-     }
-   };
+        if (aValue < bValue) return newDirection === "asc" ? -1 : 1;
+        if (aValue > bValue) return newDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+      setOrders(sortedData);
+    } else {
+      let sortedData = [];
+      if (field === "buyDate" || field === "orderDate") {
+        sortedData = await OrderService.getSortedByBuyDate(newDirection);
+      } else if (field === "totalAmount") {
+        sortedData = await OrderService.getSortedByTotalAmount(newDirection);
+      }
+      setOrders(sortedData);
+    }
+  };
 
- const handleAdd = () => {
-   setShowForm(true);
- };
+  const handleAdd = () => {
+    setShowForm(true);
+  };
 
   const handleEdit = (orderId) => {
     setEditingOrderId(orderId);
   };
 
+  const handleDelete = (orderId) => {
+    setDeletingOrderId(orderId);
+  };
+
+  const handleRestore = (orderId) => {
+    confirmAlert({
+      title: "Xác nhận khôi phục",
+      message: "Bạn có chắc chắn muốn khôi phục đơn hàng này?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: async () => {
+            try {
+              await OrderService.restoreOrder(orderId);
+              toast.success("✅ Đã khôi phục đơn hàng!");
+              fetchAllOrders();
+            } catch (error) {
+              console.error(error);
+              toast.error("❌ Lỗi khi khôi phục đơn hàng!");
+            }
+          }
+        },
+        {
+          label: "Không",
+          onClick: () => {}
+        }
+      ]
+    });
+  };
+
+  const toggleView = () => {
+    setViewType(prev => prev === "active" ? "deleted" : "active");
+    setCustomerId("");
+    setEmployeeId("");
+    setOrderDate("");
+    setSortConfig({ field: "", direction: "asc" });
+  };
+
+  const getStatusLabel = (deletedType) => {
+    if (deletedType === "CANCEL") return "Đã hủy";
+    if (deletedType === "HIDE") return "Lưu trữ";
+    return deletedType;
+  };
+
+  const getStatusColor = (deletedType) => {
+    if (deletedType === "CANCEL") return "#dc2626"; // Red
+    if (deletedType === "HIDE") return "#fbbf24"; // Yellow
+    return "#666";
+  };
+
   return (
     <div>
-
       <div className="header">
         <div className="header-left">
           <span className="header-icon">🛒</span>
-          <h2 className="header-title">Quản lý đơn hàng</h2>
+          <h2 className="header-title">
+            {viewType === "active" ? "Quản lý đơn hàng" : "Đơn hàng đã xóa"}
+          </h2>
         </div>
       </div>
 
@@ -195,32 +254,48 @@ export default function OrderList() {
           <button className="search-button" onClick={handleSearch}>
             🔍 Tìm kiếm
           </button>
-          <button className="add-button" onClick={handleAdd}>
-            ➕ Thêm mới
+          {viewType === "active" && (
+            <button className="add-button" onClick={handleAdd}>
+              ➕ Thêm mới
+            </button>
+          )}
+          <button className="archive-button" onClick={toggleView}>
+            {viewType === "active" ? "🗑️ Xem đơn hàng đã xóa" : "📋 Xem đơn hàng hoạt động"}
           </button>
-          <button className="archive-button" onClick={handleAdd}>
-                      🗃️ Xem đơn hàng lưu trữ
-                    </button>
         </div>
+
         {showForm && (
           <OrderForm
             onSuccess={() => {
               setShowForm(false);
-              fetchAllOrders(); // refresh list
+              fetchAllOrders();
             }}
             onCancel={() => setShowForm(false)}
           />
         )}
-    {editingOrderId && (
-      <OrderEditForm
-        orderId={editingOrderId}
-        onSuccess={() => {
-          setEditingOrderId(null);
-          fetchAllOrders();
-        }}
-        onCancel={() => setEditingOrderId(null)}
-      />
-    )}
+
+        {editingOrderId && (
+          <OrderEditForm
+            orderId={editingOrderId}
+            onSuccess={() => {
+              setEditingOrderId(null);
+              fetchAllOrders();
+            }}
+            onCancel={() => setEditingOrderId(null)}
+          />
+        )}
+
+        {deletingOrderId && (
+          <DeleteOrderModal
+            orderId={deletingOrderId}
+            onSuccess={() => {
+              setDeletingOrderId(null);
+              fetchAllOrders();
+            }}
+            onCancel={() => setDeletingOrderId(null)}
+          />
+        )}
+
         {/* --- Table --- */}
         {loading ? (
           <p>Đang tải dữ liệu...</p>
@@ -250,14 +325,15 @@ export default function OrderList() {
                   Tổng tiền
                 </th>
                 <th>Giảm giá</th>
+                {viewType === "deleted" && <th>Trạng thái</th>}
                 <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan="8" style={{ textAlign: "center" }}>
-                    Không có đơn hàng nào.
+                  <td colSpan={viewType === "deleted" ? "9" : "8"} style={{ textAlign: "center" }}>
+                    {viewType === "active" ? "Không có đơn hàng nào." : "Không có đơn hàng đã xóa."}
                   </td>
                 </tr>
               ) : (
@@ -267,26 +343,51 @@ export default function OrderList() {
                     <td>{order.customerId}</td>
                     <td>{order.employeeId}</td>
                     <td>{order.orderDate}</td>
-                    <td>{order.totalAmount}</td>
+                    <td>{order.totalAmount?.toLocaleString()}</td>
                     <td>{order.discount}%</td>
+                    {viewType === "deleted" && (
+                      <td>
+                        <span style={{
+                          backgroundColor: getStatusColor(order.deletedType),
+                          color: "white",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          fontWeight: "bold"
+                        }}>
+                          {getStatusLabel(order.deletedType)}
+                        </span>
+                      </td>
+                    )}
                     <td>
                       <div className="actions">
-                        <button
-                          className="icon-button edit-icon"
-                          onClick={() => handleEdit(order.orderId)}
-                          title="Sửa"
-                        >
-                          📝
-                        </button>
-
-                      <button
-                        className="icon-button delete-icon"
-                        onClick={() => handleDelete(detail.orderDetailId)}
-                        title="Xóa"
-                      >
-                        🗑️
-                      </button>
-
+                        {viewType === "active" ? (
+                          <>
+                            <button
+                              className="icon-button edit-icon"
+                              onClick={() => handleEdit(order.orderId)}
+                              title="Sửa"
+                            >
+                              📝
+                            </button>
+                            <button
+                              className="icon-button delete-icon"
+                              onClick={() => handleDelete(order.orderId)}
+                              title="Xóa"
+                            >
+                              🗑️
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="icon-button"
+                            onClick={() => handleRestore(order.orderId)}
+                            title="Khôi phục"
+                            style={{ color: "#4CAF50", fontSize: "20px" }}
+                          >
+                            ↩️
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

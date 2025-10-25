@@ -206,6 +206,7 @@ th.sortable:not(.asc):not(.desc)::after {
   opacity: 0.4;
   text-shadow: none;
 }
+
 tbody tr {
   border-bottom: 1px solid #ddd;
 }
@@ -219,9 +220,69 @@ td {
   border: 1px solid #ddd;
 }
 
+/* ===== NEW: Status Badge Styles ===== */
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.badge-active {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.badge-canceled {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.badge-hidden {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.badge-unknown {
+  background-color: #e2e3e5;
+  color: #383d41;
+  border: 1px solid #d6d8db;
+}
+
+/* ===== NEW: Inactive Order Row Styling ===== */
+.inactive-order-row {
+  background-color: #f8f9fa !important;
+  opacity: 0.75;
+}
+
+.inactive-order-row td {
+  color: #6c757d;
+}
+
+.inactive-order-row:hover {
+  background-color: #e9ecef !important;
+}
+
+/* ===== NEW: No Action Indicator ===== */
+.no-action {
+  font-size: 20px;
+  cursor: not-allowed;
+  opacity: 0.6;
+  display: inline-block;
+  padding: 5px;
+}
+
 .actions {
   display: flex;
   gap: 8px;
+  justify-content: center;
+  align-items: center;
 }
 
 .icon-button {
@@ -230,6 +291,11 @@ td {
   cursor: pointer;
   font-size: 20px;
   padding: 5px;
+  transition: transform 0.2s ease;
+}
+
+.icon-button:hover {
+  transform: scale(1.2);
 }
 
 .edit-icon {
@@ -265,25 +331,17 @@ td {
   border-color: #2d6b3d;
 }
 
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .search-icon::before {
   content: "🔍";
 }
 
 .list-icon::before {
   content: "☰";
-}
-/* === Modal Overlay === */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
 }
 
 /* === Modal Overlay === */
@@ -391,6 +449,38 @@ input[list] {
 }
 
 /* Responsive adjustment for smaller screens */
+@media (max-width: 768px) {
+  .search-section {
+    flex-direction: column;
+  }
+
+  .search-group {
+    width: 100%;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .search-button,
+  .add-button {
+    width: 100%;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  th, td {
+    padding: 8px 6px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+}
+
 @media (max-width: 480px) {
   .form-group {
     flex-direction: column;
@@ -401,5 +491,9 @@ input[list] {
     width: 100%;
     margin-bottom: 5px;
   }
-}
 
+  .modal-content {
+    width: 95%;
+    padding: 15px;
+  }
+}

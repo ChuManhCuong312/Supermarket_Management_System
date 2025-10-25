@@ -13,6 +13,33 @@ const OrderDetailService = {
     }
   },
 
+   // Get order details with order information (to check deletedType)
+    getAllWithOrderInfo: async () => {
+      try {
+        const [orderDetailsRes, ordersRes] = await Promise.all([
+          axiosClient.get(`${API_BASE}`),
+          axiosClient.get("/orders")
+        ]);
+
+        const orderDetails = orderDetailsRes.data;
+        const orders = ordersRes.data;
+
+        // Create a map of orderId -> order for quick lookup
+        const orderMap = new Map(orders.map(order => [order.orderId, order]));
+
+        // Enrich order details with order info
+        return orderDetails.map(detail => ({
+          ...detail,
+          orderInfo: orderMap.get(detail.orderId),
+          isOrderActive: orderMap.get(detail.orderId)?.deletedType === null ||
+                         orderMap.get(detail.orderId)?.deletedType === undefined
+        }));
+      } catch (error) {
+        console.error("Failed to fetch order details with order info:", error);
+        return [];
+      }
+    },
+
   getSortedByProductId: async (sort = "asc") => {
     try {
       const response = await axiosClient.get(`${API_BASE}/sorted/productid`, {
@@ -62,24 +89,32 @@ const OrderDetailService = {
   },
 
    createOrderDetail: async (orderDetail) => {
+       try {
+         const response = await axiosClient.post(`${API_BASE}/add`, orderDetail);
+         return response.data;
+       } catch (error) {
+         console.error("Failed to create order detail:", error);
+         // Extract error message from backend response
+         const errorMsg = error?.response?.data || error.message;
+         throw new Error(errorMsg);
+       }
+     },
+
+  updateOrderDetail: async (id, updatedDetail) => {
       try {
-        const response = await axiosClient.post(`${API_BASE}/add`, orderDetail);
+        // Validate that the order is active before updating
+        const orderRes = await axiosClient.get(`/orders/active/${updatedDetail.orderId}`);
+        if (!orderRes.data || (orderRes.data.deletedType !== null && orderRes.data.deletedType !== undefined)) {
+          throw new Error("Không thể cập nhật chi tiết của đơn hàng đã bị hủy hoặc ẩn!");
+        }
+
+        const response = await axiosClient.put(`${API_BASE}/update/${id}`, updatedDetail);
         return response.data;
       } catch (error) {
-        console.error("Failed to create order detail:", error);
+        console.error("Failed to update order detail:", error);
         throw error;
       }
     },
-
-   updateOrderDetail: async (id, updatedDetail) => {
-     try {
-       const response = await axiosClient.put(`${API_BASE}/update/${id}`, updatedDetail);
-       return response.data;
-     } catch (error) {
-       console.error("Failed to update order detail:", error);
-       throw error;
-     }
-   },
 
    // Get paginated order details
      getOrderDetailsByPage: async (page = 0, size = 10) => {
@@ -91,6 +126,34 @@ const OrderDetailService = {
          throw error;
        }
      },
+
+     // Get paginated order details with order info
+       getOrderDetailsByPageWithOrderInfo: async (page = 0, size = 10) => {
+         try {
+           const [detailsRes, ordersRes] = await Promise.all([
+             axiosClient.get(`${API_BASE}/page?page=${page}&size=${size}`),
+             axiosClient.get("/orders")
+           ]);
+
+           const orderMap = new Map(ordersRes.data.map(order => [order.orderId, order]));
+
+           const enrichedContent = detailsRes.data.content.map(detail => ({
+             ...detail,
+             orderInfo: orderMap.get(detail.orderId),
+             isOrderActive: orderMap.get(detail.orderId)?.deletedType === null ||
+                            orderMap.get(detail.orderId)?.deletedType === undefined
+           }));
+
+           return {
+             ...detailsRes.data,
+             content: enrichedContent
+           };
+         } catch (error) {
+           console.error("Failed to get paginated order details with order info:", error);
+           throw error;
+         }
+       },
+
      // Search order with paginated order details
      searchOrderDetailsByPage: async (orderId, productId, page = 0, size = 10) => {
        try {
