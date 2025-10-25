@@ -16,9 +16,9 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
     boolean existsByEmail(String email);
 
     @Query("SELECT c FROM Customer c WHERE " +
-            "(:name IS NULL OR c.name LIKE %:name%) AND " +
-            "(:phone IS NULL OR c.phone = :phone) AND " +
-            "(:email IS NULL OR c.email LIKE %:email%) AND " +
+            "(:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+            "(:phone IS NULL OR c.phone LIKE CONCAT('%', :phone, '%')) AND " +
+            "(:email IS NULL OR LOWER(c.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
             "(:membershipType IS NULL OR c.membershipType = :membershipType)")
     Page<Customer> searchAdvanced(
             @Param("name") String name,
