@@ -29,6 +29,9 @@ function Header() {
         <NavLink to="/dashboard" style={linkStyle}>
           Dashboard
         </NavLink>
+        <NavLink to="/products" style={linkStyle}>
+          Sản phẩm
+        </NavLink>
         <NavLink to="/customers" style={linkStyle}>
           Khách hàng
         </NavLink>
