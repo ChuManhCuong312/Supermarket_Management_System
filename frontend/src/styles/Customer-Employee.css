@@ -42,7 +42,7 @@ body, .page {
 
 .header-nav {
   display: flex;
-  gap: 27px; /* ✅ Tăng từ 8px lên 24px để dãn cách rộng hơn */
+  gap: 27px;
   flex-wrap: wrap;
   flex: 1;
   justify-content: center;
@@ -50,13 +50,13 @@ body, .page {
 }
 
 .nav-btn {
-  padding: 10px 20px; /* ✅ Tăng từ 4px 8px lên 10px 20px để nút to hơn nhiều */
+  padding: 10px 20px;
   border: none;
   background: none;
   color: white;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 16px; /* ✅ Tăng từ 14px lên 16px */
+  font-size: 16px;
   font-weight: 500;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -239,31 +239,102 @@ body, .page {
   box-sizing: border-box;
 }
 
+/* Table chính */
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 16px;
+  margin-top: 10px;
+  font-size: 15px;
+  border: 1px solid #c8e6c9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.table th {
-  background: #388e3c;
-  font-weight: 700;
-  padding: 12px 10px;
-  text-align: center;
-  border: 1px solid #81c784;
+/* Header */
+.table thead {
+  background-color: #2d6b3d;
   color: white;
 }
 
-.table td {
-  padding: 10px 8px;
-  border: 1px solid #c8e6c9;
+.table th {
+  padding: 12px;
   text-align: center;
-  background: white;
+  font-weight: 600;
+  border: 1px solid #4a8759;
+  position: relative;
+  color: white !important;
 }
 
-.table tr:hover {
-  background: #f1f8e9;
+/* Sortable Header */
+.table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  padding-right: 20px;
 }
+
+.table th.sortable::after {
+  content: "▲\A▼";
+  white-space: pre;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  line-height: 10px;
+  color: #bbb;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+/* ASCENDING → up arrow sáng */
+.table th.sortable.asc::after {
+  content: "▲\A▼";
+  background: linear-gradient(to bottom, #07f40e 50%, #888 50%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 1;
+}
+
+/* DESCENDING → down arrow sáng */
+.table th.sortable.desc::after {
+  content: "▲\A▼";
+  background: linear-gradient(to bottom, #888 50%, #ef0400 50%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  opacity: 1;
+}
+
+/* Không sort */
+.table th.sortable:not(.asc):not(.desc)::after {
+  color: #aaa;
+  opacity: 0.4;
+  text-shadow: none;
+}
+
+/* Body */
+.table td {
+  padding: 12px;
+  border: 1px solid #ddd;
+  text-align: center;
+  background-color: #fff;
+  color: #333;
+}
+
+.table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+/* No data */
+.no-data {
+  text-align: center;
+  color: #777;
+  font-style: italic;
+  padding: 20px;
+}
+
 
 /* ======= NÚT SỬA / XÓA ======= */
 .action-buttons {
@@ -336,94 +407,56 @@ body, .page {
 }
 
 /* ======= BỘ LỌC / THANH TÌM KIẾM ======= */
-.filter {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px 16px;
-}
-
-.filter-grid input,
-.filter-grid select {
-  width: 90%;
-  padding: 10px 12px;
-  border: 1px solid #bdbdbd;
-  border-radius: 6px;
-  font-size: 16px;
-  background-color: #fff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.filter-grid input:focus,
-.filter-grid select:focus {
-  outline: none;
-  border-color: #43a047;
-  box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.2);
-}
-
-.filter-buttons {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-}
-
-.btn {
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  font-size: 14px;
-}
-
 .search-btn,
 .add-btn {
+  padding: 10px 25px;
   border: none;
-  padding: 10px 24px;
   border-radius: 8px;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
   font-size: 15px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #2d6b3d; /* nền xanh đậm */
-  color: #fff;               /* chữ trắng */
+  background-color: #2d6b3d;
+  color: #fff;
+  transition: all 0.2s ease-in-out;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.search-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #fff;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23333' d='M1 1l5 5 5-5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
+.search-group select:focus {
+  outline: none;
+  border-color: #2d6b3d;
+  box-shadow: 0 0 4px rgba(45, 107, 61, 0.4);
 }
 
 .search-btn:hover,
 .add-btn:hover {
   background-color: #255d34;
   transform: translateY(-1px);
+  opacity: 0.9;
 }
 
 .search-btn:active,
 .add-btn:active {
   transform: translateY(0);
   background-color: #1e4e2b;
-}
-
-
-.clear-filter {
-  color: #999;
-  font-size: 12px;
-  cursor: pointer;
-  margin-top: 5px;
-  display: inline-block;
-  margin-right: auto;
-}
-
-.clear-filter:hover {
-  text-decoration: underline;
 }
 
 /* ======= ICON TRONG HEADER ======= */
