@@ -14,7 +14,8 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI
 .topnav-link.active { background: rgba(255,255,255,0.22); }
 
 /* Page container */
-.page { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.page { width: 100%; max-width: none; margin: 0 auto; padding: 16px; }
+
 
 /* Hero */
 .hero { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 12px; margin-top: 16px; }
