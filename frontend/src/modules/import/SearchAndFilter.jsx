@@ -2,9 +2,9 @@
 import React from "react";
 
 export default function SearchAndFilter({
-    searchId,
-    setSearchId,
-    handleSearchById,
+    searchSupplierName,
+    setSearchSupplierName,
+    handleSearchBySupplierName,
     isSearching,
     handleClearSearch,
     setShowAddBox,
@@ -26,7 +26,7 @@ export default function SearchAndFilter({
             gap: '1rem',
             flexWrap: 'wrap'
         }}>
-            {/* Search by ID */}
+            {/* Search by Supplier Name */}
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -35,16 +35,16 @@ export default function SearchAndFilter({
                 minWidth: '300px'
             }}>
                 <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
-                    🔍 Tìm theo ID:
+                    🔍 Tìm theo Tên Nhà Cung Cấp:
                 </label>
                 <input
-                    type="number"
-                    placeholder="Nhập ID phiếu nhập..."
-                    value={searchId}
-                    onChange={(e) => setSearchId(e.target.value)}
+                    type="text"
+                    placeholder="Nhập tên nhà cung cấp..."
+                    value={searchSupplierName}
+                    onChange={(e) => setSearchSupplierName(e.target.value)}
                     onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                            handleSearchById();
+                            handleSearchBySupplierName();
                         }
                     }}
                     style={{
@@ -56,7 +56,7 @@ export default function SearchAndFilter({
                         flex: '1'
                     }}
                 />
-                <button onClick={handleSearchById} className="btn" style={{
+                <button onClick={handleSearchBySupplierName} className="btn" style={{
                     background: '#3b82f6',
                     color: 'white',
                     padding: '0.5rem 1rem',
