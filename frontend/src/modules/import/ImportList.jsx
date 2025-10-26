@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from "react";
 import importService from "../import/importService";
-import axios from "axios";
+import supplierService from "../import/supplierService"; // Assume you create this file
 import "../../styles/Customer-Employee.css"
 import Header from "../import/Header";
 import SearchAndFilter from "../import/SearchAndFilter";
@@ -23,6 +22,7 @@ export default function ImportList() {
     });
 
     const [searchSupplierName, setSearchSupplierName] = useState("");
+    const [searchSupplierId, setSearchSupplierId] = useState("");
     const [isSearching, setIsSearching] = useState(false);
 
     const [newImport, setNewImport] = useState({
@@ -48,6 +48,9 @@ export default function ImportList() {
 
     const [supplierNames, setSupplierNames] = useState({});
 
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
+
     // === Fetch Imports ===
     const fetchImports = async () => {
         try {
@@ -70,12 +73,12 @@ export default function ImportList() {
 
             try {
                 const responses = await Promise.all(
-                    uniqueIds.map(id => axios.get(`http://localhost:8080/api/suppliers/${id}`))
+                    uniqueIds.map(id => supplierService.getById(id))
                 );
                 const newNames = {};
-                responses.forEach((res, index) => {
+                responses.forEach((supplier, index) => {
                     const id = uniqueIds[index];
-                    newNames[id] = res.data.companyName || "Không xác định";
+                    newNames[id] = supplier.companyName || "Không xác định";
                 });
                 setSupplierNames(prev => ({ ...prev, ...newNames }));
             } catch (err) {
@@ -98,8 +101,7 @@ export default function ImportList() {
 
         try {
             // First, search for suppliers by name
-            const supplierResponse = await axios.get(`http://localhost:8080/api/suppliers/search?name=${encodeURIComponent(searchSupplierName)}`);
-            const suppliers = supplierResponse.data.data || [];
+            const suppliers = await supplierService.searchByName(searchSupplierName);
             if (suppliers.length === 0) {
                 showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với tên: ${searchSupplierName}`, "error");
                 setImports([]);
@@ -129,9 +131,51 @@ export default function ImportList() {
         }
     };
 
+    // === Search by Supplier ID ===
+    const handleSearchBySupplierId = async () => {
+        if (!searchSupplierId || searchSupplierId.trim() === "") {
+            showModal("⚠️ Cảnh báo", "Vui lòng nhập ID nhà cung cấp cần tìm", "error");
+            return;
+        }
+
+        try {
+            // Check if supplier exists
+            const supplier = await supplierService.getById(searchSupplierId);
+            if (!supplier) {
+                showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với ID: ${searchSupplierId}`, "error");
+                setImports([]);
+                return;
+            }
+
+            // Fetch all imports and filter by supplier_id
+            const allImportsResponse = await importService.getAll(0, 1000); // Fetch more to filter, adjust as needed
+            const filteredImports = allImportsResponse.imports.filter(i => i.supplier_id == searchSupplierId);
+
+            if (filteredImports.length > 0) {
+                setImports(filteredImports);
+                setIsSearching(true);
+                setTotalPages(1); // Since filtering client-side, no pagination
+                setTotalItems(filteredImports.length);
+            } else {
+                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với ID: ${searchSupplierId}`, "error");
+                setImports([]);
+            }
+        } catch (err) {
+            showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
+            console.error("Search error:", err);
+        }
+    };
+
     // === Clear search and reload all ===
     const handleClearSearch = () => {
         setSearchSupplierName("");
+        setSearchSupplierId("");
+        setFilters({
+            startDate: "",
+            endDate: "",
+            minAmount: "",
+            maxAmount: "",
+        });
         setIsSearching(false);
         setPage(0);
         fetchImports();
@@ -147,12 +191,12 @@ export default function ImportList() {
 
     const handleSupplierSearch = async (e) => {
         const value = e.target.value;
-        setNewImport({ ...newImport, supplierName: value, supplierId: "" }); // Reset ID when typing
+        setNewImport({ ...newImport, supplierName: value, supplierId: "" }); // Reset ID khi typing
 
         if (value.length >= 2) {
             try {
-                const response = await axios.get(`http://localhost:8080/api/suppliers/search?name=${encodeURIComponent(value)}`);
-                setSupplierSuggestions(response.data.data || []);
+                const suggestions = await supplierService.searchByName(value);
+                setSupplierSuggestions(suggestions);
             } catch (err) {
                 console.error("Lỗi khi tìm kiếm nhà cung cấp:", err);
                 showModal("❌ Lỗi", "Không thể tìm kiếm nhà cung cấp", "error");
@@ -166,36 +210,9 @@ export default function ImportList() {
         setNewImport({
             ...newImport,
             supplierId: supplier.supplierId.toString(),
-            supplierName: supplier.companyName,
+            supplierName: supplier.companyName,  // Chỉ cập nhật cho hiển thị
         });
         setSupplierSuggestions([]);
-    };
-
-    const handleEdit = async (importItem) => {
-        let supplierName = supplierNames[importItem.supplier_id];
-        if (!supplierName) {
-            try {
-                const res = await axios.get(`http://localhost:8080/api/suppliers/${importItem.supplier_id}`);
-                supplierName = res.data.companyName || "Không xác định";
-                setSupplierNames(prev => ({ ...prev, [importItem.supplier_id]: supplierName }));
-            } catch (err) {
-                console.error("Lỗi khi tải tên nhà cung cấp cho chỉnh sửa:", err);
-                supplierName = "Không xác định";
-            }
-        }
-
-        setIsEditing(true);
-        setEditingId(importItem.importId);
-        setNewImport({
-            supplierId: importItem.supplier_id?.toString() || "",
-            supplierName: supplierName,
-            importDate: importItem.import_date || "",
-            totalAmount: importItem.total_amount?.toString() || "",
-            status: importItem.status || "",
-            note: importItem.note || "",
-        });
-        setErrors({});
-        setShowAddBox(true);
     };
 
     const handleSaveImport = async (e) => {
@@ -206,7 +223,7 @@ export default function ImportList() {
         const newErrors = {};
 
         if (!newImport.supplierId) {
-            newErrors.supplierName = "Vui lòng chọn nhà cung cấp từ danh sách gợi ý";
+            newErrors.supplierId = "Vui lòng chọn nhà cung cấp từ danh sách gợi ý";  // Đổi key error thành supplierId để rõ ràng hơn
             hasError = true;
         }
 
@@ -222,7 +239,7 @@ export default function ImportList() {
         }
 
         try {
-            // ✅ Convert frontend camelCase to backend snake_case
+            // ✅ Payload chỉ gửi supplier_id, KHÔNG gửi supplierName
             const payload = {
                 supplier_id: parseInt(newImport.supplierId),
                 import_date: newImport.importDate,
@@ -245,7 +262,7 @@ export default function ImportList() {
             setEditingId(null);
             setNewImport({
                 supplierId: "",
-                supplierName: "",
+                supplierName: "",  // Reset nhưng giữ key cho UI
                 importDate: "",
                 totalAmount: "",
                 status: "",
@@ -257,10 +274,10 @@ export default function ImportList() {
         } catch (err) {
             console.error("Error saving import:", err);
             if (err.response?.status === 400 && err.response?.data?.details) {
-                // ✅ Map backend snake_case errors to frontend camelCase
+                // ✅ Map backend errors, đổi supplierName thành supplierId để khớp
                 const backendErrors = err.response.data.details;
                 const mappedErrors = {
-                    supplierName: backendErrors.supplier_id,
+                    supplierId: backendErrors.supplier_id,
                     importDate: backendErrors.import_date,
                     totalAmount: backendErrors.total_amount,
                     status: backendErrors.status,
@@ -273,17 +290,61 @@ export default function ImportList() {
         }
     };
 
+
+    const handleEdit = async (importItem) => {
+        let supplierName = supplierNames[importItem.supplier_id];
+        if (!supplierName) {
+            try {
+                const supplier = await supplierService.getById(importItem.supplier_id);
+                supplierName = supplier.companyName || "Không xác định";
+                setSupplierNames(prev => ({ ...prev, [importItem.supplier_id]: supplierName }));
+            } catch (err) {
+                console.error("Lỗi khi tải tên nhà cung cấp cho chỉnh sửa:", err);
+                supplierName = "Không xác định";
+            }
+        }
+
+        setIsEditing(true);
+        setEditingId(importItem.importId);
+        setNewImport({
+            supplierId: importItem.supplier_id?.toString() || "",
+            supplierName: supplierName,
+            importDate: importItem.import_date || "",
+            totalAmount: importItem.total_amount?.toString() || "",
+            status: importItem.status || "",
+            note: importItem.note || "",
+        });
+        setErrors({});
+        setShowAddBox(true);
+    };
+
+
+
     // ✅ Delete function
-    const handleDelete = async (id) => {
-        if (!window.confirm("Bạn có chắc muốn xoá phiếu nhập này?")) return;
+    const handleDelete = (id) => {
+        setDeleteId(id);
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = async () => {
+        setShowDeleteConfirm(false);
+        if (!deleteId) return;
+
         try {
-            await axios.delete(`http://localhost:8080/api/imports/${id}`);
+            await importService.delete(deleteId);
             showModal("🗑️ Thành công", "Đã xoá phiếu nhập!", "success");
             fetchImports();
         } catch (error) {
             console.error("Delete error:", error);
             showModal("❌ Lỗi", error.response?.data?.message || "Xoá thất bại!", "error");
+        } finally {
+            setDeleteId(null);
         }
+    };
+
+    const cancelDelete = () => {
+        setShowDeleteConfirm(false);
+        setDeleteId(null);
     };
 
     const handleSortByDate = async () => {
@@ -314,6 +375,28 @@ export default function ImportList() {
         }
     };
 
+    const handleFilterByDate = async () => {
+        const { startDate, endDate } = filters;
+        if (!startDate || !endDate) {
+            showModal("⚠️ Cảnh báo", "Vui lòng nhập ngày bắt đầu và kết thúc", "error");
+            return;
+        }
+        if (new Date(startDate) > new Date(endDate)) {
+            showModal("⚠️ Cảnh báo", "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc", "error");
+            return;
+        }
+        try {
+            const data = await importService.filterByDate(startDate, endDate, sortDate);
+            setImports(data);
+            setIsSearching(true);
+            setTotalPages(1);
+            setTotalItems(data.length);
+        } catch (err) {
+            console.error("Filter error:", err);
+            showModal("❌ Lỗi", "Không thể lọc theo ngày", "error");
+        }
+    };
+
     const handlePageChange = (newPage) => setPage(newPage);
 
     const showModal = (title, message, type = "info") => {
@@ -329,7 +412,10 @@ export default function ImportList() {
             <SearchAndFilter
                 searchSupplierName={searchSupplierName}
                 setSearchSupplierName={setSearchSupplierName}
+                searchSupplierId={searchSupplierId}
+                setSearchSupplierId={setSearchSupplierId}
                 handleSearchBySupplierName={handleSearchBySupplierName}
+                handleSearchBySupplierId={handleSearchBySupplierId}
                 isSearching={isSearching}
                 handleClearSearch={handleClearSearch}
                 setShowAddBox={setShowAddBox}
@@ -339,6 +425,21 @@ export default function ImportList() {
                 setErrors={setErrors}
                 setSupplierSuggestions={setSupplierSuggestions}
             />
+            <div className="filter-section" style={{ margin: '20px 0' }}>
+                <label>Ngày bắt đầu:</label>
+                <input
+                    type="date"
+                    value={filters.startDate}
+                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                />
+                <label>Ngày kết thúc:</label>
+                <input
+                    type="date"
+                    value={filters.endDate}
+                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                />
+                <button onClick={handleFilterByDate}>Lọc theo ngày</button>
+            </div>
             <ImportTable
                 imports={imports}
                 supplierNames={supplierNames}
@@ -369,6 +470,16 @@ export default function ImportList() {
                 handleSaveImport={handleSaveImport}
             />
             <NotificationModal modal={modal} closeModal={closeModal} />
+            {showDeleteConfirm && (
+                <div className="modal" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="modal-content" style={{ background: 'white', padding: '20px', borderRadius: '8px', textAlign: 'center' }}>
+                        <h2>Xác nhận xoá</h2>
+                        <p>Bạn có chắc muốn xoá phiếu nhập này?</p>
+                        <button onClick={confirmDelete} style={{ marginRight: '10px' }}>Có</button>
+                        <button onClick={cancelDelete}>Không</button>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
