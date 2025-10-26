@@ -1,5 +1,4 @@
 /* src/styles/orderdetail.css */
-
 * {
   margin: 0;
   padding: 0;
@@ -460,6 +459,100 @@ td {
 /* Optional: adjust datalist width */
 input[list] {
   width: 100%;
+}
+/* ======= BỔ SUNG ĐỒNG BỘ GIAO DIỆN ======= */
+
+/* Tông màu chủ đạo hệ thống */
+:root {
+  --primary-color: #00cc99;
+  --primary-dark: #009973;
+  --primary-light: #6dffb9;
+  --accent-color: #ffd54f;
+  --neutral-bg: #f8f9fa;
+  --border-color: #dcdcdc;
+}
+
+/* Header tinh chỉnh */
+.header {
+  background-color: var(--primary-color);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+/* Nút chung */
+.search-button, .add-button, .save-btn, .cancel-btn {
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s ease-in-out;
+}
+
+.search-button:hover,
+.add-button:hover,
+.save-btn:hover,
+.cancel-btn:hover {
+  transform: translateY(-1.5px);
+  filter: brightness(1.05);
+}
+
+/* Bảng có hàng xen kẽ */
+tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* Hiệu ứng hover dòng */
+tbody tr:hover {
+  background-color: #eefbf6 !important;
+}
+
+/* Pagination nâng cao */
+.pagination button {
+  font-weight: 600;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+.pagination button.active {
+  background: var(--primary-color);
+  border-color: var(--primary-dark);
+}
+
+/* Modal nhấn mạnh */
+.modal-content {
+  border-top: 6px solid var(--primary-color);
+}
+
+/* Badge đồng bộ tone */
+.badge-active {
+  background-color: #e8fff2;
+  color: #007b55;
+  border: 1px solid #baf2d8;
+}
+.badge-canceled {
+  background-color: #ffecec;
+  color: #a01b1b;
+  border: 1px solid #ffcccc;
+}
+.badge-hidden {
+  background-color: #fff8e1;
+  color: #8a6d00;
+  border: 1px solid #ffeb99;
+}
+
+/* Form input đồng nhất */
+.form-group input {
+  border: 1px solid var(--border-color);
+  background-color: #fff;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 4px rgba(0,204,153,0.3);
+}
+
+/* Breadcrumb hiện đại */
+.breadcrumb {
+  color: var(--primary-dark);
+  font-weight: 500;
 }
 
 /* Responsive adjustment for smaller screens */
