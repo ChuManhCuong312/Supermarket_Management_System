@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import importService from "../import/importService";
-import axios from "axios";
+import supplierService from "../import/supplierService"; // Assume you create this file
 import "../../styles/Customer-Employee.css"
 import Header from "../import/Header";
 import SearchAndFilter from "../import/SearchAndFilter";
@@ -22,6 +22,7 @@ export default function ImportList() {
     });
 
     const [searchSupplierName, setSearchSupplierName] = useState("");
+    const [searchSupplierId, setSearchSupplierId] = useState("");
     const [isSearching, setIsSearching] = useState(false);
 
     const [newImport, setNewImport] = useState({
@@ -72,12 +73,12 @@ export default function ImportList() {
 
             try {
                 const responses = await Promise.all(
-                    uniqueIds.map(id => axios.get(`http://localhost:8080/api/suppliers/${id}`))
+                    uniqueIds.map(id => supplierService.getById(id))
                 );
                 const newNames = {};
-                responses.forEach((res, index) => {
+                responses.forEach((supplier, index) => {
                     const id = uniqueIds[index];
-                    newNames[id] = res.data.companyName || "Không xác định";
+                    newNames[id] = supplier.companyName || "Không xác định";
                 });
                 setSupplierNames(prev => ({ ...prev, ...newNames }));
             } catch (err) {
@@ -100,8 +101,7 @@ export default function ImportList() {
 
         try {
             // First, search for suppliers by name
-            const supplierResponse = await axios.get(`http://localhost:8080/api/suppliers/search?name=${encodeURIComponent(searchSupplierName)}`);
-            const suppliers = supplierResponse.data.data || [];
+            const suppliers = await supplierService.searchByName(searchSupplierName);
             if (suppliers.length === 0) {
                 showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với tên: ${searchSupplierName}`, "error");
                 setImports([]);
@@ -131,9 +131,45 @@ export default function ImportList() {
         }
     };
 
+    // === Search by Supplier ID ===
+    const handleSearchBySupplierId = async () => {
+        if (!searchSupplierId || searchSupplierId.trim() === "") {
+            showModal("⚠️ Cảnh báo", "Vui lòng nhập ID nhà cung cấp cần tìm", "error");
+            return;
+        }
+
+        try {
+            // Check if supplier exists
+            const supplier = await supplierService.getById(searchSupplierId);
+            if (!supplier) {
+                showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với ID: ${searchSupplierId}`, "error");
+                setImports([]);
+                return;
+            }
+
+            // Fetch all imports and filter by supplier_id
+            const allImportsResponse = await importService.getAll(0, 1000); // Fetch more to filter, adjust as needed
+            const filteredImports = allImportsResponse.imports.filter(i => i.supplier_id == searchSupplierId);
+
+            if (filteredImports.length > 0) {
+                setImports(filteredImports);
+                setIsSearching(true);
+                setTotalPages(1); // Since filtering client-side, no pagination
+                setTotalItems(filteredImports.length);
+            } else {
+                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với ID: ${searchSupplierId}`, "error");
+                setImports([]);
+            }
+        } catch (err) {
+            showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
+            console.error("Search error:", err);
+        }
+    };
+
     // === Clear search and reload all ===
     const handleClearSearch = () => {
         setSearchSupplierName("");
+        setSearchSupplierId("");
         setFilters({
             startDate: "",
             endDate: "",
@@ -159,8 +195,8 @@ export default function ImportList() {
 
         if (value.length >= 2) {
             try {
-                const response = await axios.get(`http://localhost:8080/api/suppliers/search?name=${encodeURIComponent(value)}`);
-                setSupplierSuggestions(response.data.data || []);
+                const suggestions = await supplierService.searchByName(value);
+                setSupplierSuggestions(suggestions);
             } catch (err) {
                 console.error("Lỗi khi tìm kiếm nhà cung cấp:", err);
                 showModal("❌ Lỗi", "Không thể tìm kiếm nhà cung cấp", "error");
@@ -259,8 +295,8 @@ export default function ImportList() {
         let supplierName = supplierNames[importItem.supplier_id];
         if (!supplierName) {
             try {
-                const res = await axios.get(`http://localhost:8080/api/suppliers/${importItem.supplier_id}`);
-                supplierName = res.data.companyName || "Không xác định";
+                const supplier = await supplierService.getById(importItem.supplier_id);
+                supplierName = supplier.companyName || "Không xác định";
                 setSupplierNames(prev => ({ ...prev, [importItem.supplier_id]: supplierName }));
             } catch (err) {
                 console.error("Lỗi khi tải tên nhà cung cấp cho chỉnh sửa:", err);
@@ -376,7 +412,10 @@ export default function ImportList() {
             <SearchAndFilter
                 searchSupplierName={searchSupplierName}
                 setSearchSupplierName={setSearchSupplierName}
+                searchSupplierId={searchSupplierId}
+                setSearchSupplierId={setSearchSupplierId}
                 handleSearchBySupplierName={handleSearchBySupplierName}
+                handleSearchBySupplierId={handleSearchBySupplierId}
                 isSearching={isSearching}
                 handleClearSearch={handleClearSearch}
                 setShowAddBox={setShowAddBox}
