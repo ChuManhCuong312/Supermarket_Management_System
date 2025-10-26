@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import importService from "../import/importService";
 import axios from "axios";
 import "../../styles/Customer-Employee.css"
-
 import Header from "../import/Header";
 import SearchAndFilter from "../import/SearchAndFilter";
 import ImportTable from "../import/ImportTable";
@@ -23,7 +22,7 @@ export default function ImportList() {
         maxAmount: "",
     });
 
-    const [searchId, setSearchId] = useState("");
+    const [searchSupplierName, setSearchSupplierName] = useState("");
     const [isSearching, setIsSearching] = useState(false);
 
     const [newImport, setNewImport] = useState({
@@ -90,36 +89,49 @@ export default function ImportList() {
         }
     }, [imports]);
 
-    // === Search by ID ===
-    const handleSearchById = async () => {
-        if (!searchId || searchId.trim() === "") {
-            showModal("⚠️ Cảnh báo", "Vui lòng nhập ID cần tìm", "error");
+    // === Search by Supplier Name ===
+    const handleSearchBySupplierName = async () => {
+        if (!searchSupplierName || searchSupplierName.trim() === "") {
+            showModal("⚠️ Cảnh báo", "Vui lòng nhập tên nhà cung cấp cần tìm", "error");
             return;
         }
 
         try {
-            const response = await axios.get(`http://localhost:8080/api/imports/${searchId}`);
-            if (response.data) {
-                setImports([response.data]); // Show only the searched item
-                setIsSearching(true);
-                setTotalPages(1);
-                setTotalItems(1);
+            // First, search for suppliers by name
+            const supplierResponse = await axios.get(`http://localhost:8080/api/suppliers/search?name=${encodeURIComponent(searchSupplierName)}`);
+            const suppliers = supplierResponse.data.data || [];
+            if (suppliers.length === 0) {
+                showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với tên: ${searchSupplierName}`, "error");
+                setImports([]);
+                return;
+            }
 
+            // Get list of supplier IDs
+            const supplierIds = suppliers.map(s => s.supplierId);
+
+            // Now, fetch all imports and filter by supplier_id (client-side filter, assuming no server-side endpoint for this)
+            // Note: For efficiency, consider adding a backend endpoint like /api/imports/search?supplierIds=1,2,3
+            const allImportsResponse = await importService.getAll(0, 1000); // Fetch more to filter, adjust as needed
+            const filteredImports = allImportsResponse.imports.filter(i => supplierIds.includes(i.supplier_id));
+
+            if (filteredImports.length > 0) {
+                setImports(filteredImports);
+                setIsSearching(true);
+                setTotalPages(1); // Since filtering client-side, no pagination
+                setTotalItems(filteredImports.length);
+            } else {
+                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với tên: ${searchSupplierName}`, "error");
+                setImports([]);
             }
         } catch (err) {
-            if (err.response?.status === 404) {
-                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập với ID: ${searchId}`, "error");
-                setImports([]);
-            } else {
-                showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
-            }
+            showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
             console.error("Search error:", err);
         }
     };
 
     // === Clear search and reload all ===
     const handleClearSearch = () => {
-        setSearchId("");
+        setSearchSupplierName("");
         setIsSearching(false);
         setPage(0);
         fetchImports();
@@ -315,9 +327,9 @@ export default function ImportList() {
         <>
             <Header />
             <SearchAndFilter
-                searchId={searchId}
-                setSearchId={setSearchId}
-                handleSearchById={handleSearchById}
+                searchSupplierName={searchSupplierName}
+                setSearchSupplierName={setSearchSupplierName}
+                handleSearchBySupplierName={handleSearchBySupplierName}
                 isSearching={isSearching}
                 handleClearSearch={handleClearSearch}
                 setShowAddBox={setShowAddBox}
