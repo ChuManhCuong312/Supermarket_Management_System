@@ -138,24 +138,24 @@ body, .page {
 .sortable-header {
   user-select: none;
   position: relative;
-  color: white;
+  color: #111; /* chữ đen dễ đọc trên nền trắng */
 }
 
 .sort-icon {
-  display: inline-block;
-  margin-left: 6px;
-  font-size: 14px;
-  font-weight: 700;
-  transition: transform 0.2s, color 0.2s;
-  color: #ffffffcc; /* mờ nhẹ khi chưa active */
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: transform 0.2s, color 0.2s;
+    color: #666;
 }
 
 .sort-icon.active {
-  color: #ffd700;  /* vàng nổi bật */
+    color: #333;
 }
 
 .sortable-header:hover .sort-icon {
-  color: #ffffff; /* trắng sáng */
+    color: #111;
 }
 
 .sort-icon.asc::after {
