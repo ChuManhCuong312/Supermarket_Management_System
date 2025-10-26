@@ -231,61 +231,82 @@ const handleSaveEmployee = async (e) => {
           </div>
         </div>
 
+        <div className="content">
         {/* Filter */}
-        <div className="filter">
-          <div className="filter-grid">
-            <input
-              placeholder="Tên nhân viên"
-              value={filters.name}
-              onChange={(e) => handleFilterChange("name", e.target.value)}
-            />
-            <input
-              placeholder="SĐT"
-              value={filters.phone}
-              onChange={(e) => handleFilterChange("phone", e.target.value)}
-            />
-            <input
-              placeholder="Email"
-              value={filters.email}
-              onChange={(e) => handleFilterChange("email", e.target.value)}
-            />
-            <select
-              value={filters.position}
-              onChange={(e) => handleFilterChange("position", e.target.value)}
-            >
-              <option value="">Tất cả loại</option>
-              <option value="Bán hàng">Bán hàng</option>
-              <option value="Bảo vệ">Bảo vệ</option>
-              <option value="Quản lý">Quản lý</option>
-              <option value="Thu ngân">Thu ngân</option>
-              <option value="Kho">Kho</option>
-
-            </select>
-          </div>
-
-          <div className="filter-buttons">
-              <button
+          <div className="search-section">
+            <div className="search-group">
+              <label>
+                <span className="search-icon"></span> Tên nhân viên
+              </label>
+              <input
+                type="text"
+                placeholder="Nhập tên nhân viên..."
+                value={filters.name}
+                onChange={(e) => handleFilterChange("name", e.target.value)}
+              />
+              <span
+                className="clear-filter"
                 onClick={() => {
-                  setFilters({
-                    name: "",
-                    phone: "",
-                    email: "",
-                  });
+                  setFilters({ name: "", phone: "", email: "", position: "" });
                   handleSearch({});
                 }}
-                className="clear-filter"
               >
-                ✕ clear filter
-              </button>
-            <button onClick={() => handleSearch(filters)} className="btn search-btn">
+                ✖ Clear Filter
+              </span>
+            </div>
+
+            <div className="search-group">
+              <label>
+                <span className="list-icon"></span> SĐT
+              </label>
+              <input
+                type="text"
+                placeholder="Nhập số điện thoại..."
+                value={filters.phone}
+                onChange={(e) => handleFilterChange("phone", e.target.value)}
+              />
+            </div>
+
+            <div className="search-group">
+              <label>
+                <span className="list-icon"></span> Email
+              </label>
+              <input
+                type="text"
+                placeholder="Nhập email..."
+                value={filters.email}
+                onChange={(e) => handleFilterChange("email", e.target.value)}
+              />
+            </div>
+
+            <div className="search-group">
+              <label>
+                <span className="list-icon"></span> Vị trí
+              </label>
+              <select
+                value={filters.position}
+                onChange={(e) => handleFilterChange("position", e.target.value)}
+              >
+                <option value="">Tất cả loại</option>
+                <option value="Bán hàng">Bán hàng</option>
+                <option value="Bảo vệ">Bảo vệ</option>
+                <option value="Quản lý">Quản lý</option>
+                <option value="Thu ngân">Thu ngân</option>
+                <option value="Kho">Kho</option>
+              </select>
+            </div>
+          </div>
+
+          {/* ===== Buttons ===== */}
+          <div className="button-group">
+            <button className="search-button" onClick={() => handleSearch(filters)}>
               🔍 Tìm kiếm
             </button>
-            <button onClick={() => setShowAddBox(true)} className="btn add-btn">
+            <button className="add-button" onClick={() => setShowAddBox(true)}>
               ➕ Thêm mới
             </button>
           </div>
         </div>
-
 
       {/* Stats */}
       <div style={{ padding: "10px 20px", color: "#666", fontSize: "14px", background: "#f1f8e9" }}>
