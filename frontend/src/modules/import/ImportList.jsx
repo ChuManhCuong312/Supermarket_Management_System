@@ -1,8 +1,15 @@
+
 import React, { useEffect, useState } from "react";
-import importService from "./importService";
-import { useNavigate } from "react-router-dom";
+import importService from "../import/importService";
 import axios from "axios";
-import "../../styles/Customer-Employee.css";
+import "../../styles/Customer-Employee.css"
+
+import Header from "../import/Header";
+import SearchAndFilter from "../import/SearchAndFilter";
+import ImportTable from "../import/ImportTable";
+import Pagination from "../import/Pagination";
+import AddEditModal from "../import/AddEditModal";
+import NotificationModal from "../import/NotificationModal";
 
 export default function ImportList() {
     const [errors, setErrors] = useState({});
@@ -39,7 +46,6 @@ export default function ImportList() {
     const [totalItems, setTotalItems] = useState(0);
 
     const [modal, setModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
-    const navigate = useNavigate();
 
     const [supplierNames, setSupplierNames] = useState({});
 
@@ -82,7 +88,7 @@ export default function ImportList() {
         if (imports.length > 0) {
             fetchSupplierNames();
         }
-    }, [imports, supplierNames]);
+    }, [imports]);
 
     // === Search by ID ===
     const handleSearchById = async () => {
@@ -184,8 +190,22 @@ export default function ImportList() {
         e.preventDefault();
         setErrors({}); // reset lỗi cũ
 
+        let hasError = false;
+        const newErrors = {};
+
         if (!newImport.supplierId) {
-            setErrors({ supplierName: "Vui lòng chọn nhà cung cấp từ danh sách gợi ý" });
+            newErrors.supplierName = "Vui lòng chọn nhà cung cấp từ danh sách gợi ý";
+            hasError = true;
+        }
+
+        const amount = parseFloat(newImport.totalAmount);
+        if (isNaN(amount) || amount < 0) {
+            newErrors.totalAmount = "Tổng tiền phải là số lớn hơn hoặc bằng 0";
+            hasError = true;
+        }
+
+        if (hasError) {
+            setErrors(newErrors);
             return;
         }
 
@@ -194,7 +214,7 @@ export default function ImportList() {
             const payload = {
                 supplier_id: parseInt(newImport.supplierId),
                 import_date: newImport.importDate,
-                total_amount: parseFloat(newImport.totalAmount),
+                total_amount: amount,
                 status: newImport.status,
                 note: newImport.note,
             };
@@ -291,301 +311,52 @@ export default function ImportList() {
 
     const closeModal = () => setModal({ isOpen: false, title: "", message: "", type: "info" });
 
-    // === Render ===
     return (
         <>
-            {/* Header */}
-            <div className="header">
-                <div className="header-left">
-                    <span className="header-icon">📥</span>
-                    <h2 className="header-title">Quản lý nhập kho</h2>
-                </div>
-            </div>
-
-            {/* Search and Filter Section */}
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '1rem',
-                backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                marginBottom: '1rem',
-                gap: '1rem',
-                flexWrap: 'wrap'
-            }}>
-                {/* Search by ID */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    flex: '1',
-                    minWidth: '300px'
-                }}>
-                    <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
-                        🔍 Tìm theo ID:
-                    </label>
-                    <input
-                        type="number"
-                        placeholder="Nhập ID phiếu nhập..."
-                        value={searchId}
-                        onChange={(e) => setSearchId(e.target.value)}
-                        onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                                handleSearchById();
-                            }
-                        }}
-                        style={{
-                            padding: '0.5rem 1rem',
-                            border: '1px solid #ddd',
-                            borderRadius: '5px',
-                            fontSize: '14px',
-                            minWidth: '180px',
-                            flex: '1'
-                        }}
-                    />
-                    <button onClick={handleSearchById} className="btn" style={{
-                        background: '#3b82f6',
-                        color: 'white',
-                        padding: '0.5rem 1rem',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap'
-                    }}>
-                        Tìm kiếm
-                    </button>
-                    {isSearching && (
-                        <button onClick={handleClearSearch} className="btn" style={{
-                            background: '#ef4444',
-                            color: 'white',
-                            padding: '0.5rem 1rem',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap'
-                        }}>
-                            ✕ Xóa bộ lọc
-                        </button>
-                    )}
-                </div>
-
-                {/* Add Button */}
-                <button
-                    onClick={() => {
-                        setIsEditing(false);
-                        setEditingId(null);
-                        setNewImport({
-                            supplierId: "",
-                            supplierName: "",
-                            importDate: "",
-                            totalAmount: "",
-                            status: "Pending",
-                            note: "",
-                        });
-                        setErrors({});
-                        setSupplierSuggestions([]);
-                        setShowAddBox(true);
-                    }}
-                    className="btn add-btn"
-                    style={{
-                        whiteSpace: 'nowrap'
-                    }}
-                >
-                    ➕ Thêm mới
-                </button>
-            </div>
-
-            {/* Table */}
-            <div className="table-container">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>ID Nhà cung cấp</th>
-                            <th>Tên Nhà cung cấp</th>
-                            <th
-                                style={{ cursor: "pointer", userSelect: "none" }}
-                                onClick={handleSortByDate}
-                            >
-                                Ngày nhập{" "}
-                                <span style={{ fontSize: "14px" }}>
-                                    {sortDate === "asc" ? "▲" : "▼"}
-                                </span>
-                            </th>
-                            <th
-                                style={{ cursor: "pointer", userSelect: "none" }}
-                                onClick={handleSortByAmount}
-                            >
-                                Tổng tiền{" "}
-                                <span style={{ fontSize: "14px" }}>
-                                    {sortAmount === "asc" ? "▲" : "▼"}
-                                </span>
-                            </th>
-                            <th>Trạng thái</th>
-                            <th>Ghi chú</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {imports.length > 0 ? imports.map(i => (
-                            <tr key={i.importId}>
-                                <td>{i.importId}</td>
-                                <td>{i.supplier_id}</td>
-                                <td>{supplierNames[i.supplier_id] || "Đang tải..."}</td>
-                                <td>{new Date(i.import_date).toLocaleDateString("vi-VN")}</td>
-                                <td>{parseFloat(i.total_amount)?.toLocaleString("vi-VN")} ₫</td>
-                                <td>
-                                    <span className={`status-badge status-${i.status?.toLowerCase()}`}>
-                                        {i.status}
-                                    </span>
-                                </td>
-                                <td>{i.note}</td>
-                                <td>
-                                    <div className="action-buttons">
-                                        <button onClick={() => handleEdit(i)} className="edit-btn" title="Chỉnh sửa">
-                                            ✏️
-                                        </button>
-                                        <button onClick={() => handleDelete(i.importId)} className="delete-btn" title="Xóa">
-                                            🗑️
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        )) : (
-                            <tr>
-                                <td colSpan="8" className="no-data">Không có dữ liệu nhập kho</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Pagination */}
-            <div className="pagination">
-                <button onClick={() => handlePageChange(page - 1)} disabled={page === 0 || isSearching}>
-                    ← Trước
-                </button>
-                <span>
-                    {isSearching ? (
-                        `Kết quả tìm kiếm: ${totalItems} phiếu`
-                    ) : (
-                        `Trang ${page + 1} / ${totalPages || 1} (${totalItems} phiếu)`
-                    )}
-                </span>
-                <button onClick={() => handlePageChange(page + 1)} disabled={page === totalPages - 1 || totalPages === 0 || isSearching}>
-                    Sau →
-                </button>
-            </div>
-
-            {/* Modal Add/Edit */}
-            {showAddBox && (
-                <div className="modal-overlay" onClick={() => setShowAddBox(false)}>
-                    <div className="form-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="form-modal-header">
-                            <h3>{isEditing ? "Chỉnh sửa phiếu nhập" : "Thêm phiếu nhập mới"}</h3>
-                            <button className="close-btn" onClick={() => setShowAddBox(false)}>✕</button>
-                        </div>
-                        <form onSubmit={handleSaveImport}>
-                            <div className="form-modal-body">
-                                <div className="form-group">
-                                    <label>Tên Nhà cung cấp <span className="required">*</span></label>
-                                    <input
-                                        type="text"
-                                        value={newImport.supplierName}
-                                        onChange={handleSupplierSearch}
-                                        placeholder="Nhập tên nhà cung cấp để tìm kiếm"
-                                        required
-                                    />
-                                    {errors.supplierName && <p className="error-text">{errors.supplierName}</p>}
-                                    {supplierSuggestions.length > 0 && (
-                                        <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0', border: '1px solid #ddd', maxHeight: '150px', overflowY: 'auto' }}>
-                                            {supplierSuggestions.map(supplier => (
-                                                <li
-                                                    key={supplier.supplierId}
-                                                    onClick={() => handleSelectSupplier(supplier)}
-                                                    style={{ padding: '0.5rem', cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                                                >
-                                                    {supplier.companyName} ({supplier.supplierId})
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                                <div className="form-group">
-                                    <label>Ngày nhập <span className="required">*</span></label>
-                                    <input
-                                        type="date"
-                                        value={newImport.importDate}
-                                        onChange={e => handleNewChange("importDate", e.target.value)}
-                                        required
-                                    />
-                                    {errors.importDate && <p className="error-text">{errors.importDate}</p>}
-                                </div>
-                                <div className="form-group">
-                                    <label>Tổng tiền (₫) <span className="required">*</span></label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={newImport.totalAmount}
-                                        onChange={e => handleNewChange("totalAmount", e.target.value)}
-                                        placeholder="Nhập tổng tiền"
-                                        required
-                                    />
-                                    {errors.totalAmount && <p className="error-text">{errors.totalAmount}</p>}
-                                </div>
-                                <div className="form-group">
-                                    <label>Trạng thái <span className="required">*</span></label>
-                                    <select
-                                        value={newImport.status}
-                                        onChange={e => handleNewChange("status", e.target.value)}
-                                        required
-                                    >
-                                        <option value="">-- Chọn trạng thái --</option>
-                                        <option value="Pending">Pending</option>
-                                        <option value="Completed">Completed</option>
-                                        <option value="Cancelled">Cancelled</option>
-                                    </select>
-                                    {errors.status && <p className="error-text">{errors.status}</p>}
-                                </div>
-                                <div className="form-group">
-                                    <label>Ghi chú</label>
-                                    <textarea
-                                        value={newImport.note}
-                                        onChange={e => handleNewChange("note", e.target.value)}
-                                        placeholder="Nhập ghi chú (tùy chọn)"
-                                        rows="3"
-                                    />
-                                    {errors.note && <p className="error-text">{errors.note}</p>}
-                                </div>
-                            </div>
-                            <div className="form-modal-footer">
-                                <button type="button" className="btn-cancel" onClick={() => setShowAddBox(false)}>
-                                    Hủy
-                                </button>
-                                <button type="submit" className="btn-save">
-                                    {isEditing ? "Cập nhật" : "Lưu"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal thông báo */}
-            {modal.isOpen && (
-                <div className="modal-overlay" onClick={closeModal}>
-                    <div className={`modal-content modal-${modal.type}`} onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-icon">
-                            {modal.type === "success" && "✅"}
-                            {modal.type === "error" && "❌"}
-                            {modal.type === "info" && "ℹ️"}
-                        </div>
-                        <h3 className="modal-title">{modal.title}</h3>
-                        <p className="modal-message">{modal.message}</p>
-                    </div>
-                </div>
-            )}
+            <Header />
+            <SearchAndFilter
+                searchId={searchId}
+                setSearchId={setSearchId}
+                handleSearchById={handleSearchById}
+                isSearching={isSearching}
+                handleClearSearch={handleClearSearch}
+                setShowAddBox={setShowAddBox}
+                setIsEditing={setIsEditing}
+                setEditingId={setEditingId}
+                setNewImport={setNewImport}
+                setErrors={setErrors}
+                setSupplierSuggestions={setSupplierSuggestions}
+            />
+            <ImportTable
+                imports={imports}
+                supplierNames={supplierNames}
+                handleSortByDate={handleSortByDate}
+                sortDate={sortDate}
+                handleSortByAmount={handleSortByAmount}
+                sortAmount={sortAmount}
+                handleEdit={handleEdit}
+                handleDelete={handleDelete}
+            />
+            <Pagination
+                page={page}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                isSearching={isSearching}
+                handlePageChange={handlePageChange}
+            />
+            <AddEditModal
+                showAddBox={showAddBox}
+                setShowAddBox={setShowAddBox}
+                isEditing={isEditing}
+                newImport={newImport}
+                handleSupplierSearch={handleSupplierSearch}
+                errors={errors}
+                supplierSuggestions={supplierSuggestions}
+                handleSelectSupplier={handleSelectSupplier}
+                handleNewChange={handleNewChange}
+                handleSaveImport={handleSaveImport}
+            />
+            <NotificationModal modal={modal} closeModal={closeModal} />
         </>
     );
 }
