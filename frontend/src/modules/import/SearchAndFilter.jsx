@@ -35,7 +35,7 @@ export default function SearchAndFilter({
                 minWidth: '300px'
             }}>
                 <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
-                    🔍 Tìm theo Tên Nhà Cung Cấp:
+                    🔍 Tìm kiếm:
                 </label>
                 <input
                     type="text"
