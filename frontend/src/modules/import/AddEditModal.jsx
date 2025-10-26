@@ -24,50 +24,96 @@ export default function AddEditModal({
                     <form onSubmit={handleSaveImport}>
                         <div className="form-modal-body">
                             <div className="form-group">
-                                <label>Tên Nhà cung cấp <span className="required">*</span></label>
-                                <input
-                                    type="text"
-                                    value={newImport.supplierName}
-                                    onChange={handleSupplierSearch}
-                                    placeholder="Nhập tên nhà cung cấp để tìm kiếm"
-                                    required
-                                />
-                                {errors.supplierName && <p className="error-text">{errors.supplierName}</p>}
-                                {supplierSuggestions.length > 0 && (
-                                    <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0', border: '1px solid #ddd', maxHeight: '150px', overflowY: 'auto' }}>
-                                        {supplierSuggestions.map(supplier => (
-                                            <li
-                                                key={supplier.supplierId}
-                                                onClick={() => handleSelectSupplier(supplier)}
-                                                style={{ padding: '0.5rem', cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                                            >
-                                                {supplier.companyName} ({supplier.supplierId})
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
+                                <label>
+                                    Tên Nhà cung cấp <span className="required">*</span>
+                                </label>
+                                <div className="input-wrapper" style={{ position: "relative", width: "100%" }}>
+                                    <input
+                                        type="text"
+                                        value={newImport.supplierName}
+                                        onChange={handleSupplierSearch}
+                                        placeholder="Nhập tên nhà cung cấp"
+                                        required
+                                        autoComplete="off"
+                                        style={{
+                                            width: "100%",
+                                            padding: "8px 10px",
+                                            borderRadius: "6px",
+                                            border: "1px solid #ccc",
+                                            boxSizing: "border-box",
+                                        }}
+                                    />
+                                    {errors.supplierName && (
+                                        <p className="error-text" style={{ color: "red", fontSize: "13px", marginTop: "4px" }}>
+                                            {errors.supplierName}
+                                        </p>
+                                    )}
+
+                                    {supplierSuggestions.length > 0 && (
+                                        <ul
+                                            style={{
+                                                listStyle: "none",
+                                                padding: 0,
+                                                margin: 0,
+                                                position: "absolute",
+                                                top: "100%",
+                                                left: 0,
+                                                right: 0,
+                                                backgroundColor: "#fff",
+                                                border: "1px solid #ccc",
+                                                borderRadius: "4px",
+                                                maxHeight: "150px",
+                                                overflowY: "auto",
+                                                zIndex: 10,
+                                            }}
+                                        >
+                                            {supplierSuggestions.map((supplier) => (
+                                                <li
+                                                    key={supplier.supplierId}
+                                                    onClick={() => handleSelectSupplier(supplier)}
+                                                    onMouseDown={(e) => e.preventDefault()} // tránh mất focus khi click
+                                                    style={{
+                                                        padding: "0.5rem",
+                                                        cursor: "pointer",
+                                                        borderBottom: "1px solid #eee",
+                                                    }}
+                                                >
+                                                    {supplier.companyName} ({supplier.supplierId})
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
                             </div>
+
                             <div className="form-group">
                                 <label>Ngày nhập <span className="required">*</span></label>
-                                <input
-                                    type="date"
-                                    value={newImport.importDate}
-                                    onChange={e => handleNewChange("importDate", e.target.value)}
-                                    required
-                                />
-                                {errors.importDate && <p className="error-text">{errors.importDate}</p>}
+                                <div className="input-wrapper">
+                                    <input
+                                        type="date"
+                                        value={newImport.importDate}
+                                        onChange={e => handleNewChange("importDate", e.target.value)}
+                                        required
+                                    />
+                                    {errors.importDate && (
+                                        <p className="error-text">{errors.importDate}</p>
+                                    )}
+                                </div>
                             </div>
+
                             <div className="form-group">
                                 <label>Tổng tiền (₫) <span className="required">*</span></label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={newImport.totalAmount}
-                                    onChange={e => handleNewChange("totalAmount", e.target.value)}
-                                    placeholder="Nhập tổng tiền"
-                                    required
-                                />
-                                {errors.totalAmount && <p className="error-text">{errors.totalAmount}</p>}
+                                <div className="input-wrapper">
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={newImport.totalAmount}
+                                        onChange={e => handleNewChange("totalAmount", e.target.value)}
+                                        placeholder="Nhập tổng tiền"
+                                        required
+                                    />
+                                    {errors.totalAmount && <p className="error-text">{errors.totalAmount}</p>}
+                                </div>
                             </div>
                             <div className="form-group">
                                 <label>Trạng thái <span className="required">*</span></label>
@@ -81,7 +127,7 @@ export default function AddEditModal({
                                     <option value="Completed">Completed</option>
                                     <option value="Cancelled">Cancelled</option>
                                 </select>
-                                {errors.status && <p className="error-text">{errors.status}</p>}
+                                {errors.status && <p className="error-text" style={{ fontSize: 'small', color: 'red' }}>{errors.status}</p>}
                             </div>
                             <div className="form-group">
                                 <label>Ghi chú</label>
@@ -91,7 +137,7 @@ export default function AddEditModal({
                                     placeholder="Nhập ghi chú (tùy chọn)"
                                     rows="3"
                                 />
-                                {errors.note && <p className="error-text">{errors.note}</p>}
+                                {errors.note && <p className="error-text" style={{ fontSize: 'small', color: 'red' }}>{errors.note}</p>}
                             </div>
                         </div>
                         <div className="form-modal-footer">
