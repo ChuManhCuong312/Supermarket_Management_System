@@ -383,25 +383,35 @@ body, .page {
   font-size: 14px;
 }
 
-.search-btn {
-  background-color: #c8e6c9; /* xanh nhạt */
-  color: #111;               /* chữ đen */
-  border: 1px solid #81c784;
-}
-
-.search-btn:hover {
-  background-color: #b2dfbd;
-}
-
+.search-btn,
 .add-btn {
-  background-color: #a5d6a7; /* xanh nhạt hơn */
-  color: #111;               /* chữ đen */
-  border: 1px solid #81c784;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #2d6b3d; /* nền xanh đậm */
+  color: #fff;               /* chữ trắng */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.search-btn:hover,
 .add-btn:hover {
-  background-color: #9bd09d;
+  background-color: #255d34;
+  transform: translateY(-1px);
 }
+
+.search-btn:active,
+.add-btn:active {
+  transform: translateY(0);
+  background-color: #1e4e2b;
+}
+
 
 .clear-filter {
   color: #999;
