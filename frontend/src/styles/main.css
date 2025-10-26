@@ -61,6 +61,6 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI
 .table-responsive { width: 100%; overflow: auto; }
 .table { width: 100%; border-collapse: collapse; }
 .table th, .table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
-.table th { color: #6b7280; font-weight: 600; }
+.table th { color: #111; font-weight: 600; }
 
 
