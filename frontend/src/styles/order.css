@@ -106,19 +106,32 @@
 }
 
 .search-button,
-.add-button,
-.archive-button {
+.add-button {
   padding: 10px 25px;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 5px;
-  background-color: #6b9d7a;
-  color: white;
+  gap: 8px;
+  background-color: #2d6b3d; /* nền xanh đậm */
+  color: #fff;               /* chữ trắng */
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-button:hover,
+.add-button:hover {
+  background-color: #255d34;
+  transform: translateY(-1px);
+}
+
+.search-button:active,
+.add-button:active {
+  transform: translateY(0);
+  background-color: #1e4e2b;
 }
 
 .search-button:hover,
