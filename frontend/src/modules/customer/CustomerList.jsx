@@ -246,48 +246,78 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="filter">
-        <div className="filter-grid">
-          <input
-            placeholder="Tên khách hàng"
-            value={filters.name}
-            onChange={(e) => handleFilterChange("name", e.target.value)}
-          />
-          <input
-            placeholder="SĐT"
-            value={filters.phone}
-            onChange={(e) => handleFilterChange("phone", e.target.value)}
-          />
-          <input
-            placeholder="Email"
-            value={filters.email}
-            onChange={(e) => handleFilterChange("email", e.target.value)}
+      <div className="content">
+        {/* ===== Search Section ===== */}
+        <div className="search-section">
+          <div className="search-group">
+            <label>
+              <span className="search-icon"></span> Tên khách hàng
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập tên khách hàng..."
+              value={filters.name}
+              onChange={(e) => handleFilterChange("name", e.target.value)}
+            />
+            <span
+              className="clear-filter"
+              onClick={() => {
+                setFilters({ name: "", phone: "", email: "", membershipType: "" });
+                handleSearch({});
+              }}
+            >
+              ✖ Clear Filter
+            </span>
+          </div>
 
-                    />
-          <select
-            value={filters.membershipType}
-            onChange={(e) => handleFilterChange("membershipType", e.target.value)}
-          >
-            <option value="">Tất cả loại</option>
-            <option value="Thường">Thường</option>
-            <option value="VIP">VIP</option>
-            <option value="Thân thiết">Thân thiết</option>
-          </select>
+          <div className="search-group">
+            <label>
+              <span className="list-icon"></span> SĐT
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập số điện thoại..."
+              value={filters.phone}
+              onChange={(e) => handleFilterChange("phone", e.target.value)}
+            />
+          </div>
+
+          <div className="search-group">
+            <label>
+              <span className="list-icon"></span> Email
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập email..."
+              value={filters.email}
+              onChange={(e) => handleFilterChange("email", e.target.value)}
+            />
+          </div>
+
+          <div className="search-group">
+            <label>
+              <span className="list-icon"></span> Loại thành viên
+            </label>
+            <select
+              value={filters.membershipType}
+              onChange={(e) => handleFilterChange("membershipType", e.target.value)}
+            >
+              <option value="">Tất cả loại</option>
+              <option value="Thường">Thường</option>
+              <option value="VIP">VIP</option>
+              <option value="Thân thiết">Thân thiết</option>
+            </select>
+          </div>
         </div>
-        <div className="filter-buttons">
-        <button
-        onClick={() => {
-          setFilters({
-             name: "",
-             phone: "",
-             email: "",
-          });
-          handleSearch({});
-        }}
-          className="clear-filter" >✕ clear filter</button>
-         <button onClick={() => handleSearch(filters)} className="btn search-btn">🔍 Tìm kiếm</button>
-          <button onClick={openAddForm} className="btn add-btn">➕ Thêm mới</button>
+
+        {/* ===== Buttons ===== */}
+        <div className="button-group">
+          <button className="search-button" onClick={() => handleSearch(filters)}>
+            🔍 Tìm kiếm
+          </button>
+          <button className="add-button" onClick={openAddForm}>
+            ➕ Thêm mới
+          </button>
         </div>
       </div>
 
@@ -303,26 +333,27 @@ useEffect(() => {
                   <tr>
                     <th>ID</th>
                     <th
-                      className="sortable-header"
+                      className={`sortable ${sortConfig.sortBy === "name" && sortConfig.sort !== "none" ? sortConfig.sort : ""}`}
                       onClick={() => handleSort("name")}
                       style={{ cursor: "pointer" }}
                     >
-                      Tên {renderSortIcon("name")}
+                      Tên
                     </th>
                     <th>SĐT</th>
                     <th>Email</th>
                     <th>Địa chỉ</th>
                     <th
-                      className="sortable-header"
+                      className={`sortable ${sortConfig.sortBy === "points" && sortConfig.sort !== "none" ? sortConfig.sort : ""}`}
                       onClick={() => handleSort("points")}
                       style={{ cursor: "pointer" }}
                     >
-                      Điểm {renderSortIcon("points")}
+                      Điểm
                     </th>
                     <th>Loại TV</th>
                     <th>Thao tác</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {customers.length > 0 ? customers.map((c) => (
                     <tr key={c.id}>

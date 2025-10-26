@@ -319,23 +319,21 @@ const handleSaveEmployee = async (e) => {
           <thead>
             <tr>
               <th>ID</th>
-<th
-                      className="sortable-header"
-                      onClick={() => handleSort("name")}
-                      style={{ cursor: "pointer" }}
-                    >
-                      Tên {renderSortIcon("name")}
-              </th>
+                <th
+                  className={`sortable ${sortConfig.sortBy === "name" && sortConfig.sort !== "none" ? sortConfig.sort : ""}`}
+                  onClick={() => handleSort("name")}
+                >
+                  Tên
+                </th>
               <th>Chức vụ</th>
               <th>SĐT</th>
               <th>Email</th>
-<th
-                      className="sortable-header"
-                      onClick={() => handleSort("salary")}
-                      style={{ cursor: "pointer" }}
-                    >
-                      Lương {renderSortIcon("salary")}
-                    </th>
+              <th
+                className={`sortable ${sortConfig.sortBy === "salary" && sortConfig.sort !== "none" ? sortConfig.sort : ""}`}
+                onClick={() => handleSort("salary")}
+              >
+                Lương
+              </th>
               <th>Ca làm việc</th>
               <th>Thao tác</th>
             </tr>
