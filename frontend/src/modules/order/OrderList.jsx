@@ -375,7 +375,7 @@ export default function OrderList() {
                       <td>{order.customerId}</td>
                       <td>{order.employeeId}</td>
                       <td>{order.orderDate}</td>
-                      <td>{order.totalAmount?.toLocaleString()}đ</td>
+                      <td>{order.totalAmount?.toLocaleString()}</td>
                       <td>{order.discount}%</td>
                       {viewType === "deleted" && (
                         <td>
@@ -427,6 +427,18 @@ export default function OrderList() {
                 )}
               </tbody>
             </table>
+
+            {/* Pagination Info */}
+            {totalElements > 0 && (
+              <div style={{
+                textAlign: "center",
+                padding: "10px 0",
+                color: "#666",
+                fontSize: "14px"
+              }}>
+                Hiển thị {orders.length} / {totalElements} đơn hàng
+              </div>
+            )}
           </>
         )}
 
@@ -450,16 +462,44 @@ export default function OrderList() {
             ‹
           </button>
 
-          {/* Page numbers */}
-          {[...Array(totalPages)].map((_, i) => (
-            <button
-              key={i}
-              className={i === page ? "active" : ""}
-              onClick={() => setPage(i)}
-            >
-              {i + 1}
-            </button>
-          ))}
+          {/* Page numbers - Smart pagination (max 5 visible) */}
+          {(() => {
+            const maxVisible = 5;
+            let startPage = 0;
+            let endPage = totalPages;
+
+            if (totalPages > maxVisible) {
+              // Calculate start and end based on current page
+              const halfVisible = Math.floor(maxVisible / 2);
+
+              if (page <= halfVisible) {
+                // Near the beginning
+                startPage = 0;
+                endPage = maxVisible;
+              } else if (page >= totalPages - halfVisible - 1) {
+                // Near the end
+                startPage = totalPages - maxVisible;
+                endPage = totalPages;
+              } else {
+                // In the middle
+                startPage = page - halfVisible;
+                endPage = page + halfVisible + 1;
+              }
+            }
+
+            return [...Array(endPage - startPage)].map((_, i) => {
+              const pageNum = startPage + i;
+              return (
+                <button
+                  key={pageNum}
+                  className={pageNum === page ? "active" : ""}
+                  onClick={() => setPage(pageNum)}
+                >
+                  {pageNum + 1}
+                </button>
+              );
+            });
+          })()}
 
           {/* Next page button */}
           <button
