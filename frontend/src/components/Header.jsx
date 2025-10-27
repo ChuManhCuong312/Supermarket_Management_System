@@ -5,7 +5,9 @@ function Header() {
   const linkStyle = ({ isActive }) => ({
     padding: "8px 16px",
     textDecoration: "none",
-    color: isActive ? "#1976d2" : "#333",
+    color: isActive ? "#66bb6a" : "#fff",
+    textShadow: isActive ? "0 0 8px #66bb6a" : "none",
+    borderBottom: isActive ? "3px solid #66bb6a" : "none",
     fontWeight: isActive ? 600 : 400,
     borderRadius: "4px",
     margin: "0 4px",
@@ -19,9 +21,9 @@ function Header() {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      backgroundColor: "#fff"
+      backgroundColor: "#2d6b3d"
     }}>
-      <h1 style={{ margin: 0, fontSize: 35, color: "#1976d2" }}>
+      <h1 style={{ margin: 0, fontSize: 20, color: "#fff" }}>
         🏪 ÉliteMart
       </h1>
       

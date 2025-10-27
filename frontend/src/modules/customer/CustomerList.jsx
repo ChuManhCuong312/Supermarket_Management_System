@@ -237,7 +237,7 @@ useEffect(() => {
 }, [sortConfig]);
 
   return (
-    <div className="page">
+         <>
       {/* Header */}
       <div className="header">
         <div className="header-left">
@@ -502,6 +502,6 @@ useEffect(() => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
