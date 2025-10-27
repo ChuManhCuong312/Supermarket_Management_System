@@ -237,7 +237,7 @@ useEffect(() => {
 }, [sortConfig]);
 
   return (
-         <>
+    <>
       {/* Header */}
       <div className="header">
         <div className="header-left">
@@ -246,88 +246,89 @@ useEffect(() => {
         </div>
       </div>
 
-  <div className="content">
-    {/* ===== Search Section ===== */}
-    <div className="search-section">
-      <div className="search-group">
-        <label>
-          <span className="search-icon"></span> Tên khách hàng
-        </label>
-        <input
-          type="text"
-          placeholder="Nhập tên khách hàng..."
-          value={filters.name}
-          onChange={(e) => handleFilterChange("name", e.target.value)}
-        />
-        <span
-          className="clear-filter"
-          onClick={() => {
-            setFilters({ name: "", phone: "", email: "", membershipType: "" });
-            handleSearch({});
-          }}
-        >
-          ✖ Clear Filter
-        </span>
+      {/* Filter */}
+
+      <div className="content">
+        {/* ===== Search Section ===== */}
+        <div className="search-section">
+          <div className="search-group">
+            <label>
+              <span className="search-icon"></span> Tên khách hàng
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập tên khách hàng..."
+              value={filters.name}
+              onChange={(e) => handleFilterChange("name", e.target.value)}
+            />
+            <span
+              className="clear-filter"
+              onClick={() => {
+                setFilters({ name: "", phone: "", email: "", membershipType: "" });
+                handleSearch({});
+              }}
+            >
+              ✖ Clear Filter
+            </span>
+          </div>
+
+          <div className="search-group">
+            <label>
+              <span className="list-icon"></span> SĐT
+            </label>
+            <input
+              type="tel"
+              pattern="[0-9]*"
+              inputMode="numeric"
+              placeholder="Nhập số điện thoại..."
+              value={filters.phone}
+              onChange={(e) => handleFilterChange("phone", e.target.value)}
+            onKeyDown={(e) => {
+                        if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                          e.preventDefault();
+                        }
+                      }}
+            />
+          </div>
+
+          <div className="search-group">
+            <label>
+              <span className="list-icon"></span> Email
+            </label>
+            <input
+              type="text"
+              placeholder="Nhập email..."
+              value={filters.email}
+              onChange={(e) => handleFilterChange("email", e.target.value)}
+            />
+          </div>
+
+          <div className="search-group">
+            <label>
+              <span className="list-icon"></span> Loại thành viên
+            </label>
+            <select
+              value={filters.membershipType}
+              onChange={(e) => handleFilterChange("membershipType", e.target.value)}
+            >
+              <option value="">Tất cả loại</option>
+              <option value="Thường">Thường</option>
+              <option value="VIP">VIP</option>
+              <option value="Thân thiết">Thân thiết</option>
+            </select>
+          </div>
+        </div>
+
+        {/* ===== Buttons ===== */}
+        <div className="button-group">
+          <button className="search-button" onClick={() => handleSearch(filters)}>
+            🔍 Tìm kiếm
+          </button>
+          <button className="add-button" onClick={openAddForm}>
+            ➕ Thêm mới
+          </button>
+        </div>
       </div>
-
-      <div className="search-group">
-        <label>
-          <span className="list-icon"></span> SĐT
-        </label>
-        <input
-          type="tel"
-          pattern="[0-9]*"
-          inputMode="numeric"
-          placeholder="Nhập số điện thoại..."
-          value={filters.phone}
-          onChange={(e) => handleFilterChange("phone", e.target.value)}
-          onKeyDown={(e) => {
-            if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-              e.preventDefault();
-            }
-          }}
-        />
-      </div>
-
-      <div className="search-group">
-        <label>
-          <span className="list-icon"></span> Email
-        </label>
-        <input
-          type="text"
-          placeholder="Nhập email..."
-          value={filters.email}
-          onChange={(e) => handleFilterChange("email", e.target.value)}
-        />
-      </div>
-
-      <div className="search-group">
-        <label>
-          <span className="list-icon"></span> Loại thành viên
-        </label>
-        <select
-          value={filters.membershipType}
-          onChange={(e) => handleFilterChange("membershipType", e.target.value)}
-        >
-          <option value="">Tất cả loại</option>
-          <option value="Thường">Thường</option>
-          <option value="VIP">VIP</option>
-          <option value="Thân thiết">Thân thiết</option>
-        </select>
-      </div>
-    </div>
-
-    {/* ===== Buttons ===== */}
-    <div className="button-group">
-      <button className="search-button" onClick={() => handleSearch(filters)}>
-        🔍 Tìm kiếm
-      </button>
-      <button className="add-button" onClick={openAddForm}>
-        ➕ Thêm mới
-      </button>
-    </div>
-  </div>
-
 
       {/* Stats */}
       <div style={{ padding: "10px 20px", color: "#666", fontSize: "14px", background: "#f1f8e9" }}>
@@ -427,18 +428,18 @@ useEffect(() => {
                 <div className="form-group">
                   <label>Số điện thoại <span className="required">*</span></label>
                   <input
-                    type="tel"
-                    pattern="[0-9]*"
-                    inputMode="numeric"
+type="tel"
+            pattern="[0-9]*"
+            inputMode="numeric"
                     required
                     placeholder="Nhập SĐT"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    onKeyDown={(e) => {
-                      if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                        e.preventDefault();
-                      }
-                    }}
+                  onKeyDown={(e) => {
+                              if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                e.preventDefault();
+                              }
+                            }}
                   />
                 </div>
                 <div className="form-group">
@@ -454,8 +455,6 @@ useEffect(() => {
                 <div className="form-group">
                   <label>Địa chỉ<span className="required">*</span></label>
                   <input
-                  required
-                  type="address"
                     placeholder="Nhập địa chỉ"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -479,8 +478,6 @@ useEffect(() => {
                     placeholder="0"
                     value={formData.points}
                     onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value) || 0 })}
-                    onKeyDown={e => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
-                  min="0"
                   />
                 </div>
               </div>
