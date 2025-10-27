@@ -170,7 +170,6 @@ export default function ImportList() {
 
     const handleFilterChange = (key, value) => setFilters({ ...filters, [key]: value });
     const handleNewChange = (key, value) => setNewImport({ ...newImport, [key]: value });
-
     const handleSupplierSearch = async (e) => {
         const value = e.target.value;
         setNewImport({ ...newImport, supplierName: value, supplierId: "" });
@@ -203,7 +202,6 @@ export default function ImportList() {
 
         let hasError = false;
         const newErrors = {};
-
         if (!newImport.supplierId) {
             newErrors.supplierId = "Vui lòng chọn nhà cung cấp từ danh sách gợi ý";
             hasError = true;
@@ -268,7 +266,6 @@ export default function ImportList() {
         }
     };
 
-
     const handleEdit = async (importItem) => {
         let supplierName = supplierNames[importItem.supplier_id];
         if (!supplierName) {
@@ -304,7 +301,6 @@ export default function ImportList() {
     const confirmDelete = async () => {
         setShowDeleteConfirm(false);
         if (!deleteId) return;
-
         try {
             await importService.delete(deleteId);
             showModal("Thành công", "Đã xoá phiếu nhập!", "success");
@@ -373,12 +369,10 @@ export default function ImportList() {
     };
 
     const handlePageChange = (newPage) => setPage(newPage);
-
     const showModal = (title, message, type = "info") => {
         setModal({ isOpen: true, title, message, type });
         setTimeout(() => setModal({ isOpen: false, title: "", message: "", type: "info" }), 3000);
     };
-
     const closeModal = () => setModal({ isOpen: false, title: "", message: "", type: "info" });
 
     return (
