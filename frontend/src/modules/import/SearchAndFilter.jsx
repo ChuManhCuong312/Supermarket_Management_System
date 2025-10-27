@@ -1,6 +1,6 @@
 // Updated SearchAndFilter.jsx with status filter UI
 import React from "react";
-
+import "../../styles/Customer-Employee.css";
 export default function SearchAndFilter({
     searchSupplierName,
     setSearchSupplierName,
@@ -97,16 +97,8 @@ export default function SearchAndFilter({
                         flex: '1'
                     }}
                 />
-                <button onClick={handleSearch} className="btn" style={{
-                    background: '#3b82f6',
-                    color: 'white',
-                    padding: '0.5rem 1rem',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap'
-                }}>
-                    Tìm kiếm
+                <button onClick={handleSearch} className="search-btn" >
+                    🔍 Tìm kiếm
                 </button>
                 {isSearching && (
                     <button onClick={handleClearSearch} className="btn" style={{
@@ -140,16 +132,7 @@ export default function SearchAndFilter({
                     setSupplierSuggestions([]);
                     setShowAddBox(true);
                 }}
-                className="btn add-btn"
-                style={{
-                    whiteSpace: 'nowrap',
-                    color: 'white',
-                    backgroundColor: '#10b981',
-                    padding: '0.5rem 1rem',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                }}
+                className="add-btn"
             >
                 ➕ Thêm mới
             </button>
