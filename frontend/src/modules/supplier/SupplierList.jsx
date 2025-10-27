@@ -222,7 +222,7 @@ export default function SupplierList() {
   }, [page, sortConfig]);
 
   return (
-    <div className="page">
+    <div className="page" style={{padding:"0px"}}>
       {/* Header */}
       <div className="header">
         <div className="header-left">
@@ -231,39 +231,69 @@ export default function SupplierList() {
         </div>
       </div>
 
-{/*       Filter */}
-      <div className="filter">
-        <div className="filter-grid">
-          <input
-            placeholder="Tên nhà cung cấp"
-            value={filters.name}
-            onChange={(e) => handleFilterChange("name", e.target.value)}
-          />
-          <input
-            placeholder="Số điện thoại"
-            value={filters.phone}
-            onChange={(e) => handleFilterChange("phone", e.target.value)}
-          />
-          <input
-            placeholder="Email"
-            value={filters.email}
-            onChange={(e) => handleFilterChange("email", e.target.value)}
-          />
-        </div>
-        <div className="filter-buttons">
-          <button onClick={() => handleSearch(filters)} className="btn search-btn">
-            🔍 Tìm kiếm
-          </button>
-          <button onClick={openAddForm} className="btn add-btn">
-            ➕ Thêm mới
-          </button>
-        </div>
-      </div>
+{/* Filter */}
+<div className="content">
+  <div className="search-section">
+    <div className="search-group">
+      <label>
+        <span className="supplier-icon" /> Tên nhà cung cấp
+      </label>
+      <input
+        type="text"
+        placeholder="Nhập tên nhà cung cấp..."
+        value={filters.name}
+        onChange={(e) => handleFilterChange("name", e.target.value)}
+      />
+      <span
+        className="clear-filter"
+        onClick={() => {
+          setFilters({ name: "", phone: "", email: "" });
+          handleSearch({});
+        }}
+      >
+        ✖ Clear Filter
+      </span>
+    </div>
 
-{/*       Stats */}
-      <div style={{ padding: "10px 20px", color: "#666", fontSize: "14px", background: "#f1f8e9" }}>
-        Tổng số: <strong>{totalItems}</strong> nhà cung cấp
-      </div>
+    <div className="search-group">
+      <label>
+        <span className="phone-icon" /> Số điện thoại
+      </label>
+      <input
+        type="number"
+        placeholder="Nhập số điện thoại..."
+        value={filters.phone}
+        onChange={(e) => handleFilterChange("phone", e.target.value)}
+      />
+    </div>
+
+    <div className="search-group">
+      <label>
+        <span className="email-icon" /> Email
+      </label>
+      <input
+        type="text"
+        placeholder="Nhập email..."
+        value={filters.email}
+        onChange={(e) => handleFilterChange("email", e.target.value)}
+      />
+    </div>
+  </div>
+
+  <div className="button-group" style={{ marginBottom: "0px" }}>
+    <button onClick={() => handleSearch(filters)} className="search-btn">
+      🔍 Tìm kiếm
+    </button>
+    <button onClick={openAddForm} className="add-btn">
+      ➕ Thêm mới
+    </button>
+  </div>
+</div>
+  {/* Stats */}
+  <div style={{ padding: "10px 20px", color: "#666", fontSize: "14px", background: "#f1f8e9" }}>
+    Tổng số: <strong>{totalItems}</strong> nhà cung cấp
+  </div>
+
 
 {/*       Table */}
       <div className="table-container">
@@ -358,8 +388,9 @@ export default function SupplierList() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Email</label>
+                  <label>Email<span className="required">*</span></label>
                   <input
+                    required
                     type="email"
                     placeholder="Nhập email"
                     value={formData.email|| ""}
@@ -367,16 +398,18 @@ export default function SupplierList() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Địa chỉ</label>
+                  <label>Địa chỉ<span className="required">*</span></label>
                   <input
+                    required
                     placeholder="Nhập địa chỉ"
                     value={formData.address|| ""}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Người liên hệ</label>
+                  <label>Người liên hệ<span className="required">*</span></label>
                   <input
+                    required
                     placeholder="Nhập tên người liên hệ"
                     value={formData.contactPerson|| ""}
                     onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}

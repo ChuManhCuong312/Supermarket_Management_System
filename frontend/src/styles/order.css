@@ -106,7 +106,7 @@
 }
 
 .search-button,
-.add-button {
+.add-button,.archive-button {
   padding: 10px 25px;
   border: none;
   border-radius: 8px;
@@ -123,13 +123,14 @@
 }
 
 .search-button:hover,
-.add-button:hover {
+.add-button:hover,.archive-button:hover {
   background-color: #255d34;
   transform: translateY(-1px);
 }
 
 .search-button:active,
-.add-button:active {
+.add-button:active,
+ .archive-button:active{
   transform: translateY(0);
   background-color: #1e4e2b;
 }
