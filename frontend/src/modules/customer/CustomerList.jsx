@@ -237,7 +237,7 @@ useEffect(() => {
 }, [sortConfig]);
 
   return (
-    <div className="page">
+    <>
       {/* Header */}
       <div className="header">
         <div className="header-left">
@@ -277,10 +277,17 @@ useEffect(() => {
               <span className="list-icon"></span> SĐT
             </label>
             <input
-              type="text"
+              type="tel"
+              pattern="[0-9]*"
+              inputMode="numeric"
               placeholder="Nhập số điện thoại..."
               value={filters.phone}
               onChange={(e) => handleFilterChange("phone", e.target.value)}
+            onKeyDown={(e) => {
+                        if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                          e.preventDefault();
+                        }
+                      }}
             />
           </div>
 
@@ -428,6 +435,11 @@ type="tel"
                     placeholder="Nhập SĐT"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onKeyDown={(e) => {
+                              if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                e.preventDefault();
+                              }
+                            }}
                   />
                 </div>
                 <div className="form-group">
@@ -508,6 +520,6 @@ type="tel"
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
