@@ -405,9 +405,13 @@ export default function ImportList() {
                 setErrors={setErrors}
                 setSupplierSuggestions={setSupplierSuggestions}
             />
+
             <div className="filter-section">
+                <div className="total-number">
+                    <p>Tổng số:<span class="total-items-count">{totalItems}</span> nhập đơn </p>
+                </div>
                 <label>Ngày bắt đầu:</label>
-                <input
+                <input class
                     type="date"
                     value={filters.startDate}
                     onChange={(e) => handleFilterChange('startDate', e.target.value)}
@@ -418,7 +422,7 @@ export default function ImportList() {
                     value={filters.endDate}
                     onChange={(e) => handleFilterChange('endDate', e.target.value)}
                 />
-                <button onClick={handleFilterByDate}>Lọc theo ngày</button>
+                <button id="btn-filter-date" onClick={handleFilterByDate}><span class="text-in-button">Lọc theo ngày </span></button>
             </div>
             <ImportTable
                 imports={imports}
