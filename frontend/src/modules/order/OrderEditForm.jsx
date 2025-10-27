@@ -29,83 +29,122 @@ export default function OrderEditForm({ orderId, onSuccess, onCancel }) {
   const [loading, setLoading] = useState(true);
 
   // Fetch order data and its details
-  useEffect(() => {
-    const fetchOrderData = async () => {
-      try {
-        setLoading(true);
+    useEffect(() => {
+      const fetchOrderData = async () => {
+        try {
+          setLoading(true);
 
-        // Fetch order
-        const orderRes = await axiosClient.get(`/orders/active/${orderId}`);
-        const order = orderRes.data;
-        setOrderData(order);
+          // Fetch order
+          const orderRes = await axiosClient.get(`/orders/active/${orderId}`);
+          const order = orderRes.data;
+          setOrderData(order);
 
-        setFormData({
-          customerId: order.customerId?.toString() ?? "",
-          employeeId: order.employeeId?.toString() ?? "",
-          orderDate: order.orderDate ?? "",
-          discount: order.discount?.toString() ?? "",
-        });
+          setFormData({
+            customerId: order.customerId?.toString() ?? "",
+            employeeId: order.employeeId?.toString() ?? "",
+            orderDate: order.orderDate ?? "",
+            discount: order.discount?.toString() ?? "",
+          });
 
-        // Fetch order details
-        const detailsRes = await OrderDetailService.searchOrderDetailsByPage(
-          orderId,
-          null,
-          0,
-          100
-        );
-        setExistingOrderDetails(detailsRes.content || []);
+          // Fetch order details
+          const detailsRes = await OrderDetailService.searchOrderDetailsByPage(
+            orderId,
+            null,
+            0,
+            100
+          );
+          setExistingOrderDetails(detailsRes.content || []);
 
-        // Fetch customers, employees, products
-        const [custRes, empRes, prodRes] = await Promise.all([
-          axiosClient.get("/customers?page=1&size=10"),
-          axiosClient.get("/employees?page=0&size=10"),
-          axiosClient.get("/products"),
-        ]);
+          // Fetch customers, employees, products
+          const [custRes, empRes, prodRes] = await Promise.all([
+            axiosClient.get("/customers?page=1&size=10"),
+            axiosClient.get("/employees?page=0&size=10"), // 🔴 0-based for employees
+            axiosClient.get("/products"),
+          ]);
 
-        const customersData = custRes.data.data || [];
-        const employeesData = empRes.data.data || [];
-        const productsData = Array.isArray(prodRes.data)
-          ? prodRes.data
-          : (prodRes.data.data || []);
+          const customersData = custRes.data.data || [];
+          const employeesData = empRes.data.data || [];
+          const productsData = Array.isArray(prodRes.data)
+            ? prodRes.data
+            : (prodRes.data.data || []);
 
-        setCustomers(customersData);
-        setEmployees(employeesData);
-        // Only show first 10 products initially
-        setProducts(productsData.slice(0, 10));
+          setCustomers(customersData);
+          setEmployees(employeesData);
+          setProducts(productsData.slice(0, 10));
 
-        // Set display inputs
-        const customer = customersData.find(c => c.id === order.customerId);
-        if (customer) {
-          setCustomerInput(customer.id.toString());
+          // Set display inputs in id - name (phone) format
+          if (order.customerId) {
+            let customer = customersData.find(c => c.id === order.customerId);
+            if (!customer) {
+              try {
+                const res = await axiosClient.get(`/customers/${order.customerId}`);
+                if (res?.data) {
+                  customer = res.data;
+                  setCustomers(prev => {
+                    if (prev.find(c => c.id === res.data.id)) return prev;
+                    return [...prev, res.data];
+                  });
+                }
+              } catch (err) {
+                console.debug("Customer not found:", order.customerId);
+              }
+            }
+            if (customer) {
+              setCustomerInput(`${customer.id} - ${customer.name} (${customer.phone})`);
+            } else {
+              setCustomerInput(order.customerId.toString()); // Fallback to ID
+            }
+          }
+
+          if (order.employeeId) {
+            let employee = employeesData.find(e => e.id === order.employeeId);
+            if (!employee) {
+              try {
+                const res = await axiosClient.get(`/employees/${order.employeeId}`);
+                if (res?.data) {
+                  employee = res.data;
+                  setEmployees(prev => {
+                    if (prev.find(e => e.id === res.data.id)) return prev;
+                    return [...prev, res.data];
+                  });
+                }
+              } catch (err) {
+                console.debug("Employee not found:", order.employeeId);
+              }
+            }
+            if (employee) {
+              setEmployeeInput(`${employee.id} - ${employee.name} (${employee.phone})`);
+            } else {
+              setEmployeeInput(order.employeeId.toString()); // Fallback to ID
+            }
+          }
+
+        } catch (error) {
+          toast.error("❌ Lỗi khi tải thông tin đơn hàng");
+          console.error(error);
+        } finally {
+          setLoading(false);
         }
+      };
 
-        const employee = employeesData.find(e => e.id === order.employeeId);
-        if (employee) {
-          setEmployeeInput(employee.id.toString());
-        }
-
-      } catch (error) {
-        toast.error("❌ Lỗi khi tải thông tin đơn hàng");
-        console.error(error);
-      } finally {
-        setLoading(false);
+      if (orderId) {
+        fetchOrderData();
       }
-    };
-
-    if (orderId) {
-      fetchOrderData();
-    }
-  }, [orderId]);
+    }, [orderId]);
 
   const handleCustomerChange = async (e) => {
     const value = e.target.value;
+    setCustomerInput(value);
+
+    // Try to extract numeric ID first
     const idMatch = value.match(/^\d+/);
     const inputId = idMatch ? parseInt(idMatch[0], 10) : null;
 
     if (inputId && !isNaN(inputId)) {
-      setCustomerInput(inputId.toString());
+      // Found numeric ID
       setFormData(prev => ({ ...prev, customerId: inputId.toString() }));
 
+      // Fetch if not in list
       const existingCustomer = customers.find(c => c.id === inputId);
       if (!existingCustomer) {
         try {
@@ -121,39 +160,122 @@ export default function OrderEditForm({ orderId, onSuccess, onCancel }) {
         }
       }
     } else {
-      setCustomerInput(value);
-      setFormData(prev => ({ ...prev, customerId: "" }));
+      // Try match by name
+      const matched = customers.find(
+        c => c.name?.toLowerCase().trim() === value.toLowerCase().trim()
+      );
+
+      if (matched) {
+        setFormData(prev => ({ ...prev, customerId: matched.id?.toString() ?? "" }));
+      } else {
+        try {
+          const res = await axiosClient.get("/customers?page=1&size=10");
+          const newCustomers = res.data.data || [];
+          const found = newCustomers.find(
+            c => c.name?.toLowerCase().trim() === value.toLowerCase().trim()
+          );
+          if (found) {
+            setFormData(prev => ({ ...prev, customerId: found.id?.toString() ?? "" }));
+            setCustomers(newCustomers);
+          } else {
+            setFormData(prev => ({ ...prev, customerId: "" }));
+          }
+        } catch (err) {
+          console.error(err);
+          toast.error("❌ Lỗi khi tìm khách hàng!");
+        }
+      }
     }
   };
 
-  const handleEmployeeChange = async (e) => {
-    const value = e.target.value;
+  const handleCustomerByNameChange = async (value) => {
+    setCustomerInput(value);
+
+    if (!value || value.trim() === "") {
+      try {
+        const res = await axiosClient.get("/customers?page=1&size=10");
+        setCustomers(res.data.data || []);
+      } catch (err) {
+        console.error("❌ Lỗi khi tải danh sách khách hàng:", err);
+      }
+      setFormData((prev) => ({ ...prev, customerId: "" }));
+      return;
+    }
+
     const idMatch = value.match(/^\d+/);
     const inputId = idMatch ? parseInt(idMatch[0], 10) : null;
 
-    if (inputId && !isNaN(inputId)) {
-      setEmployeeInput(inputId.toString());
-      setFormData(prev => ({ ...prev, employeeId: inputId.toString() }));
+    try {
+      const res = await axiosClient.get("/customers?page=1&size=100");
+      const list = res.data.data || [];
 
-      const existingEmployee = employees.find(emp => emp.id === inputId);
-      if (!existingEmployee) {
-        try {
-          const res = await axiosClient.get(`/employees/${inputId}`);
-          if (res?.data) {
-            setEmployees(prev => {
-              if (prev.find(e => e.id === res.data.id)) return prev;
-              return [...prev, res.data];
-            });
-          }
-        } catch (err) {
-          console.debug("Employee not found:", inputId);
-        }
-      }
-    } else {
-      setEmployeeInput(value);
-      setFormData(prev => ({ ...prev, employeeId: "" }));
+      const filtered = list.filter((c) => {
+        const idOk = inputId && c.id === inputId;
+        const nameOk = c.name.toLowerCase().includes(value.toLowerCase());
+        return idOk || nameOk;
+      });
+
+      setCustomers(filtered.length > 0 ? filtered.slice(0, 10) : list.slice(0, 10));
+
+      const exact = filtered.find(
+        (c) =>
+          c.id === inputId ||
+          c.name.toLowerCase().trim() === value.toLowerCase().trim()
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+        customerId: exact ? exact.id.toString() : "",
+      }));
+    } catch (err) {
+      console.error("❌ Lỗi khi tìm khách hàng:", err);
     }
   };
+
+  const handleEmployeeByNameChange = async (value) => {
+    setEmployeeInput(value);
+
+    if (!value || value.trim() === "") {
+      try {
+        const res = await axiosClient.get("/employees?page=0&size=10");
+        setEmployees(res.data.data || []);
+      } catch (err) {
+        console.error("❌ Lỗi khi tải danh sách nhân viên:", err);
+      }
+      setFormData((prev) => ({ ...prev, employeeId: "" }));
+      return;
+    }
+
+    const idMatch = value.match(/^\d+/);
+    const inputId = idMatch ? parseInt(idMatch[0], 10) : null;
+
+    try {
+      const res = await axiosClient.get("/employees?page=0&size=100"); // 🔴 Use page=0
+      const list = res.data.data || [];
+
+      const filtered = list.filter((e) => {
+        const idOk = inputId && e.id === inputId;
+        const nameOk = e.name.toLowerCase().includes(value.toLowerCase());
+        return idOk || nameOk;
+      });
+
+      setEmployees(filtered.length > 0 ? filtered.slice(0, 10) : list.slice(0, 10));
+
+      const exact = filtered.find(
+        (e) =>
+          e.id === inputId ||
+          e.name.toLowerCase().trim() === value.toLowerCase().trim()
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+        employeeId: exact ? exact.id.toString() : "",
+      }));
+    } catch (err) {
+      console.error("❌ Lỗi khi tìm nhân viên:", err);
+    }
+  };
+
 
   const handleChange = (e) => {
       const { name, value } = e.target;
@@ -413,11 +535,12 @@ export default function OrderEditForm({ orderId, onSuccess, onCancel }) {
             <label>Khách hàng *</label>
             <input
               list="customer-list"
+              name="customerName"
               value={customerInput}
-              onChange={handleCustomerChange}
+              onChange={(e) => handleCustomerByNameChange(e.target.value)}
               required
               autoComplete="off"
-              placeholder="Nhập hoặc chọn mã khách hàng"
+              placeholder="Nhập hoặc chọn tên khách hàng"
             />
             <datalist id="customer-list">
               {customers.map((c) => (
@@ -434,11 +557,12 @@ export default function OrderEditForm({ orderId, onSuccess, onCancel }) {
             <label>Nhân viên *</label>
             <input
               list="employee-list"
+              name="employeeName"
               value={employeeInput}
-              onChange={handleEmployeeChange}
+              onChange={(e) => handleEmployeeByNameChange(e.target.value)}
               required
               autoComplete="off"
-              placeholder="Nhập hoặc chọn mã nhân viên"
+              placeholder="Nhập hoặc chọn tên nhân viên"
             />
             <datalist id="employee-list">
               {employees
