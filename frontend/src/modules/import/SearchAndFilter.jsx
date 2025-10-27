@@ -15,6 +15,10 @@ export default function SearchAndFilter({
     setNewImport,
     setErrors,
     setSupplierSuggestions,
+    totalItems,
+    filters,
+    handleFilterChange,
+    handleFilterByDate,
 }) {
     const handleSearch = () => {
         const id = searchSupplierId.trim();
@@ -24,8 +28,6 @@ export default function SearchAndFilter({
         } else if (name !== "") {
             handleSearchBySupplierName();
         } else {
-            // Assuming showModal is available, but since it's not in props, you may need to adjust
-            // For now, alert as placeholder
             alert("Vui lòng nhập ID hoặc tên nhà cung cấp để tìm kiếm.");
         }
     };
@@ -72,6 +74,8 @@ export default function SearchAndFilter({
                         flex: '1'
                     }}
                 />
+                <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
+                </label>
                 <input
                     type="text"
                     placeholder="Nhập tên nhà cung cấp..."
@@ -147,6 +151,24 @@ export default function SearchAndFilter({
             >
                 ➕ Thêm mới
             </button>
+
+            {/* Added Filter Section */}
+            <div className="filter-section">
+
+                <label>Ngày bắt đầu:</label>
+                <input
+                    type="date"
+                    value={filters.startDate}
+                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                />
+                <label>Ngày kết thúc:</label>
+                <input
+                    type="date"
+                    value={filters.endDate}
+                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                />
+                <button id="btn-filter-date" onClick={handleFilterByDate}><span className="text-in-button">Lọc theo ngày </span></button>
+            </div>
         </div>
     );
 }
