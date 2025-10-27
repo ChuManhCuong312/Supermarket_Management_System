@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import revenueService from '../revenueService';
 
 export default function DashboardStats({ dateRange }) {
   const [stats, setStats] = useState({
@@ -19,40 +20,62 @@ export default function DashboardStats({ dateRange }) {
   const fetchDashboardStats = async () => {
     setLoading(true);
     try {
-      // Mock data - replace with actual API calls
-      const mockData = {
-        totalRevenue: 125000000,
-        totalOrders: 1247,
-        totalCustomers: 892,
-        totalProducts: 156,
-        dailyRevenue: [
-          { date: '2024-01-01', revenue: 2500000 },
-          { date: '2024-01-02', revenue: 3200000 },
-          { date: '2024-01-03', revenue: 2800000 },
-          { date: '2024-01-04', revenue: 4100000 },
-          { date: '2024-01-05', revenue: 3500000 }
-        ],
-        topCategories: [
-          { name: 'Thực phẩm', revenue: 45000000, percentage: 36 },
-          { name: 'Đồ uống', revenue: 32000000, percentage: 25.6 },
-          { name: 'Vệ sinh', revenue: 28000000, percentage: 22.4 },
-          { name: 'Khác', revenue: 20000000, percentage: 16 }
-        ]
-      };
+      // Fetch từ API thật
+      const [revenueResponse, categoriesResponse, dailyResponse] = await Promise.all([
+        revenueService.getTotalRevenue(dateRange.startDate, dateRange.endDate),
+        revenueService.getRevenueByCategory(dateRange.startDate, dateRange.endDate),
+        revenueService.getDailyRevenue(dateRange.startDate, dateRange.endDate)
+      ]);
+
+      const totalRevenue = revenueResponse.data.totalRevenue || 0;
+      const totalOrders = revenueResponse.data.totalOrders || 0;
       
-      setStats(mockData);
+      // Calculate categories percentage
+      const topCategoriesData = categoriesResponse.data || [];
+      const totalCatRevenue = topCategoriesData.reduce((sum, cat) => sum + (parseFloat(cat.revenue) || 0), 0);
+      const topCategories = topCategoriesData.map(cat => ({
+        name: cat.category,
+        revenue: parseFloat(cat.revenue) || 0,
+        percentage: totalCatRevenue > 0 ? Math.round((cat.revenue / totalCatRevenue) * 100) : 0
+      }));
+
+      // Prepare daily revenue data
+      const dailyRevenue = (dailyResponse.data || []).map(item => ({
+        date: item.date,
+        revenue: parseFloat(item.revenue) || 0
+      }));
+      
+      setStats({
+        totalRevenue,
+        totalOrders,
+        totalCustomers: 0, // Không có trong API
+        totalProducts: 0, // Không có trong API
+        dailyRevenue,
+        topCategories
+      });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
+      // Fallback to empty data on error
+      setStats({
+        totalRevenue: 0,
+        totalOrders: 0,
+        totalCustomers: 0,
+        totalProducts: 0,
+        dailyRevenue: [],
+        topCategories: []
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const formatCurrency = (amount) => {
+    // Handle BigDecimal from backend
+    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
-    }).format(amount);
+    }).format(num || 0);
   };
 
   if (loading) {
