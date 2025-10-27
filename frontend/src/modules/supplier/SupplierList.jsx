@@ -260,7 +260,7 @@ export default function SupplierList() {
         <span className="phone-icon" /> Số điện thoại
       </label>
       <input
-        type="text"
+        type="number"
         placeholder="Nhập số điện thoại..."
         value={filters.phone}
         onChange={(e) => handleFilterChange("phone", e.target.value)}
@@ -388,8 +388,9 @@ export default function SupplierList() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Email</label>
+                  <label>Email<span className="required">*</span></label>
                   <input
+                    required
                     type="email"
                     placeholder="Nhập email"
                     value={formData.email|| ""}
@@ -397,16 +398,18 @@ export default function SupplierList() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Địa chỉ</label>
+                  <label>Địa chỉ<span className="required">*</span></label>
                   <input
+                    required
                     placeholder="Nhập địa chỉ"
                     value={formData.address|| ""}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Người liên hệ</label>
+                  <label>Người liên hệ<span className="required">*</span></label>
                   <input
+                    required
                     placeholder="Nhập tên người liên hệ"
                     value={formData.contactPerson|| ""}
                     onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}

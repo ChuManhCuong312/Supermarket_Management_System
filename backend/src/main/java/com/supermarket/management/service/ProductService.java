@@ -63,6 +63,7 @@ public class ProductService {
 
     @Transactional
     public Product createProduct(ProductRequest request) {
+        System.out.println("Received ProductRequest: " + request);
         Supplier supplier = supplierRepository.findById(request.getSupplierId())
                 .orElseThrow(() -> new IllegalArgumentException("Nhà cung cấp không được trống và phải tồn tại"));
 
