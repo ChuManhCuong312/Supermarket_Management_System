@@ -58,13 +58,16 @@ ul.unsorted-list {
 }
 
 .total-number {
-    margin-right: 15px;
-    padding: 10px;
+    margin-left: 15px;
+    padding: 10px 20px;
+    color: rgb(102, 102, 102);
+    font-size: 14px;
+    background: rgb(241, 248, 233);
 }
 
 .total-items-count {
     font-weight: bold;
-    padding: 3px;
+    padding: 5px;
 }
 
 #btn-filter-date {
