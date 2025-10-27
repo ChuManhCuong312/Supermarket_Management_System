@@ -267,9 +267,9 @@ const handleSaveEmployee = async (e) => {
                 value={filters.phone}
                 onChange={(e) => handleFilterChange("phone", e.target.value)}
               onKeyDown={(e) => {
-                          if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
-                            e.preventDefault();
-                          }
+              if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+              e.preventDefault();
+              }
                         }}
               />
             </div>
