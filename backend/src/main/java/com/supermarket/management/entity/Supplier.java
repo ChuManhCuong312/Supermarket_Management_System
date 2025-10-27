@@ -15,17 +15,17 @@ public class Supplier {
     @Column(name = "company_name", nullable = false, length = 100)
     private String companyName;
 
-    @Column(nullable = false, length = 15)
+    @Column(unique = true,nullable = false, length = 15)
     private String phone;
 
     @Email
-    @Column(unique = true, length = 100)
+    @Column(unique = true,nullable = false, length = 100)
     private String email;
 
-    @Column(length = 255)
+    @Column(length = 255,nullable = false)
     private String address;
 
-    @Column(name = "contact_person", length = 100)
+    @Column(name = "contact_person",nullable = false, length = 100)
     private String contactPerson;
 
     // Getters and Setters

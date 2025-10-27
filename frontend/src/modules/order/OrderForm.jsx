@@ -9,7 +9,7 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
     customerId: "",
     employeeId: "",
-    orderDate: "",
+    orderDate:  new Date().toISOString().split("T")[0],
     discount: "",
   });
 
@@ -25,8 +25,8 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
     const fetchInitialData = async () => {
       try {
         const [custRes, empRes, prodRes] = await Promise.all([
-          axiosClient.get("/customers?page=1&size=50"),
-          axiosClient.get("/employees?page=0&size=50"),
+          axiosClient.get("/customers?page=1&size=10"),
+          axiosClient.get("/employees?page=0&size=10"),
           axiosClient.get("/products"),
         ]);
         setCustomers(custRes.data.data || []);
@@ -70,7 +70,7 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
       setFormData({
         customerId: "",
         employeeId: "",
-        orderDate: "",
+        orderDate:  new Date().toISOString().split("T")[0],
         discount: "",
       });
       setCustomerInput("");
@@ -138,7 +138,36 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+
+    if (name === "discount") {
+      let discountValue = parseFloat(value);
+      if (isNaN(discountValue)) discountValue = 0;
+
+      // Clamp between 0 and 100
+      if (discountValue < 0 || discountValue > 100) {
+        toast.warn("⚠️ Giảm giá phải nằm trong khoảng 0% đến 100%");
+      }
+
+      if (discountValue < 0) discountValue = 0;
+      if (discountValue > 100) discountValue = 100;
+
+      setFormData((prev) => ({
+        ...prev,
+        discount: discountValue.toString(),
+      }));
+
+    }
+    else if (name === "orderDate") {
+        const today = new Date().toISOString().split("T")[0];
+        if (value > today) {
+          toast.warn("⚠️ Ngày mua không được lớn hơn ngày hôm nay!");
+          setFormData((prev) => ({ ...prev, orderDate: today }));
+        } else {
+          setFormData((prev) => ({ ...prev, orderDate: value }));
+        }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleProductChange = async (index, value) => {
@@ -334,6 +363,7 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
               name="orderDate"
               value={formData.orderDate}
               onChange={handleChange}
+              max={new Date().toISOString().split("T")[0]} // ✅ limit to today
               required
             />
           </div>
@@ -349,7 +379,7 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
               placeholder="0"
               min="0"
               max="100"
-              step="0.01"
+              step="1"
             />
           </div>
 

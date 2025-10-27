@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
-import importService from "./importService";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import importService from "../import/importService";
+import supplierService from "../import/supplierService";
 import "../../styles/Customer-Employee.css";
+import "../../styles/import.css";
+import Header from "../import/Header";
+import SearchAndFilter from "../import/SearchAndFilter";
+import ImportTable from "../import/ImportTable";
+import Pagination from "../import/Pagination";
+import AddEditModal from "../import/AddEditModal";
+import NotificationModal from "../import/NotificationModal";
 
 export default function ImportList() {
     const [errors, setErrors] = useState({});
@@ -16,9 +22,9 @@ export default function ImportList() {
         maxAmount: "",
     });
 
-    const [searchId, setSearchId] = useState("");
+    const [searchSupplierName, setSearchSupplierName] = useState("");
+    const [searchSupplierId, setSearchSupplierId] = useState("");
     const [isSearching, setIsSearching] = useState(false);
-
     const [newImport, setNewImport] = useState({
         supplierId: "",
         supplierName: "",
@@ -29,19 +35,17 @@ export default function ImportList() {
     });
 
     const [supplierSuggestions, setSupplierSuggestions] = useState([]);
-
     const [showAddBox, setShowAddBox] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
-
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalItems, setTotalItems] = useState(0);
-
     const [modal, setModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
-    const navigate = useNavigate();
 
     const [supplierNames, setSupplierNames] = useState({});
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
 
     // === Fetch Imports ===
     const fetchImports = async () => {
@@ -65,12 +69,12 @@ export default function ImportList() {
 
             try {
                 const responses = await Promise.all(
-                    uniqueIds.map(id => axios.get(`http://localhost:8080/api/suppliers/${id}`))
+                    uniqueIds.map(id => supplierService.getById(id))
                 );
                 const newNames = {};
-                responses.forEach((res, index) => {
+                responses.forEach((supplier, index) => {
                     const id = uniqueIds[index];
-                    newNames[id] = res.data.companyName || "Không xác định";
+                    newNames[id] = supplier.companyName || "Không xác định";
                 });
                 setSupplierNames(prev => ({ ...prev, ...newNames }));
             } catch (err) {
@@ -82,38 +86,84 @@ export default function ImportList() {
         if (imports.length > 0) {
             fetchSupplierNames();
         }
-    }, [imports, supplierNames]);
+    }, [imports]);
 
-    // === Search by ID ===
-    const handleSearchById = async () => {
-        if (!searchId || searchId.trim() === "") {
-            showModal("⚠️ Cảnh báo", "Vui lòng nhập ID cần tìm", "error");
+    // === Search by Supplier Name ===
+    const handleSearchBySupplierName = async () => {
+        if (!searchSupplierName || searchSupplierName.trim() === "") {
+            showModal("⚠️ Cảnh báo", "Vui lòng nhập tên nhà cung cấp cần tìm", "error");
             return;
         }
 
         try {
-            const response = await axios.get(`http://localhost:8080/api/imports/${searchId}`);
-            if (response.data) {
-                setImports([response.data]); // Show only the searched item
+            const suppliers = await supplierService.searchByName(searchSupplierName);
+            if (suppliers.length === 0) {
+                showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với tên: ${searchSupplierName}`, "error");
+                setImports([]);
+                return;
+            }
+
+            const supplierIds = suppliers.map(s => s.supplierId);
+            const allImportsResponse = await importService.getAll(0, 1000);
+            const filteredImports = allImportsResponse.imports.filter(i => supplierIds.includes(i.supplier_id));
+
+            if (filteredImports.length > 0) {
+                setImports(filteredImports);
                 setIsSearching(true);
                 setTotalPages(1);
-                setTotalItems(1);
-
+                setTotalItems(filteredImports.length);
+            } else {
+                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với tên: ${searchSupplierName}`, "error");
+                setImports([]);
             }
         } catch (err) {
-            if (err.response?.status === 404) {
-                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập với ID: ${searchId}`, "error");
-                setImports([]);
-            } else {
-                showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
-            }
+            showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
             console.error("Search error:", err);
         }
     };
 
-    // === Clear search and reload all ===
+    // === Search by Supplier ID ===
+    const handleSearchBySupplierId = async () => {
+        if (!searchSupplierId || searchSupplierId.trim() === "") {
+            showModal("⚠️ Cảnh báo", "Vui lòng nhập ID nhà cung cấp cần tìm", "error");
+            return;
+        }
+
+        try {
+            const supplier = await supplierService.getById(searchSupplierId);
+            if (!supplier) {
+                showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với ID: ${searchSupplierId}`, "error");
+                setImports([]);
+                return;
+            }
+
+            const allImportsResponse = await importService.getAll(0, 1000);
+            const filteredImports = allImportsResponse.imports.filter(i => i.supplier_id == searchSupplierId);
+
+            if (filteredImports.length > 0) {
+                setImports(filteredImports);
+                setIsSearching(true);
+                setTotalPages(1);
+                setTotalItems(filteredImports.length);
+            } else {
+                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với ID: ${searchSupplierId}`, "error");
+                setImports([]);
+            }
+        } catch (err) {
+            showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
+            console.error("Search error:", err);
+        }
+    };
+
     const handleClearSearch = () => {
-        setSearchId("");
+        setSearchSupplierName("");
+        setSearchSupplierId("");
+        setFilters({
+            startDate: "",
+            endDate: "",
+            minAmount: "",
+            maxAmount: "",
+        });
         setIsSearching(false);
         setPage(0);
         fetchImports();
@@ -123,18 +173,17 @@ export default function ImportList() {
         fetchImports();
     }, [page]);
 
-    // === Handlers ===
     const handleFilterChange = (key, value) => setFilters({ ...filters, [key]: value });
     const handleNewChange = (key, value) => setNewImport({ ...newImport, [key]: value });
 
     const handleSupplierSearch = async (e) => {
         const value = e.target.value;
-        setNewImport({ ...newImport, supplierName: value, supplierId: "" }); // Reset ID when typing
+        setNewImport({ ...newImport, supplierName: value, supplierId: "" });
 
         if (value.length >= 2) {
             try {
-                const response = await axios.get(`http://localhost:8080/api/suppliers/search?name=${encodeURIComponent(value)}`);
-                setSupplierSuggestions(response.data.data || []);
+                const suggestions = await supplierService.searchByName(value);
+                setSupplierSuggestions(suggestions);
             } catch (err) {
                 console.error("Lỗi khi tìm kiếm nhà cung cấp:", err);
                 showModal("❌ Lỗi", "Không thể tìm kiếm nhà cung cấp", "error");
@@ -153,12 +202,84 @@ export default function ImportList() {
         setSupplierSuggestions([]);
     };
 
+    const handleSaveImport = async (e) => {
+        e.preventDefault();
+        setErrors({});
+
+        let hasError = false;
+        const newErrors = {};
+
+        if (!newImport.supplierId) {
+            newErrors.supplierId = "Vui lòng chọn nhà cung cấp từ danh sách gợi ý";
+            hasError = true;
+        }
+
+        const amount = parseFloat(newImport.totalAmount);
+        if (isNaN(amount) || amount < 0) {
+            newErrors.totalAmount = "Tổng tiền phải là số lớn hơn hoặc bằng 0";
+            hasError = true;
+        }
+
+        if (hasError) {
+            setErrors(newErrors);
+            return;
+        }
+
+        try {
+            const payload = {
+                supplier_id: parseInt(newImport.supplierId),
+                import_date: newImport.importDate,
+                total_amount: amount,
+                status: newImport.status,
+                note: newImport.note,
+            };
+
+            if (isEditing) {
+                await importService.update(editingId, payload);
+                showModal("✓ Thành công", "Cập nhật phiếu nhập thành công!", "success");
+            } else {
+                await importService.create(payload);
+                showModal("✓ Thành công", "Thêm mới phiếu nhập thành công!", "success");
+            }
+
+            setShowAddBox(false);
+            setIsEditing(false);
+            setEditingId(null);
+            setNewImport({
+                supplierId: "",
+                supplierName: "",
+                importDate: "",
+                totalAmount: "",
+                status: "",
+                note: "",
+            });
+            setSupplierSuggestions([]);
+            fetchImports();
+        } catch (err) {
+            console.error("Error saving import:", err);
+            if (err.response?.status === 400 && err.response?.data?.details) {
+                const backendErrors = err.response.data.details;
+                const mappedErrors = {
+                    supplierId: backendErrors.supplier_id,
+                    importDate: backendErrors.import_date,
+                    totalAmount: backendErrors.total_amount,
+                    status: backendErrors.status,
+                    note: backendErrors.note,
+                };
+                setErrors(mappedErrors);
+            } else {
+                showModal("❌ Lỗi", err.response?.data?.message || "Không thể lưu phiếu nhập", "error");
+            }
+        }
+    };
+
+
     const handleEdit = async (importItem) => {
         let supplierName = supplierNames[importItem.supplier_id];
         if (!supplierName) {
             try {
-                const res = await axios.get(`http://localhost:8080/api/suppliers/${importItem.supplier_id}`);
-                supplierName = res.data.companyName || "Không xác định";
+                const supplier = await supplierService.getById(importItem.supplier_id);
+                supplierName = supplier.companyName || "Không xác định";
                 setSupplierNames(prev => ({ ...prev, [importItem.supplier_id]: supplierName }));
             } catch (err) {
                 console.error("Lỗi khi tải tên nhà cung cấp cho chỉnh sửa:", err);
@@ -180,78 +301,30 @@ export default function ImportList() {
         setShowAddBox(true);
     };
 
-    const handleSaveImport = async (e) => {
-        e.preventDefault();
-        setErrors({}); // reset lỗi cũ
-
-        if (!newImport.supplierId) {
-            setErrors({ supplierName: "Vui lòng chọn nhà cung cấp từ danh sách gợi ý" });
-            return;
-        }
-
-        try {
-            // ✅ Convert frontend camelCase to backend snake_case
-            const payload = {
-                supplier_id: parseInt(newImport.supplierId),
-                import_date: newImport.importDate,
-                total_amount: parseFloat(newImport.totalAmount),
-                status: newImport.status,
-                note: newImport.note,
-            };
-
-            if (isEditing) {
-                await importService.update(editingId, payload);
-                showModal("✓ Thành công", "Cập nhật phiếu nhập thành công!", "success");
-            } else {
-                await importService.create(payload);
-                showModal("✓ Thành công", "Thêm mới phiếu nhập thành công!", "success");
-            }
-
-            // Reset form
-            setShowAddBox(false);
-            setIsEditing(false);
-            setEditingId(null);
-            setNewImport({
-                supplierId: "",
-                supplierName: "",
-                importDate: "",
-                totalAmount: "",
-                status: "",
-                note: "",
-            });
-            setSupplierSuggestions([]);
-
-            fetchImports(); // load lại danh sách
-        } catch (err) {
-            console.error("Error saving import:", err);
-            if (err.response?.status === 400 && err.response?.data?.details) {
-                // ✅ Map backend snake_case errors to frontend camelCase
-                const backendErrors = err.response.data.details;
-                const mappedErrors = {
-                    supplierName: backendErrors.supplier_id,
-                    importDate: backendErrors.import_date,
-                    totalAmount: backendErrors.total_amount,
-                    status: backendErrors.status,
-                    note: backendErrors.note,
-                };
-                setErrors(mappedErrors);
-            } else {
-                showModal("❌ Lỗi", err.response?.data?.message || "Không thể lưu phiếu nhập", "error");
-            }
-        }
+    const handleDelete = (id) => {
+        setDeleteId(id);
+        setShowDeleteConfirm(true);
     };
 
-    // ✅ Delete function
-    const handleDelete = async (id) => {
-        if (!window.confirm("Bạn có chắc muốn xoá phiếu nhập này?")) return;
+    const confirmDelete = async () => {
+        setShowDeleteConfirm(false);
+        if (!deleteId) return;
+
         try {
-            await axios.delete(`http://localhost:8080/api/imports/${id}`);
+            await importService.delete(deleteId);
             showModal("🗑️ Thành công", "Đã xoá phiếu nhập!", "success");
             fetchImports();
         } catch (error) {
             console.error("Delete error:", error);
             showModal("❌ Lỗi", error.response?.data?.message || "Xoá thất bại!", "error");
+        } finally {
+            setDeleteId(null);
         }
+    };
+
+    const cancelDelete = () => {
+        setShowDeleteConfirm(false);
+        setDeleteId(null);
     };
 
     const handleSortByDate = async () => {
@@ -282,6 +355,28 @@ export default function ImportList() {
         }
     };
 
+    const handleFilterByDate = async () => {
+        const { startDate, endDate } = filters;
+        if (!startDate || !endDate) {
+            showModal("⚠️ Cảnh báo", "Vui lòng nhập ngày bắt đầu và kết thúc", "error");
+            return;
+        }
+        if (new Date(startDate) > new Date(endDate)) {
+            showModal("⚠️ Cảnh báo", "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc", "error");
+            return;
+        }
+        try {
+            const data = await importService.filterByDate(startDate, endDate, sortDate);
+            setImports(data);
+            setIsSearching(true);
+            setTotalPages(1);
+            setTotalItems(data.length);
+        } catch (err) {
+            console.error("Filter error:", err);
+            showModal("❌ Lỗi", "Không thể lọc theo ngày", "error");
+        }
+    };
+
     const handlePageChange = (newPage) => setPage(newPage);
 
     const showModal = (title, message, type = "info") => {
@@ -291,298 +386,81 @@ export default function ImportList() {
 
     const closeModal = () => setModal({ isOpen: false, title: "", message: "", type: "info" });
 
-    // === Render ===
     return (
         <>
-            {/* Header */}
-            <div className="header">
-                <div className="header-left">
-                    <span className="header-icon">📥</span>
-                    <h2 className="header-title">Quản lý nhập kho</h2>
+            <Header />
+            <SearchAndFilter
+                searchSupplierName={searchSupplierName}
+                setSearchSupplierName={setSearchSupplierName}
+                searchSupplierId={searchSupplierId}
+                setSearchSupplierId={setSearchSupplierId}
+                handleSearchBySupplierName={handleSearchBySupplierName}
+                handleSearchBySupplierId={handleSearchBySupplierId}
+                isSearching={isSearching}
+                handleClearSearch={handleClearSearch}
+                setShowAddBox={setShowAddBox}
+                setIsEditing={setIsEditing}
+                setEditingId={setEditingId}
+                setNewImport={setNewImport}
+                setErrors={setErrors}
+                setSupplierSuggestions={setSupplierSuggestions}
+            />
+
+            <div className="filter-section">
+                <div className="total-number">
+                    <p>Tổng số:<span class="total-items-count">{totalItems}</span> nhập đơn </p>
                 </div>
+                <label>Ngày bắt đầu:</label>
+                <input class
+                    type="date"
+                    value={filters.startDate}
+                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                />
+                <label>Ngày kết thúc:</label>
+                <input
+                    type="date"
+                    value={filters.endDate}
+                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                />
+                <button id="btn-filter-date" onClick={handleFilterByDate}><span class="text-in-button">Lọc theo ngày </span></button>
             </div>
-
-            {/* Search and Filter Section */}
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '1rem',
-                backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                marginBottom: '1rem',
-                gap: '1rem',
-                flexWrap: 'wrap'
-            }}>
-                {/* Search by ID */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    flex: '1',
-                    minWidth: '300px'
-                }}>
-                    <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
-                        🔍 Tìm theo ID:
-                    </label>
-                    <input
-                        type="number"
-                        placeholder="Nhập ID phiếu nhập..."
-                        value={searchId}
-                        onChange={(e) => setSearchId(e.target.value)}
-                        onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                                handleSearchById();
-                            }
-                        }}
-                        style={{
-                            padding: '0.5rem 1rem',
-                            border: '1px solid #ddd',
-                            borderRadius: '5px',
-                            fontSize: '14px',
-                            minWidth: '180px',
-                            flex: '1'
-                        }}
-                    />
-                    <button onClick={handleSearchById} className="btn" style={{
-                        background: '#3b82f6',
-                        color: 'white',
-                        padding: '0.5rem 1rem',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap'
-                    }}>
-                        Tìm kiếm
-                    </button>
-                    {isSearching && (
-                        <button onClick={handleClearSearch} className="btn" style={{
-                            background: '#ef4444',
-                            color: 'white',
-                            padding: '0.5rem 1rem',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap'
-                        }}>
-                            ✕ Xóa bộ lọc
-                        </button>
-                    )}
-                </div>
-
-                {/* Add Button */}
-                <button
-                    onClick={() => {
-                        setIsEditing(false);
-                        setEditingId(null);
-                        setNewImport({
-                            supplierId: "",
-                            supplierName: "",
-                            importDate: "",
-                            totalAmount: "",
-                            status: "Pending",
-                            note: "",
-                        });
-                        setErrors({});
-                        setSupplierSuggestions([]);
-                        setShowAddBox(true);
-                    }}
-                    className="btn add-btn"
-                    style={{
-                        whiteSpace: 'nowrap'
-                    }}
-                >
-                    ➕ Thêm mới
-                </button>
-            </div>
-
-            {/* Table */}
-            <div className="table-container">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>ID Nhà cung cấp</th>
-                            <th>Tên Nhà cung cấp</th>
-                            <th
-                                style={{ cursor: "pointer", userSelect: "none" }}
-                                onClick={handleSortByDate}
-                            >
-                                Ngày nhập{" "}
-                                <span style={{ fontSize: "14px" }}>
-                                    {sortDate === "asc" ? "▲" : "▼"}
-                                </span>
-                            </th>
-                            <th
-                                style={{ cursor: "pointer", userSelect: "none" }}
-                                onClick={handleSortByAmount}
-                            >
-                                Tổng tiền{" "}
-                                <span style={{ fontSize: "14px" }}>
-                                    {sortAmount === "asc" ? "▲" : "▼"}
-                                </span>
-                            </th>
-                            <th>Trạng thái</th>
-                            <th>Ghi chú</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {imports.length > 0 ? imports.map(i => (
-                            <tr key={i.importId}>
-                                <td>{i.importId}</td>
-                                <td>{i.supplier_id}</td>
-                                <td>{supplierNames[i.supplier_id] || "Đang tải..."}</td>
-                                <td>{new Date(i.import_date).toLocaleDateString("vi-VN")}</td>
-                                <td>{parseFloat(i.total_amount)?.toLocaleString("vi-VN")} ₫</td>
-                                <td>
-                                    <span className={`status-badge status-${i.status?.toLowerCase()}`}>
-                                        {i.status}
-                                    </span>
-                                </td>
-                                <td>{i.note}</td>
-                                <td>
-                                    <div className="action-buttons">
-                                        <button onClick={() => handleEdit(i)} className="edit-btn" title="Chỉnh sửa">
-                                            ✏️
-                                        </button>
-                                        <button onClick={() => handleDelete(i.importId)} className="delete-btn" title="Xóa">
-                                            🗑️
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        )) : (
-                            <tr>
-                                <td colSpan="8" className="no-data">Không có dữ liệu nhập kho</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Pagination */}
-            <div className="pagination">
-                <button onClick={() => handlePageChange(page - 1)} disabled={page === 0 || isSearching}>
-                    ← Trước
-                </button>
-                <span>
-                    {isSearching ? (
-                        `Kết quả tìm kiếm: ${totalItems} phiếu`
-                    ) : (
-                        `Trang ${page + 1} / ${totalPages || 1} (${totalItems} phiếu)`
-                    )}
-                </span>
-                <button onClick={() => handlePageChange(page + 1)} disabled={page === totalPages - 1 || totalPages === 0 || isSearching}>
-                    Sau →
-                </button>
-            </div>
-
-            {/* Modal Add/Edit */}
-            {showAddBox && (
-                <div className="modal-overlay" onClick={() => setShowAddBox(false)}>
-                    <div className="form-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="form-modal-header">
-                            <h3>{isEditing ? "Chỉnh sửa phiếu nhập" : "Thêm phiếu nhập mới"}</h3>
-                            <button className="close-btn" onClick={() => setShowAddBox(false)}>✕</button>
-                        </div>
-                        <form onSubmit={handleSaveImport}>
-                            <div className="form-modal-body">
-                                <div className="form-group">
-                                    <label>Tên Nhà cung cấp <span className="required">*</span></label>
-                                    <input
-                                        type="text"
-                                        value={newImport.supplierName}
-                                        onChange={handleSupplierSearch}
-                                        placeholder="Nhập tên nhà cung cấp để tìm kiếm"
-                                        required
-                                    />
-                                    {errors.supplierName && <p className="error-text">{errors.supplierName}</p>}
-                                    {supplierSuggestions.length > 0 && (
-                                        <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0', border: '1px solid #ddd', maxHeight: '150px', overflowY: 'auto' }}>
-                                            {supplierSuggestions.map(supplier => (
-                                                <li
-                                                    key={supplier.supplierId}
-                                                    onClick={() => handleSelectSupplier(supplier)}
-                                                    style={{ padding: '0.5rem', cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                                                >
-                                                    {supplier.companyName} ({supplier.supplierId})
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                                <div className="form-group">
-                                    <label>Ngày nhập <span className="required">*</span></label>
-                                    <input
-                                        type="date"
-                                        value={newImport.importDate}
-                                        onChange={e => handleNewChange("importDate", e.target.value)}
-                                        required
-                                    />
-                                    {errors.importDate && <p className="error-text">{errors.importDate}</p>}
-                                </div>
-                                <div className="form-group">
-                                    <label>Tổng tiền (₫) <span className="required">*</span></label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={newImport.totalAmount}
-                                        onChange={e => handleNewChange("totalAmount", e.target.value)}
-                                        placeholder="Nhập tổng tiền"
-                                        required
-                                    />
-                                    {errors.totalAmount && <p className="error-text">{errors.totalAmount}</p>}
-                                </div>
-                                <div className="form-group">
-                                    <label>Trạng thái <span className="required">*</span></label>
-                                    <select
-                                        value={newImport.status}
-                                        onChange={e => handleNewChange("status", e.target.value)}
-                                        required
-                                    >
-                                        <option value="">-- Chọn trạng thái --</option>
-                                        <option value="Pending">Pending</option>
-                                        <option value="Completed">Completed</option>
-                                        <option value="Cancelled">Cancelled</option>
-                                    </select>
-                                    {errors.status && <p className="error-text">{errors.status}</p>}
-                                </div>
-                                <div className="form-group">
-                                    <label>Ghi chú</label>
-                                    <textarea
-                                        value={newImport.note}
-                                        onChange={e => handleNewChange("note", e.target.value)}
-                                        placeholder="Nhập ghi chú (tùy chọn)"
-                                        rows="3"
-                                    />
-                                    {errors.note && <p className="error-text">{errors.note}</p>}
-                                </div>
-                            </div>
-                            <div className="form-modal-footer">
-                                <button type="button" className="btn-cancel" onClick={() => setShowAddBox(false)}>
-                                    Hủy
-                                </button>
-                                <button type="submit" className="btn-save">
-                                    {isEditing ? "Cập nhật" : "Lưu"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal thông báo */}
-            {modal.isOpen && (
-                <div className="modal-overlay" onClick={closeModal}>
-                    <div className={`modal-content modal-${modal.type}`} onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-icon">
-                            {modal.type === "success" && "✅"}
-                            {modal.type === "error" && "❌"}
-                            {modal.type === "info" && "ℹ️"}
-                        </div>
-                        <h3 className="modal-title">{modal.title}</h3>
-                        <p className="modal-message">{modal.message}</p>
+            <ImportTable
+                imports={imports}
+                supplierNames={supplierNames}
+                handleSortByDate={handleSortByDate}
+                sortDate={sortDate}
+                handleSortByAmount={handleSortByAmount}
+                sortAmount={sortAmount}
+                handleEdit={handleEdit}
+                handleDelete={handleDelete}
+            />
+            <Pagination
+                page={page}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                isSearching={isSearching}
+                handlePageChange={handlePageChange}
+            />
+            <AddEditModal
+                showAddBox={showAddBox}
+                setShowAddBox={setShowAddBox}
+                isEditing={isEditing}
+                newImport={newImport}
+                handleSupplierSearch={handleSupplierSearch}
+                errors={errors}
+                supplierSuggestions={supplierSuggestions}
+                handleSelectSupplier={handleSelectSupplier}
+                handleNewChange={handleNewChange}
+                handleSaveImport={handleSaveImport}
+            />
+            <NotificationModal modal={modal} closeModal={closeModal} />
+            {showDeleteConfirm && (
+                <div className="modal" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="modal-content" style={{ background: 'white', padding: '20px', borderRadius: '8px', textAlign: 'center' }}>
+                        <h2>Xác nhận xoá</h2>
+                        <p>Bạn có chắc muốn xoá phiếu nhập này?</p>
+                        <button onClick={confirmDelete} style={{ marginRight: '10px' }}>Có</button>
+                        <button onClick={cancelDelete}>Không</button>
                     </div>
                 </div>
             )}
