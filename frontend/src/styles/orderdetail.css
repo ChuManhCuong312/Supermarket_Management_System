@@ -305,6 +305,9 @@ td {
   font-size: 20px;
   padding: 5px;
   transition: transform 0.2s ease;
+  border-radius: 4px;
+  font-weight: 600;
+  color: white;
 }
 
 .icon-button:hover {
@@ -312,11 +315,11 @@ td {
 }
 
 .edit-icon {
-  color: #ffd700;
+  background-color: #ffd700;
 }
 
 .delete-icon {
-  color: #dc2626;
+  background-color: #dc2626;
 }
 
 .pagination {
@@ -358,7 +361,7 @@ td {
 }
 
 /* === Modal Overlay === */
-.modal-overlay {
+.orderdetail-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -372,12 +375,12 @@ td {
 }
 
 /* === Modal Content === */
-.modal-content {
+.orderdetail-modal-content {
   background: #fff;
   padding: 25px;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  width: 420px;
+  width: 700px;
   max-width: 90%;
   animation: fadeIn 0.3s ease-in-out;
 }

@@ -207,8 +207,8 @@ export default function OrderDetailForm({ initialData, onSuccess, onCancel }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="orderdetail-modal-overlay">
+      <div className="orderdetail-modal-content">
         <h2>{initialData ? "Cập nhật Chi tiết Đơn hàng" : "Thêm Chi tiết Đơn hàng"}</h2>
         <form onSubmit={handleSubmit} className="orderdetail-form">
           {/* Order ID */}

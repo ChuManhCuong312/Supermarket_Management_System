@@ -319,220 +319,223 @@ export default function OrderList() {
           />
         )}
 
-        {/* --- Table --- */}
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "40px" }}>
-            <p>Đang tải dữ liệu...</p>
-          </div>
-        ) : error ? (
-          <div style={{ textAlign: "center", padding: "40px", color: "red" }}>
-            <p>{error}</p>
-          </div>
-        ) : (
-          <>
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Mã KH</th>
-                  <th>Mã NV</th>
-                  <th
-                    className={`sortable ${
-                      sortConfig.field === "buyDate" && sortConfig.direction ? sortConfig.direction : ""
-                    }`}
-                    onClick={() => handleSort("buyDate")}
-                  >
-                    Ngày mua
-                  </th>
-                  <th
-                    className={`sortable ${
-                      sortConfig.field === "totalAmount" && sortConfig.direction ? sortConfig.direction : ""
-                    }`}
-                    onClick={() => handleSort("totalAmount")}
-                  >
-                    Tổng tiền
-                  </th>
-                  <th>Giảm giá</th>
-                  {viewType === "deleted" && <th>Trạng thái</th>}
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.length === 0 ? (
-                  <tr>
-                    <td colSpan={viewType === "deleted" ? "8" : "7"} style={{ textAlign: "center" }}>
-                      {isSearching
-                        ? "Không tìm thấy đơn hàng nào."
-                        : viewType === "active"
-                          ? "Không có đơn hàng nào."
-                          : "Không có đơn hàng đã xóa."}
-                    </td>
-                  </tr>
-                ) : (
-                  orders.map((order) => (
-                    <tr key={order.orderId}>
-                      <td>{order.orderId}</td>
-                      <td>{order.customerId}</td>
-                      <td>{order.employeeId}</td>
-                      <td>{order.orderDate}</td>
-                      <td>{order.totalAmount?.toLocaleString()}</td>
-                      <td>{order.discount}%</td>
-                      {viewType === "deleted" && (
-                        <td>
-                          <span style={{
-                            backgroundColor: getStatusColor(order.deletedType),
-                            color: "white",
-                            padding: "4px 8px",
-                            borderRadius: "4px",
-                            fontSize: "12px",
-                            fontWeight: "bold"
-                          }}>
-                            {getStatusLabel(order.deletedType)}
-                          </span>
-                        </td>
-                      )}
-                      <td>
-                        <div className="actions">
-                          {viewType === "active" ? (
-                            <>
-                              <button
-                                className="icon-button edit-icon"
-                                onClick={() => handleEdit(order.orderId)}
-                                title="Sửa"
-                              >
-                                📝
-                              </button>
-                              <button
-                                className="icon-button delete-icon"
-                                onClick={() => handleDelete(order.orderId)}
-                                title="Xóa"
-                              >
-                                🗑️
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              className="icon-button"
-                              onClick={() => handleRestore(order.orderId)}
-                              title="Khôi phục"
-                              style={{ color: "#4CAF50", fontSize: "20px" }}
-                            >
-                              ↩️
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
 
-            {/* Pagination Info */}
-            {totalElements > 0 && (
-              <div style={{
-                textAlign: "center",
-                padding: "10px 0",
-                color: "#666",
-                fontSize: "14px"
-              }}>
-                Hiển thị {orders.length} / {totalElements} đơn hàng
-              </div>
-            )}
-          </>
-        )}
-
-        {/* --- Pagination Controls --- */}
-        <div className="pagination">
-          {/* First page button */}
-          <button
-            onClick={() => setPage(0)}
-            disabled={page === 0}
-            title="Trang đầu"
-          >
-            «
-          </button>
-
-          {/* Previous page button */}
-          <button
-            onClick={() => setPage(page - 1)}
-            disabled={page === 0}
-            title="Trang trước"
-          >
-            ‹
-          </button>
-
-          {/* Page numbers - Smart pagination (max 5 visible) */}
-          {(() => {
-            const maxVisible = 5;
-            let startPage = 0;
-            let endPage = totalPages;
-
-            if (totalPages > maxVisible) {
-              // Calculate start and end based on current page
-              const halfVisible = Math.floor(maxVisible / 2);
-
-              if (page <= halfVisible) {
-                // Near the beginning
-                startPage = 0;
-                endPage = maxVisible;
-              } else if (page >= totalPages - halfVisible - 1) {
-                // Near the end
-                startPage = totalPages - maxVisible;
-                endPage = totalPages;
-              } else {
-                // In the middle
-                startPage = page - halfVisible;
-                endPage = page + halfVisible + 1;
-              }
-            }
-
-            return [...Array(endPage - startPage)].map((_, i) => {
-              const pageNum = startPage + i;
-              return (
-                <button
-                  key={pageNum}
-                  className={pageNum === page ? "active" : ""}
-                  onClick={() => setPage(pageNum)}
-                >
-                  {pageNum + 1}
-                </button>
-              );
-            });
-          })()}
-
-          {/* Next page button */}
-          <button
-            onClick={() => setPage(page + 1)}
-            disabled={page + 1 >= totalPages}
-            title="Trang sau"
-          >
-            ›
-          </button>
-
-          {/* Last page button */}
-          <button
-            onClick={() => setPage(totalPages - 1)}
-            disabled={page + 1 >= totalPages}
-            title="Trang cuối"
-          >
-            »
-          </button>
-
-          {/* Page size selector */}
-          <select
-            value={size}
-            onChange={(e) => {
-              setSize(parseInt(e.target.value));
-              setPage(0); // Reset to first page when changing size
-            }}
-            style={{ marginLeft: "10px" }}
-          >
-            <option value={5}>5 / trang</option>
-            <option value={10}>10 / trang</option>
-            <option value={20}>20 / trang</option>
-          </select>
         </div>
+        <div style={{ marginTop: "50px" }}>
+        {/* --- Table --- */}
+                {loading ? (
+                  <div style={{ textAlign: "center", padding: "40px" }}>
+                    <p>Đang tải dữ liệu...</p>
+                  </div>
+                ) : error ? (
+                  <div style={{ textAlign: "center", padding: "40px", color: "red" }}>
+                    <p>{error}</p>
+                  </div>
+                ) : (
+                  <>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Mã KH</th>
+                          <th>Mã NV</th>
+                          <th
+                            className={`sortable ${
+                              sortConfig.field === "buyDate" && sortConfig.direction ? sortConfig.direction : ""
+                            }`}
+                            onClick={() => handleSort("buyDate")}
+                          >
+                            Ngày mua
+                          </th>
+                          <th
+                            className={`sortable ${
+                              sortConfig.field === "totalAmount" && sortConfig.direction ? sortConfig.direction : ""
+                            }`}
+                            onClick={() => handleSort("totalAmount")}
+                          >
+                            Tổng tiền
+                          </th>
+                          <th>Giảm giá</th>
+                          {viewType === "deleted" && <th>Trạng thái</th>}
+                          <th>Thao tác</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.length === 0 ? (
+                          <tr>
+                            <td colSpan={viewType === "deleted" ? "8" : "7"} style={{ textAlign: "center" }}>
+                              {isSearching
+                                ? "Không tìm thấy đơn hàng nào."
+                                : viewType === "active"
+                                  ? "Không có đơn hàng nào."
+                                  : "Không có đơn hàng đã xóa."}
+                            </td>
+                          </tr>
+                        ) : (
+                          orders.map((order) => (
+                            <tr key={order.orderId}>
+                              <td>{order.orderId}</td>
+                              <td>{order.customerId}</td>
+                              <td>{order.employeeId}</td>
+                              <td>{order.orderDate}</td>
+                              <td>{order.totalAmount?.toLocaleString()}</td>
+                              <td>{order.discount}%</td>
+                              {viewType === "deleted" && (
+                                <td>
+                                  <span style={{
+                                    backgroundColor: getStatusColor(order.deletedType),
+                                    color: "white",
+                                    padding: "4px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "12px",
+                                    fontWeight: "bold"
+                                  }}>
+                                    {getStatusLabel(order.deletedType)}
+                                  </span>
+                                </td>
+                              )}
+                              <td>
+                                <div className="actions">
+                                  {viewType === "active" ? (
+                                    <>
+                                      <button
+                                        className="icon-button edit-icon"
+                                        onClick={() => handleEdit(order.orderId)}
+                                        title="Sửa"
+                                      >
+                                        ✏️
+                                      </button>
+                                      <button
+                                        className="icon-button delete-icon"
+                                        onClick={() => handleDelete(order.orderId)}
+                                        title="Xóa"
+                                      >
+                                        🗑️
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <button
+                                      className="icon-button"
+                                      onClick={() => handleRestore(order.orderId)}
+                                      title="Khôi phục"
+                                      style={{ color: "#4CAF50", fontSize: "20px" }}
+                                    >
+                                      ↩️
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+
+                    {/* Pagination Info */}
+                    {totalElements > 0 && (
+                      <div style={{
+                        textAlign: "center",
+                        padding: "10px 0",
+                        color: "#666",
+                        fontSize: "14px"
+                      }}>
+                        Hiển thị {orders.length} / {totalElements} đơn hàng
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* --- Pagination Controls --- */}
+                <div className="pagination">
+                  {/* First page button */}
+                  <button
+                    onClick={() => setPage(0)}
+                    disabled={page === 0}
+                    title="Trang đầu"
+                  >
+                    «
+                  </button>
+
+                  {/* Previous page button */}
+                  <button
+                    onClick={() => setPage(page - 1)}
+                    disabled={page === 0}
+                    title="Trang trước"
+                  >
+                    ‹
+                  </button>
+
+                  {/* Page numbers - Smart pagination (max 5 visible) */}
+                  {(() => {
+                    const maxVisible = 5;
+                    let startPage = 0;
+                    let endPage = totalPages;
+
+                    if (totalPages > maxVisible) {
+                      // Calculate start and end based on current page
+                      const halfVisible = Math.floor(maxVisible / 2);
+
+                      if (page <= halfVisible) {
+                        // Near the beginning
+                        startPage = 0;
+                        endPage = maxVisible;
+                      } else if (page >= totalPages - halfVisible - 1) {
+                        // Near the end
+                        startPage = totalPages - maxVisible;
+                        endPage = totalPages;
+                      } else {
+                        // In the middle
+                        startPage = page - halfVisible;
+                        endPage = page + halfVisible + 1;
+                      }
+                    }
+
+                    return [...Array(endPage - startPage)].map((_, i) => {
+                      const pageNum = startPage + i;
+                      return (
+                        <button
+                          key={pageNum}
+                          className={pageNum === page ? "active" : ""}
+                          onClick={() => setPage(pageNum)}
+                        >
+                          {pageNum + 1}
+                        </button>
+                      );
+                    });
+                  })()}
+
+                  {/* Next page button */}
+                  <button
+                    onClick={() => setPage(page + 1)}
+                    disabled={page + 1 >= totalPages}
+                    title="Trang sau"
+                  >
+                    ›
+                  </button>
+
+                  {/* Last page button */}
+                  <button
+                    onClick={() => setPage(totalPages - 1)}
+                    disabled={page + 1 >= totalPages}
+                    title="Trang cuối"
+                  >
+                    »
+                  </button>
+
+                  {/* Page size selector */}
+                  <select
+                    value={size}
+                    onChange={(e) => {
+                      setSize(parseInt(e.target.value));
+                      setPage(0); // Reset to first page when changing size
+                    }}
+                    style={{ marginLeft: "10px" }}
+                  >
+                    <option value={5}>5 / trang</option>
+                    <option value={10}>10 / trang</option>
+                    <option value={20}>20 / trang</option>
+                  </select>
+                </div>
       </div>
     </div>
   );

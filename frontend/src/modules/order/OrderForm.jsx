@@ -305,8 +305,8 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="order-modal-overlay">
+      <div className="order-modal-content">
         <h2>{initialData ? "✏️ Cập nhật Đơn hàng" : "➕ Thêm Đơn hàng mới"}</h2>
         <form onSubmit={handleSubmit} className="order-form">
           {/* Customer */}
@@ -394,7 +394,8 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
                   Chưa có sản phẩm nào. Nhấn "Thêm sản phẩm" để bắt đầu.
                 </p>
               ) : (
-                orderDetails.map((detail, index) => (
+                  <div className="order-details-grid">
+                {orderDetails.map((detail, index) => (
                   <div key={index} className="order-detail-item">
                     <div className="order-detail-header">
                       <h4>Sản phẩm #{index + 1}</h4>
@@ -455,7 +456,8 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
                       Thành tiền: {(detail.quantity * detail.unitPrice).toLocaleString()}đ
                     </div>
                   </div>
-                ))
+                ))}
+            </div>
               )}
 
               <button
