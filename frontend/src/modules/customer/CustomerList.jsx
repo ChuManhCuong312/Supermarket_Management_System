@@ -237,7 +237,7 @@ useEffect(() => {
 }, [sortConfig]);
 
   return (
-    <div className="page">
+         <>
       {/* Header */}
       <div className="header">
         <div className="header-left">
@@ -247,24 +247,63 @@ useEffect(() => {
       </div>
 
       {/* Filter */}
-      <div className="filter">
-        <div className="filter-grid">
+      <div className="content">
+        <div className="search-section">
+            <div className="search-group">
+              <label>
+                <span className="search-icon"></span> Tên khách hàng
+              </label>
           <input
             placeholder="Tên khách hàng"
             value={filters.name}
             onChange={(e) => handleFilterChange("name", e.target.value)}
           />
+          <span
+                          className="clear-filter"
+                          onClick={() => {
+                            setFilters({ name: "", phone: "", email: "", position: "" });
+                            handleSearch({});
+                          }}
+                        >
+                          ✖ Clear Filter
+                        </span>
+                      </div>
+
+        <div className="search-group">
+              <label>
+                <span className="list-icon"></span> SĐT
+              </label>
           <input
+            type="tel"
+            pattern="[0-9]*"
+            inputMode="numeric"
             placeholder="SĐT"
             value={filters.phone}
             onChange={(e) => handleFilterChange("phone", e.target.value)}
+            onKeyDown={(e) => {
+              if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                e.preventDefault();
+              }
+            }}
           />
+
+          </div>
+
+          <div className="search-group">
+                        <label>
+                          <span className="list-icon"></span> Email
+                        </label>
           <input
             placeholder="Email"
             value={filters.email}
             onChange={(e) => handleFilterChange("email", e.target.value)}
-
                     />
+           </div>
+
+            <div className="search-group">
+             <label>
+             <span className="list-icon"></span> Loại thành viên
+              </label>
           <select
             value={filters.membershipType}
             onChange={(e) => handleFilterChange("membershipType", e.target.value)}
@@ -275,20 +314,16 @@ useEffect(() => {
             <option value="Thân thiết">Thân thiết</option>
           </select>
         </div>
-        <div className="filter-buttons">
-        <button
-        onClick={() => {
-          setFilters({
-             name: "",
-             phone: "",
-             email: "",
-          });
-          handleSearch({});
-        }}
-          className="clear-filter" >✕ clear filter</button>
-         <button onClick={() => handleSearch(filters)} className="btn search-btn">🔍 Tìm kiếm</button>
-          <button onClick={openAddForm} className="btn add-btn">➕ Thêm mới</button>
         </div>
+
+          <div className="button-group">
+            <button className="search-button" onClick={() => handleSearch(filters)}>
+              🔍 Tìm kiếm
+            </button>
+            <button className="add-button" onClick={openAddForm}>
+              ➕ Thêm mới
+            </button>
+          </div>
       </div>
 
       {/* Stats */}
@@ -388,10 +423,18 @@ useEffect(() => {
                 <div className="form-group">
                   <label>Số điện thoại <span className="required">*</span></label>
                   <input
+                    type="tel"
+                    pattern="[0-9]*"
+                    inputMode="numeric"
                     required
                     placeholder="Nhập SĐT"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </div>
                 <div className="form-group">
@@ -407,6 +450,8 @@ useEffect(() => {
                 <div className="form-group">
                   <label>Địa chỉ<span className="required">*</span></label>
                   <input
+                  required
+                  type="address"
                     placeholder="Nhập địa chỉ"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -430,6 +475,8 @@ useEffect(() => {
                     placeholder="0"
                     value={formData.points}
                     onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value) || 0 })}
+                    onKeyDown={e => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
+                  min="0"
                   />
                 </div>
               </div>
@@ -472,6 +519,6 @@ useEffect(() => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

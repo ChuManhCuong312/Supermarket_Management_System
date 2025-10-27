@@ -1,10 +1,11 @@
-// src/components/SearchAndFilter.js
 import React from "react";
-
 export default function SearchAndFilter({
     searchSupplierName,
     setSearchSupplierName,
+    searchSupplierId,
+    setSearchSupplierId,
     handleSearchBySupplierName,
+    handleSearchBySupplierId,
     isSearching,
     handleClearSearch,
     setShowAddBox,
@@ -35,7 +36,7 @@ export default function SearchAndFilter({
                 minWidth: '300px'
             }}>
                 <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
-                    🔍 Tìm theo Tên Nhà Cung Cấp:
+                    🔍 Tìm kiếm:
                 </label>
                 <input
                     type="text"
@@ -57,6 +58,49 @@ export default function SearchAndFilter({
                     }}
                 />
                 <button onClick={handleSearchBySupplierName} className="btn" style={{
+                    background: '#3b82f6',
+                    color: 'white',
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                }}>
+                    Tìm kiếm
+                </button>
+            </div>
+
+            {/* Search by Supplier ID */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                flex: '1',
+                minWidth: '300px'
+            }}>
+                <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
+                    🔍 Tìm theo ID Nhà Cung Cấp:
+                </label>
+                <input
+                    type="text"
+                    placeholder="Nhập ID nhà cung cấp..."
+                    value={searchSupplierId}
+                    onChange={(e) => setSearchSupplierId(e.target.value)}
+                    onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                            handleSearchBySupplierId();
+                        }
+                    }}
+                    style={{
+                        padding: '0.5rem 1rem',
+                        border: '1px solid #ddd',
+                        borderRadius: '5px',
+                        fontSize: '14px',
+                        minWidth: '180px',
+                        flex: '1'
+                    }}
+                />
+                <button onClick={handleSearchBySupplierId} className="btn" style={{
                     background: '#3b82f6',
                     color: 'white',
                     padding: '0.5rem 1rem',
@@ -101,7 +145,9 @@ export default function SearchAndFilter({
                 }}
                 className="btn add-btn"
                 style={{
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    background: ' #2e7d32',
+
                 }}
             >
                 ➕ Thêm mới
