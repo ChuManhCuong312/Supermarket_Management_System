@@ -109,18 +109,28 @@ const renderSortIcon = (field) => {
 };
 
 const openEditForm = (employee) => {
+  console.log("Editing employee:", employee);
+
   setIsEditing(true);
   setEditingId(employee.id);
+
+  const defaultEmployee = {
+    name: "",
+    position: "",
+    phone: "",
+    email: "",
+    salary: "",
+    shift: "",
+  };
+
   setNewEmployee({
-    name: employee.name,
-    position: employee.position,
-    phone: employee.phone,
-    email: employee.email,
-    salary: employee.salary,
-    shift: employee.shift,
+    ...defaultEmployee,
+    ...employee,
   });
+
   setShowAddBox(true);
 };
+
 
 
   // Đóng form
@@ -299,7 +309,7 @@ const handleSaveEmployee = async (e) => {
                 <option value="Bảo vệ">Bảo vệ</option>
                 <option value="Quản lý">Quản lý</option>
                 <option value="Thu ngân">Thu ngân</option>
-                <option value="Kho">Kho</option>
+                <option value="Kho hàng">Kho hàng</option>
               </select>
             </div>
           </div>
@@ -408,7 +418,7 @@ const handleSaveEmployee = async (e) => {
                     <option value="Thu ngân">Thu ngân</option>
                     <option value="Bán hàng">Bán hàng</option>
                     <option value="Quản lý">Quản lý</option>
-                    <option value="Kho">Kho</option>
+                    <option value="Kho hàng">Kho hàng</option>
                     <option value="Bảo vệ">Bảo vệ</option>
                   </select>
 
@@ -443,6 +453,7 @@ const handleSaveEmployee = async (e) => {
                 <div className="form-group">
                   <label>Lương <span className="required">*</span></label>
                   <input
+                  required
                     type="number"
                     placeholder="Nhập lương"
                     value={newEmployee.salary}
@@ -459,9 +470,9 @@ const handleSaveEmployee = async (e) => {
                     onChange={e => handleNewChange("shift", e.target.value)}
                   >
                     <option value="">-- Chọn ca làm việc --</option>
-                    <option value="Sáng">Ca sáng (7:00 - 11:00)</option>
-                    <option value="Chiều">Ca chiều (13:00 - 17:00)</option>
-                    <option value="Tối">Ca tối (18:00 - 22:00)</option>
+                    <option value="Ca sáng">Ca sáng (7:00 - 11:00)</option>
+                    <option value="Ca chiều">Ca chiều (13:00 - 17:00)</option>
+                    <option value="Ca tối">Ca tối (18:00 - 22:00)</option>
                     <option value="Cả ngày">Cả ngày (7:00 - 22:00)</option>
                   </select>
                 </div>

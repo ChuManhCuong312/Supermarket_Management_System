@@ -393,25 +393,12 @@ export default function ImportList() {
                 setNewImport={setNewImport}
                 setErrors={setErrors}
                 setSupplierSuggestions={setSupplierSuggestions}
+                filters={filters}
+                handleFilterChange={handleFilterChange}
+                handleFilterByDate={handleFilterByDate}
             />
-
-            <div className="filter-section">
-                <div className="total-number">
-                    <p>Tổng số:<span class="total-items-count">{totalItems}</span> nhập đơn </p>
-                </div>
-                <label>Ngày bắt đầu:</label>
-                <input class
-                    type="date"
-                    value={filters.startDate}
-                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                />
-                <label>Ngày kết thúc:</label>
-                <input
-                    type="date"
-                    value={filters.endDate}
-                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                />
-                <button id="btn-filter-date" onClick={handleFilterByDate}><span class="text-in-button">Lọc theo ngày </span></button>
+            <div className="total-number">
+                <p>Tổng số:<span className="total-items-count">{totalItems}</span> nhập đơn </p>
             </div>
             <ImportTable
                 imports={imports}
@@ -444,12 +431,28 @@ export default function ImportList() {
             />
             <NotificationModal modal={modal} closeModal={closeModal} />
             {showDeleteConfirm && (
-                <div className="modal" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div className="modal-content" style={{ background: 'white', padding: '20px', borderRadius: '8px', textAlign: 'center' }}>
-                        <h2>Xác nhận xoá</h2>
-                        <p>Bạn có chắc muốn xoá phiếu nhập này?</p>
-                        <button onClick={confirmDelete} style={{ marginRight: '10px' }}>Có</button>
-                        <button onClick={cancelDelete}>Không</button>
+                <div
+                    className="modal-overlay"
+                >
+                    <div
+                        className="modal-content modal-warning"
+                    >
+                        <h2 style={{ marginBottom: "15px" }}>⚠️ Xác nhận</h2>
+                        <p style={{ color: "#555", marginBottom: "25px" }}>
+                            Bạn có chắc chắn muốn xoá phiếu nhập này không?
+                        </p>
+                        <div style={{ display: "flex", justifyContent: "center", gap: "15px" }}>
+                            <button className="modal-btn modal-btn-cancel"
+                                onClick={cancelDelete}
+                            >
+                                Huỷ
+                            </button>
+                            <button className="modal-btn modal-btn-confirm"
+                                onClick={confirmDelete}
+                            >
+                                Xoá
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

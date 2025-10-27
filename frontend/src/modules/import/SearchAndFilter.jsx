@@ -1,4 +1,5 @@
 import React from "react";
+
 export default function SearchAndFilter({
     searchSupplierName,
     setSearchSupplierName,
@@ -14,7 +15,23 @@ export default function SearchAndFilter({
     setNewImport,
     setErrors,
     setSupplierSuggestions,
+    totalItems,
+    filters,
+    handleFilterChange,
+    handleFilterByDate,
 }) {
+    const handleSearch = () => {
+        const id = searchSupplierId.trim();
+        const name = searchSupplierName.trim();
+        if (id !== "") {
+            handleSearchBySupplierId();
+        } else if (name !== "") {
+            handleSearchBySupplierName();
+        } else {
+            alert("Vui lòng nhập ID hoặc tên nhà cung cấp để tìm kiếm.");
+        }
+    };
+
     return (
         <div style={{
             display: 'flex',
@@ -27,16 +44,16 @@ export default function SearchAndFilter({
             gap: '1rem',
             flexWrap: 'wrap'
         }}>
-            {/* Search by Supplier ID */}
+            {/* Search Inputs */}
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-                flex: '1',
-                minWidth: '300px'
+                flex: '2',
+                minWidth: '600px'
             }}>
                 <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
-                    🔍 Tìm kiếm:
+                    🔍 Tìm kiếm
                 </label>
                 <input
                     type="text"
@@ -45,7 +62,7 @@ export default function SearchAndFilter({
                     onChange={(e) => setSearchSupplierId(e.target.value)}
                     onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                            handleSearchBySupplierId();
+                            handleSearch();
                         }
                     }}
                     style={{
@@ -57,7 +74,28 @@ export default function SearchAndFilter({
                         flex: '1'
                     }}
                 />
-                <button onClick={handleSearchBySupplierId} className="btn" style={{
+                <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
+                </label>
+                <input
+                    type="text"
+                    placeholder="Nhập tên nhà cung cấp..."
+                    value={searchSupplierName}
+                    onChange={(e) => setSearchSupplierName(e.target.value)}
+                    onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                            handleSearch();
+                        }
+                    }}
+                    style={{
+                        padding: '0.5rem 1rem',
+                        border: '1px solid #ddd',
+                        borderRadius: '5px',
+                        fontSize: '14px',
+                        minWidth: '180px',
+                        flex: '1'
+                    }}
+                />
+                <button onClick={handleSearch} className="btn" style={{
                     background: '#3b82f6',
                     color: 'white',
                     padding: '0.5rem 1rem',
@@ -83,48 +121,6 @@ export default function SearchAndFilter({
                 )}
             </div>
 
-            {/* Search by Supplier Name */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                flex: '1',
-                minWidth: '300px'
-            }}>
-
-                <input
-                    type="text"
-                    placeholder="Nhập tên nhà cung cấp..."
-                    value={searchSupplierName}
-                    onChange={(e) => setSearchSupplierName(e.target.value)}
-                    onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                            handleSearchBySupplierName();
-                        }
-                    }}
-                    style={{
-                        padding: '0.5rem 1rem',
-                        border: '1px solid #ddd',
-                        borderRadius: '5px',
-                        fontSize: '14px',
-                        minWidth: '180px',
-                        flex: '1'
-                    }}
-                />
-                <button onClick={handleSearchBySupplierName} className="btn" style={{
-                    background: '#3b82f6',
-                    color: 'white',
-                    padding: '0.5rem 1rem',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap'
-                }}>
-                    Tìm kiếm
-                </button>
-            </div>
-
-
             {/* Add Button */}
             <button
                 onClick={() => {
@@ -145,12 +141,34 @@ export default function SearchAndFilter({
                 className="btn add-btn"
                 style={{
                     whiteSpace: 'nowrap',
-                    background: ' #2e7d32',
-
+                    color: 'white',
+                    backgroundColor: '#10b981',
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
                 }}
             >
                 ➕ Thêm mới
             </button>
+
+            {/* Added Filter Section */}
+            <div className="filter-section">
+
+                <label>Ngày bắt đầu:</label>
+                <input
+                    type="date"
+                    value={filters.startDate}
+                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                />
+                <label>Ngày kết thúc:</label>
+                <input
+                    type="date"
+                    value={filters.endDate}
+                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                />
+                <button id="btn-filter-date" onClick={handleFilterByDate}><span className="text-in-button">Lọc theo ngày </span></button>
+            </div>
         </div>
     );
 }

@@ -455,6 +455,7 @@ type="tel"
                 <div className="form-group">
                   <label>Địa chỉ<span className="required">*</span></label>
                   <input
+                  required
                     placeholder="Nhập địa chỉ"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
