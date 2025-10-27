@@ -27,49 +27,6 @@ export default function SearchAndFilter({
             gap: '1rem',
             flexWrap: 'wrap'
         }}>
-            {/* Search by Supplier Name */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                flex: '1',
-                minWidth: '300px'
-            }}>
-                <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
-                    🔍 Tìm kiếm:
-                </label>
-                <input
-                    type="text"
-                    placeholder="Nhập tên nhà cung cấp..."
-                    value={searchSupplierName}
-                    onChange={(e) => setSearchSupplierName(e.target.value)}
-                    onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                            handleSearchBySupplierName();
-                        }
-                    }}
-                    style={{
-                        padding: '0.5rem 1rem',
-                        border: '1px solid #ddd',
-                        borderRadius: '5px',
-                        fontSize: '14px',
-                        minWidth: '180px',
-                        flex: '1'
-                    }}
-                />
-                <button onClick={handleSearchBySupplierName} className="btn" style={{
-                    background: '#3b82f6',
-                    color: 'white',
-                    padding: '0.5rem 1rem',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap'
-                }}>
-                    Tìm kiếm
-                </button>
-            </div>
-
             {/* Search by Supplier ID */}
             <div style={{
                 display: 'flex',
@@ -79,7 +36,7 @@ export default function SearchAndFilter({
                 minWidth: '300px'
             }}>
                 <label style={{ fontWeight: '500', whiteSpace: 'nowrap' }}>
-                    🔍 Tìm theo ID Nhà Cung Cấp:
+                    🔍 Tìm kiếm:
                 </label>
                 <input
                     type="text"
@@ -125,6 +82,48 @@ export default function SearchAndFilter({
                     </button>
                 )}
             </div>
+
+            {/* Search by Supplier Name */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                flex: '1',
+                minWidth: '300px'
+            }}>
+
+                <input
+                    type="text"
+                    placeholder="Nhập tên nhà cung cấp..."
+                    value={searchSupplierName}
+                    onChange={(e) => setSearchSupplierName(e.target.value)}
+                    onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                            handleSearchBySupplierName();
+                        }
+                    }}
+                    style={{
+                        padding: '0.5rem 1rem',
+                        border: '1px solid #ddd',
+                        borderRadius: '5px',
+                        fontSize: '14px',
+                        minWidth: '180px',
+                        flex: '1'
+                    }}
+                />
+                <button onClick={handleSearchBySupplierName} className="btn" style={{
+                    background: '#3b82f6',
+                    color: 'white',
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                }}>
+                    Tìm kiếm
+                </button>
+            </div>
+
 
             {/* Add Button */}
             <button
