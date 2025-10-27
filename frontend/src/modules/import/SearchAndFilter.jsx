@@ -1,5 +1,4 @@
 import React from "react";
-
 export default function SearchAndFilter({
     searchSupplierName,
     setSearchSupplierName,
@@ -146,7 +145,9 @@ export default function SearchAndFilter({
                 }}
                 className="btn add-btn"
                 style={{
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    background: ' #2e7d32',
+
                 }}
             >
                 ➕ Thêm mới
