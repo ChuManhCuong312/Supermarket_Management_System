@@ -405,6 +405,10 @@ export default function ImportList() {
                 setErrors={setErrors}
                 setSupplierSuggestions={setSupplierSuggestions}
             />
+            <div className="total-number">
+                <p>Tổng số: {totalItems} nhập đơn </p>
+            </div>
+
             <div className="filter-section">
                 <label>Ngày bắt đầu:</label>
                 <input
