@@ -55,6 +55,8 @@ public class OrderService {
 
     @Transactional
     public Order createOrder(Order order) {
+        trimOrder(order);
+        validateOrder(order, null);
         // Validate required fields
         if (order.getCustomerId() == null) {
             throw new IllegalArgumentException("Customer ID is required");
@@ -84,7 +86,8 @@ public class OrderService {
         // Find existing order
         Order existingOrder = orderRepository.findByOrderIdAndDeletedTypeIsNull(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
-
+        trimOrder(existingOrder);
+        validateOrder(existingOrder, updatedOrder);
         // Update editable fields
         if (updatedOrder.getCustomerId() != null) {
             existingOrder.setCustomerId(updatedOrder.getCustomerId());
@@ -227,4 +230,43 @@ public class OrderService {
         Pageable pageable = PageRequest.of(page, size);
         return orderRepository.searchDeletedOrders(customerId, employeeId, orderDate, pageable);
     }
+    // ================================
+    // Validate dữ liệu
+    // ================================
+    private void validateOrder(Order order, Order existingOrder) {
+        // Kiểm tra bắt buộc
+        if (order.getCustomerId() == null || order.getCustomerId() <= 0) {
+            throw new IllegalArgumentException("Mã khách hàng không được để trống và phải lớn hơn 0");
+        }
+
+        if (order.getEmployeeId() == null || order.getEmployeeId() <= 0) {
+            throw new IllegalArgumentException("Mã nhân viên không được để trống và phải lớn hơn 0");
+        }
+
+        if (order.getOrderDate() == null) {
+            throw new IllegalArgumentException("Ngày đặt hàng không được để trống");
+        }
+
+        if (order.getOrderDate().isAfter(java.time.LocalDate.now())) {
+            throw new IllegalArgumentException("Ngày đặt hàng không thể ở tương lai");
+        }
+
+        // Kiểm tra giảm giá (nếu có)
+        if (order.getDiscount() != null && order.getDiscount().signum() < 0) {
+            throw new IllegalArgumentException("Giảm giá không thể âm");
+        }
+
+        // total_amount không cần kiểm tra vì được tính tự động
+        // deleted_type là tùy chọn nên không bắt buộc
+    }
+
+    // ================================
+    // Cắt khoảng trắng
+    // ================================
+    private void trimOrder(Order order) {
+        if (order.getDeletedType() != null) {
+            order.setDeletedType(order.getDeletedType().trim());
+        }
+    }
+
 }
