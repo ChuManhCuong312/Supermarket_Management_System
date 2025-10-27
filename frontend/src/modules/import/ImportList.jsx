@@ -422,7 +422,7 @@ export default function ImportList() {
                     value={filters.endDate}
                     onChange={(e) => handleFilterChange('endDate', e.target.value)}
                 />
-                <button class="btn" styles="" onClick={handleFilterByDate}>Lọc theo ngày</button>
+                <button id="btn-filter-date" onClick={handleFilterByDate}><span class="text-in-button">Lọc theo ngày </span></button>
             </div>
             <ImportTable
                 imports={imports}
