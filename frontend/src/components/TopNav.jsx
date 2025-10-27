@@ -3,6 +3,7 @@ import CustomerList from "./modules/customer/CustomerList";
 import EmployeeList from "./modules/employee/EmployeeList";
 import OrderList from "./modules/order/OrderList";
 import ImportList from "./modules/import/ImportList";
+import ImportList2 from "./modules/import/ImportList2";
 import OrderDetailList from "./modules/orderDetail/OrderDetailList";
 import { NavLink } from "react-router-dom";
 
@@ -38,6 +39,9 @@ function TopNav() {
           </NavLink>
           <NavLink to="/imports" className={linkClass}>
             Nhập kho
+          </NavLink>
+          <NavLink to="/imports2" className={linkClass}>
+            Nhập kho 2
           </NavLink>
         </nav>
       </div>

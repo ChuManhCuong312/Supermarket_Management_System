@@ -43,7 +43,7 @@ function Header() {
         <NavLink to="/suppliers" style={linkStyle}>
           Nhà cung cấp
         </NavLink>
-        <NavLink to="/imports" style={linkStyle}>
+        <NavLink to="/imports2" style={linkStyle}>
           Nhập kho
         </NavLink>
         <NavLink to="/orders" style={linkStyle}>
@@ -51,9 +51,6 @@ function Header() {
         </NavLink>
         <NavLink to="/order-details" style={linkStyle}>
           Chi tiết đơn hàng
-        </NavLink>
-        <NavLink to="/reports" style={linkStyle}>
-          Báo cáo
         </NavLink>
       </nav>
     </header>
