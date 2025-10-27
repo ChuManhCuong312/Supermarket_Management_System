@@ -15,7 +15,7 @@ function TopNav() {
       <div className="topnav-inner">
         <div className="brand">
           <span className="brand-icon">🛒</span>
-          <span className="brand-name">ÉliteMart</span>
+          <span className="brand-name">EliteMart</span>
         </div>
         <nav className="menu">
           <NavLink to="/products" className={linkClass}>

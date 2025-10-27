@@ -24,7 +24,7 @@ function Header() {
       backgroundColor: "#2d6b3d"
     }}>
       <h1 style={{ margin: 0, fontSize: 20, color: "#fff" }}>
-        🏪 ÉliteMart
+        🏪 EliteMart
       </h1>
       
       <nav style={{ display: "flex", gap: "8px" }}>
