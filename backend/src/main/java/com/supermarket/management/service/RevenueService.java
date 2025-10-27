@@ -30,7 +30,8 @@ public class RevenueService {
      * Lấy tổng doanh thu trong khoảng thời gian
      */
     public RevenueResponse getTotalRevenue(LocalDate startDate, LocalDate endDate) {
-        BigDecimal totalRevenue = orderRepository.getTotalRevenue(startDate, endDate);
+        Double totalRevenueDouble = orderRepository.getTotalRevenue(startDate, endDate);
+        BigDecimal totalRevenue = totalRevenueDouble != null ? BigDecimal.valueOf(totalRevenueDouble) : BigDecimal.ZERO;
         Long totalOrders = orderRepository.getTotalOrders(startDate, endDate);
         
         BigDecimal averageOrderValue = BigDecimal.ZERO;
