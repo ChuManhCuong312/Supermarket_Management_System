@@ -20,7 +20,7 @@ public class Product {
     @Column(nullable = false, unique = true, length = 50)
     private String barcode;
 
-    @Column(length = 50)
+    @Column(length = 50, nullable = false)
     private String category;
 
     @DecimalMin(value = "0.0", inclusive = true, message = "Giá sản phẩm không thể âm")

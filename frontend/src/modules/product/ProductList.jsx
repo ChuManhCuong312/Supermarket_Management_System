@@ -285,7 +285,7 @@ export default function ProductList() {
             <span className="list-icon" /> Mã vạch
           </label>
           <input
-            type="text"
+            type="number"
             placeholder="Nhập mã vạch..."
             value={filters.barcode}
             onChange={(e) => handleFilterChange("barcode", e.target.value)}
@@ -362,7 +362,7 @@ export default function ProductList() {
                   <td>{p.name}</td>
                   <td>{p.barcode}</td>
                   <td>{p.category}</td>
-                  <td>{p.price.toLocaleString()}₫</td>
+                  <td>{p.price.toLocaleString()}</td>
                   <td>{p.stock}</td>
                   <td>{p.supplier?.companyName || "N/A"}</td>
                   <td>
@@ -410,15 +410,18 @@ export default function ProductList() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Mã vạch</label>
+                  <label >Mã vạch<span className="required">*</span></label>
                   <input
+                    type="number"
+                    required
                     value={formData.barcode}
                     onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
                   />
                 </div>
                 <div className="form-group" style={{ position: "relative" }}>
-                  <label>Loại</label>
+                  <label>Loại<span className="required">*</span></label>
                   <input
+                    required
                     value={formData.category}
                     onChange={(e) => {
                       const value = e.target.value;
@@ -480,8 +483,9 @@ export default function ProductList() {
                   />
                 </div>
                 <div className="form-group" style={{ position: "relative" }}>
-                  <label>Nhà cung cấp</label>
+                  <label>Nhà cung cấp<span className="required">*</span></label>
                   <input
+                    required
                     value={formData.supplier}
                     onChange={(e) => {
                       setFormData({ ...formData, supplier: e.target.value });

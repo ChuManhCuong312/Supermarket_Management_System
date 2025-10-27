@@ -70,6 +70,9 @@ public class SupplierService {
         if (supplier.getAddress() == null || supplier.getAddress().isEmpty()) {
             throw new IllegalArgumentException("Địa chỉ không được để trống");
         }
+        if (supplier.getContactPerson() == null || supplier.getContactPerson().isEmpty()) {
+            throw new IllegalArgumentException("Người liên hệ không được để trống");
+        }
     }
 
     // Thêm mới nhà cung cấp
