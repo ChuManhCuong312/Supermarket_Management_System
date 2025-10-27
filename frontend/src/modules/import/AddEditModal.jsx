@@ -1,4 +1,3 @@
-// src/components/AddEditModal.js
 import React from "react";
 
 export default function AddEditModal({
@@ -35,13 +34,7 @@ export default function AddEditModal({
                                         placeholder="Nhập tên nhà cung cấp"
                                         required
                                         autoComplete="off"
-                                        style={{
-                                            width: "100%",
-                                            padding: "8px 10px",
-                                            borderRadius: "6px",
-                                            border: "1px solid #ccc",
-                                            boxSizing: "border-box",
-                                        }}
+
                                     />
                                     {errors.supplierName && (
                                         <p className="error-text" style={{ color: "red", fontSize: "13px", marginTop: "4px" }}>
@@ -50,28 +43,13 @@ export default function AddEditModal({
                                     )}
 
                                     {supplierSuggestions.length > 0 && (
-                                        <ul
-                                            style={{
-                                                listStyle: "none",
-                                                padding: 0,
-                                                margin: 0,
-                                                position: "absolute",
-                                                top: "100%",
-                                                left: 0,
-                                                right: 0,
-                                                backgroundColor: "#fff",
-                                                border: "1px solid #ccc",
-                                                borderRadius: "4px",
-                                                maxHeight: "150px",
-                                                overflowY: "auto",
-                                                zIndex: 10,
-                                            }}
+                                        <ul class="unsorted-list"
                                         >
                                             {supplierSuggestions.map((supplier) => (
                                                 <li
                                                     key={supplier.supplierId}
                                                     onClick={() => handleSelectSupplier(supplier)}
-                                                    onMouseDown={(e) => e.preventDefault()} // tránh mất focus khi click
+                                                    onMouseDown={(e) => e.preventDefault()}
                                                     style={{
                                                         padding: "0.5rem",
                                                         cursor: "pointer",
@@ -112,7 +90,7 @@ export default function AddEditModal({
                                         placeholder="Nhập tổng tiền"
                                         required
                                     />
-                                    {errors.totalAmount && <p className="error-text">{errors.totalAmount}</p>}
+                                    {errors.totalAmount && <p className="error-text" >{errors.totalAmount}</p>}
                                 </div>
                             </div>
                             <div className="form-group">
@@ -122,12 +100,11 @@ export default function AddEditModal({
                                     onChange={e => handleNewChange("status", e.target.value)}
                                     required
                                 >
-                                    <option value="">-- Chọn trạng thái --</option>
                                     <option value="Pending">Pending</option>
                                     <option value="Completed">Completed</option>
                                     <option value="Cancelled">Cancelled</option>
                                 </select>
-                                {errors.status && <p className="error-text" style={{ fontSize: 'small', color: 'red' }}>{errors.status}</p>}
+                                {errors.status && <p className="error-text" >{errors.status}</p>}
                             </div>
                             <div className="form-group">
                                 <label>Ghi chú</label>
@@ -137,7 +114,7 @@ export default function AddEditModal({
                                     placeholder="Nhập ghi chú (tùy chọn)"
                                     rows="3"
                                 />
-                                {errors.note && <p className="error-text" style={{ fontSize: 'small', color: 'red' }}>{errors.note}</p>}
+                                {errors.note && <p className="error-text" >{errors.note}</p>}
                             </div>
                         </div>
                         <div className="form-modal-footer">

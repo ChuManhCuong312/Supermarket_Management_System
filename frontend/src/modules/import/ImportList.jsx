@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import importService from "../import/importService";
-import supplierService from "../import/supplierService"; // Assume you create this file
-import "../../styles/Customer-Employee.css"
+import supplierService from "../import/supplierService";
+import "../../styles/Customer-Employee.css";
+import "../../styles/import.css";
 import Header from "../import/Header";
 import SearchAndFilter from "../import/SearchAndFilter";
 import ImportTable from "../import/ImportTable";
@@ -24,7 +25,6 @@ export default function ImportList() {
     const [searchSupplierName, setSearchSupplierName] = useState("");
     const [searchSupplierId, setSearchSupplierId] = useState("");
     const [isSearching, setIsSearching] = useState(false);
-
     const [newImport, setNewImport] = useState({
         supplierId: "",
         supplierName: "",
@@ -35,19 +35,15 @@ export default function ImportList() {
     });
 
     const [supplierSuggestions, setSupplierSuggestions] = useState([]);
-
     const [showAddBox, setShowAddBox] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
-
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalItems, setTotalItems] = useState(0);
-
     const [modal, setModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
 
     const [supplierNames, setSupplierNames] = useState({});
-
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
 
@@ -100,7 +96,6 @@ export default function ImportList() {
         }
 
         try {
-            // First, search for suppliers by name
             const suppliers = await supplierService.searchByName(searchSupplierName);
             if (suppliers.length === 0) {
                 showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với tên: ${searchSupplierName}`, "error");
@@ -108,18 +103,14 @@ export default function ImportList() {
                 return;
             }
 
-            // Get list of supplier IDs
             const supplierIds = suppliers.map(s => s.supplierId);
-
-            // Now, fetch all imports and filter by supplier_id (client-side filter, assuming no server-side endpoint for this)
-            // Note: For efficiency, consider adding a backend endpoint like /api/imports/search?supplierIds=1,2,3
-            const allImportsResponse = await importService.getAll(0, 1000); // Fetch more to filter, adjust as needed
+            const allImportsResponse = await importService.getAll(0, 1000);
             const filteredImports = allImportsResponse.imports.filter(i => supplierIds.includes(i.supplier_id));
 
             if (filteredImports.length > 0) {
                 setImports(filteredImports);
                 setIsSearching(true);
-                setTotalPages(1); // Since filtering client-side, no pagination
+                setTotalPages(1);
                 setTotalItems(filteredImports.length);
             } else {
                 showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với tên: ${searchSupplierName}`, "error");
@@ -139,7 +130,6 @@ export default function ImportList() {
         }
 
         try {
-            // Check if supplier exists
             const supplier = await supplierService.getById(searchSupplierId);
             if (!supplier) {
                 showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với ID: ${searchSupplierId}`, "error");
@@ -147,14 +137,13 @@ export default function ImportList() {
                 return;
             }
 
-            // Fetch all imports and filter by supplier_id
-            const allImportsResponse = await importService.getAll(0, 1000); // Fetch more to filter, adjust as needed
+            const allImportsResponse = await importService.getAll(0, 1000);
             const filteredImports = allImportsResponse.imports.filter(i => i.supplier_id == searchSupplierId);
 
             if (filteredImports.length > 0) {
                 setImports(filteredImports);
                 setIsSearching(true);
-                setTotalPages(1); // Since filtering client-side, no pagination
+                setTotalPages(1);
                 setTotalItems(filteredImports.length);
             } else {
                 showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với ID: ${searchSupplierId}`, "error");
@@ -166,7 +155,6 @@ export default function ImportList() {
         }
     };
 
-    // === Clear search and reload all ===
     const handleClearSearch = () => {
         setSearchSupplierName("");
         setSearchSupplierId("");
@@ -185,13 +173,12 @@ export default function ImportList() {
         fetchImports();
     }, [page]);
 
-    // === Handlers ===
     const handleFilterChange = (key, value) => setFilters({ ...filters, [key]: value });
     const handleNewChange = (key, value) => setNewImport({ ...newImport, [key]: value });
 
     const handleSupplierSearch = async (e) => {
         const value = e.target.value;
-        setNewImport({ ...newImport, supplierName: value, supplierId: "" }); // Reset ID khi typing
+        setNewImport({ ...newImport, supplierName: value, supplierId: "" });
 
         if (value.length >= 2) {
             try {
@@ -210,20 +197,20 @@ export default function ImportList() {
         setNewImport({
             ...newImport,
             supplierId: supplier.supplierId.toString(),
-            supplierName: supplier.companyName,  // Chỉ cập nhật cho hiển thị
+            supplierName: supplier.companyName,
         });
         setSupplierSuggestions([]);
     };
 
     const handleSaveImport = async (e) => {
         e.preventDefault();
-        setErrors({}); // reset lỗi cũ
+        setErrors({});
 
         let hasError = false;
         const newErrors = {};
 
         if (!newImport.supplierId) {
-            newErrors.supplierId = "Vui lòng chọn nhà cung cấp từ danh sách gợi ý";  // Đổi key error thành supplierId để rõ ràng hơn
+            newErrors.supplierId = "Vui lòng chọn nhà cung cấp từ danh sách gợi ý";
             hasError = true;
         }
 
@@ -239,7 +226,6 @@ export default function ImportList() {
         }
 
         try {
-            // ✅ Payload chỉ gửi supplier_id, KHÔNG gửi supplierName
             const payload = {
                 supplier_id: parseInt(newImport.supplierId),
                 import_date: newImport.importDate,
@@ -256,25 +242,22 @@ export default function ImportList() {
                 showModal("✓ Thành công", "Thêm mới phiếu nhập thành công!", "success");
             }
 
-            // Reset form
             setShowAddBox(false);
             setIsEditing(false);
             setEditingId(null);
             setNewImport({
                 supplierId: "",
-                supplierName: "",  // Reset nhưng giữ key cho UI
+                supplierName: "",
                 importDate: "",
                 totalAmount: "",
                 status: "",
                 note: "",
             });
             setSupplierSuggestions([]);
-
-            fetchImports(); // load lại danh sách
+            fetchImports();
         } catch (err) {
             console.error("Error saving import:", err);
             if (err.response?.status === 400 && err.response?.data?.details) {
-                // ✅ Map backend errors, đổi supplierName thành supplierId để khớp
                 const backendErrors = err.response.data.details;
                 const mappedErrors = {
                     supplierId: backendErrors.supplier_id,
@@ -318,9 +301,6 @@ export default function ImportList() {
         setShowAddBox(true);
     };
 
-
-
-    // ✅ Delete function
     const handleDelete = (id) => {
         setDeleteId(id);
         setShowDeleteConfirm(true);
@@ -425,9 +405,13 @@ export default function ImportList() {
                 setErrors={setErrors}
                 setSupplierSuggestions={setSupplierSuggestions}
             />
-            <div className="filter-section" style={{ margin: '20px 0' }}>
+
+            <div className="filter-section">
+                <div className="total-number">
+                    <p>Tổng số:<span class="total-items-count">{totalItems}</span> nhập đơn </p>
+                </div>
                 <label>Ngày bắt đầu:</label>
-                <input
+                <input class
                     type="date"
                     value={filters.startDate}
                     onChange={(e) => handleFilterChange('startDate', e.target.value)}
@@ -438,7 +422,7 @@ export default function ImportList() {
                     value={filters.endDate}
                     onChange={(e) => handleFilterChange('endDate', e.target.value)}
                 />
-                <button onClick={handleFilterByDate}>Lọc theo ngày</button>
+                <button id="btn-filter-date" onClick={handleFilterByDate}><span class="text-in-button">Lọc theo ngày </span></button>
             </div>
             <ImportTable
                 imports={imports}

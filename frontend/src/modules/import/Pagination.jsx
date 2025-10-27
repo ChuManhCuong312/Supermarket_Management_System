@@ -1,5 +1,4 @@
 import React from "react";
-
 export default function Pagination({
     page,
     totalPages,
@@ -16,7 +15,7 @@ export default function Pagination({
                 {isSearching ? (
                     `Kết quả tìm kiếm: ${totalItems} phiếu`
                 ) : (
-                    `Trang ${page + 1} / ${totalPages || 1} (${totalItems} phiếu)`
+                    `Trang ${page + 1} / ${totalPages || 1}`
                 )}
             </span>
             <button onClick={() => handlePageChange(page + 1)} disabled={page === totalPages - 1 || totalPages === 0 || isSearching}>
