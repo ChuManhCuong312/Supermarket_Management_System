@@ -104,6 +104,7 @@ export default function ImportList() {
             }
 
             const supplierIds = suppliers.map(s => s.supplierId);
+            const allImportsResponse = await importService.getAll(0, 1000);
             const filteredImports = allImportsResponse.imports.filter(i => supplierIds.includes(i.supplier_id));
 
             if (filteredImports.length > 0) {
