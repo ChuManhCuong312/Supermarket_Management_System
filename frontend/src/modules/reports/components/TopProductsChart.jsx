@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import revenueService from '../revenueService';
 
 export default function TopProductsChart({ dateRange }) {
   const [productsData, setProductsData] = useState({
@@ -16,43 +17,55 @@ export default function TopProductsChart({ dateRange }) {
   const fetchProductsData = async () => {
     setLoading(true);
     try {
-      // Mock data - replace with actual API calls
-      const mockData = {
-        topSelling: [
-          { id: 1, name: 'Coca Cola 330ml', sold: 1250, revenue: 6250000, stock: 150 },
-          { id: 2, name: 'Bánh mì sandwich', sold: 980, revenue: 4900000, stock: 45 },
-          { id: 3, name: 'Sữa tươi Vinamilk', sold: 850, revenue: 4250000, stock: 120 },
-          { id: 4, name: 'Nước suối Aquafina', sold: 720, revenue: 3600000, stock: 200 },
-          { id: 5, name: 'Kẹo cao su Mentos', sold: 650, revenue: 3250000, stock: 80 }
-        ],
-        lowStock: [
-          { id: 6, name: 'Bánh Oreo', sold: 320, revenue: 1600000, stock: 5 },
-          { id: 7, name: 'Kẹo dẻo Haribo', sold: 280, revenue: 1400000, stock: 8 },
-          { id: 8, name: 'Bánh quy bơ', sold: 450, revenue: 2250000, stock: 12 },
-          { id: 9, name: 'Nước cam tươi', sold: 380, revenue: 1900000, stock: 15 },
-          { id: 10, name: 'Socola KitKat', sold: 290, revenue: 1450000, stock: 3 }
-        ],
-        categories: [
-          { name: 'Đồ uống', products: 45, revenue: 25000000 },
-          { name: 'Bánh kẹo', products: 38, revenue: 18000000 },
-          { name: 'Thực phẩm', products: 52, revenue: 32000000 },
-          { name: 'Vệ sinh', products: 21, revenue: 15000000 }
-        ]
-      };
+      // Fetch từ API thật
+      const [topByRevenueResponse, topByQuantityResponse, categoriesResponse] = await Promise.all([
+        revenueService.getTopProductsByRevenue(dateRange.startDate, dateRange.endDate, 10),
+        revenueService.getTopProductsByQuantity(dateRange.startDate, dateRange.endDate, 10),
+        revenueService.getRevenueByCategory(dateRange.startDate, dateRange.endDate)
+      ]);
+
+      const topSelling = (topByRevenueResponse.data || []).map(item => ({
+        id: item.productId,
+        name: item.productName,
+        sold: item.quantitySold || 0,
+        revenue: parseFloat(item.revenue) || 0,
+        category: item.category
+      }));
+
+      const topByQuantity = (topByQuantityResponse.data || []).map(item => ({
+        id: item.productId,
+        name: item.productName,
+        sold: item.quantitySold || 0,
+        revenue: parseFloat(item.revenue) || 0,
+        category: item.category
+      }));
+
+      const categories = (categoriesResponse.data || []).map(item => ({
+        name: item.category,
+        products: 0, // Không có trong API
+        revenue: parseFloat(item.revenue) || 0,
+        quantitySold: item.quantitySold || 0
+      }));
       
-      setProductsData(mockData);
+      setProductsData({
+        topSelling,
+        lowStock: topByQuantity, // Dùng topByQuantity cho lowStock tab
+        categories
+      });
     } catch (error) {
       console.error('Error fetching products data:', error);
+      setProductsData({ topSelling: [], lowStock: [], categories: [] });
     } finally {
       setLoading(false);
     }
   };
 
   const formatCurrency = (amount) => {
+    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
-    }).format(amount);
+    }).format(num || 0);
   };
 
   if (loading) {
@@ -90,7 +103,7 @@ export default function TopProductsChart({ dateRange }) {
             className={`view-btn ${activeTab === 'stock' ? 'active' : ''}`}
             onClick={() => setActiveTab('stock')}
           >
-            Tồn Kho Thấp
+            Theo Số Lượng
           </button>
           <button 
             className={`view-btn ${activeTab === 'categories' ? 'active' : ''}`}
@@ -157,9 +170,9 @@ export default function TopProductsChart({ dateRange }) {
             </div>
             {activeTab === 'stock' && (
               <div className="stat-item">
-                <span className="stat-label">Sản phẩm sắp hết:</span>
-                <span className="stat-value warning">
-                  {currentData.filter(item => item.stock < 20).length}
+                <span className="stat-label">Tổng số lượng bán:</span>
+                <span className="stat-value">
+                  {currentData.reduce((sum, item) => sum + (item.sold || 0), 0).toLocaleString()}
                 </span>
               </div>
             )}
