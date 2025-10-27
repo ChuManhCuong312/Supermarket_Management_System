@@ -274,10 +274,19 @@ useEffect(() => {
                 <span className="list-icon"></span> SĐT
               </label>
           <input
+            type="tel"
+            pattern="[0-9]*"
+            inputMode="numeric"
             placeholder="SĐT"
             value={filters.phone}
             onChange={(e) => handleFilterChange("phone", e.target.value)}
+            onKeyDown={(e) => {
+              if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                e.preventDefault();
+              }
+            }}
           />
+
           </div>
 
           <div className="search-group">
@@ -414,10 +423,18 @@ useEffect(() => {
                 <div className="form-group">
                   <label>Số điện thoại <span className="required">*</span></label>
                   <input
+                    type="tel"
+                    pattern="[0-9]*"
+                    inputMode="numeric"
                     required
                     placeholder="Nhập SĐT"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </div>
                 <div className="form-group">
