@@ -275,7 +275,7 @@ useEffect(() => {
                 <span className="list-icon"></span> SĐT
               </label>
           <input
-            type="tel"
+type="tel"
             pattern="[0-9]*"
             inputMode="numeric"
             placeholder="SĐT"
@@ -424,9 +424,9 @@ useEffect(() => {
                 <div className="form-group">
                   <label>Số điện thoại <span className="required">*</span></label>
                   <input
-                    type="tel"
-                    pattern="[0-9]*"
-                    inputMode="numeric"
+type="tel"
+            pattern="[0-9]*"
+            inputMode="numeric"
                     required
                     placeholder="Nhập SĐT"
                     value={formData.phone}
