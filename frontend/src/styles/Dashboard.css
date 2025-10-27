@@ -1,92 +1,25 @@
-/* ======= DASHBOARD PAGE ======= */
 .page {
   padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #f8f9fa;
 }
 
-/* ======= CARD GRID ======= */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 2rem;
-  justify-content: center; /* Căn giữa toàn bộ grid */
-  align-content: start;
+  grid-template-columns: repeat(4, 1fr); /* 4 cột */
+  gap: 1.5rem;
   margin-top: 2rem;
-  width: 100%;
-  max-width: 1200px;
-  box-sizing: border-box;
 }
 
-/* Căn giữa từng card trong cột */
-.card-grid > div {
-  display: flex;
-  justify-content: center;
-}
-
-/* ======= RESPONSIVE ======= */
+/* Responsive: 2 cột cho tablet */
 @media (max-width: 1024px) {
   .card-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* Responsive: 1 cột cho mobile */
 @media (max-width: 600px) {
   .card-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
   }
 }
-
-/* ======= FEATURE CARD STYLE (đảm bảo đồng bộ) ======= */
-.feature-card {
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  padding: 1.5rem;
-  text-align: center;
-  width: 100%;
-  max-width: 260px;
-  transition: all 0.25s ease;
-  cursor: pointer;
-}
-
-.feature-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-}
-
-.feature-card-icon {
-  font-size: 2.2rem;
-}
-
-.feature-card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #00cc99;
-  margin-top: 0.5rem;
-}
-
-.feature-card-desc {
-  font-size: 0.95rem;
-  color: #555;
-  margin: 0.75rem 0 1rem 0;
-}
-
-.btn.btn-ghost {
-  background: transparent;
-  color: #009973;
-  border: 1px solid #00cc99;
-  border-radius: 8px;
-  padding: 0.4rem 1rem;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.btn.btn-ghost:hover {
-  background: #00cc99;
-  color: white;
-}
+``
