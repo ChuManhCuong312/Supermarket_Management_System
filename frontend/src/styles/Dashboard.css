@@ -2,24 +2,31 @@
   padding: 2rem;
 }
 
+/* Căn đều 7 cards, tự giãn linh hoạt */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 cột */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  justify-items: center; /* căn giữa từng card trong cột */
+  align-items: stretch;  /* chiều cao đồng đều */
   gap: 1.5rem;
   margin-top: 2rem;
 }
 
-/* Responsive: 2 cột cho tablet */
+/* Card container — nếu cần căn chỉnh kích thước đồng đều */
+.card-grid > div {
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Responsive tối ưu hơn */
 @media (max-width: 1024px) {
   .card-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 }
 
-/* Responsive: 1 cột cho mobile */
 @media (max-width: 600px) {
   .card-grid {
     grid-template-columns: 1fr;
   }
 }
-``
