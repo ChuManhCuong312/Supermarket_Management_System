@@ -246,6 +246,7 @@ useEffect(() => {
         </div>
       </div>
 
+
       {/* Filter */}
       <div className="content">
         <div className="search-section">
