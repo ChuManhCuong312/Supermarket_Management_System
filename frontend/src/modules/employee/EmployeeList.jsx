@@ -260,10 +260,17 @@ const handleSaveEmployee = async (e) => {
                 <span className="list-icon"></span> SĐT
               </label>
               <input
-                type="text"
+                type="tel"
+                pattern="[0-9]*"
+                inputMode="numeric"
                 placeholder="Nhập số điện thoại..."
                 value={filters.phone}
                 onChange={(e) => handleFilterChange("phone", e.target.value)}
+              onKeyDown={(e) => {
+              if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+              e.preventDefault();
+              }
+                        }}
               />
             </div>
 
@@ -319,23 +326,21 @@ const handleSaveEmployee = async (e) => {
           <thead>
             <tr>
               <th>ID</th>
-<th
-                      className="sortable-header"
-                      onClick={() => handleSort("name")}
-                      style={{ cursor: "pointer" }}
-                    >
-                      Tên {renderSortIcon("name")}
-              </th>
+                <th
+                  className={`sortable ${sortConfig.sortBy === "name" && sortConfig.sort !== "none" ? sortConfig.sort : ""}`}
+                  onClick={() => handleSort("name")}
+                >
+                  Tên
+                </th>
               <th>Chức vụ</th>
               <th>SĐT</th>
               <th>Email</th>
-<th
-                      className="sortable-header"
-                      onClick={() => handleSort("salary")}
-                      style={{ cursor: "pointer" }}
-                    >
-                      Lương {renderSortIcon("salary")}
-                    </th>
+              <th
+                className={`sortable ${sortConfig.sortBy === "salary" && sortConfig.sort !== "none" ? sortConfig.sort : ""}`}
+                onClick={() => handleSort("salary")}
+              >
+                Lương
+              </th>
               <th>Ca làm việc</th>
               <th>Thao tác</th>
             </tr>
@@ -412,9 +417,17 @@ const handleSaveEmployee = async (e) => {
                   <label>Số điện thoại <span className="required">*</span></label>
                   <input
                     required
+                     type="tel"
+                     pattern="[0-9]*"
+                     inputMode="numeric"
                     placeholder="Nhập SĐT"
                     value={newEmployee.phone}
                     onChange={e => handleNewChange("phone", e.target.value)}
+                  onKeyDown={(e) => {
+                              if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                                e.preventDefault();
+                              }
+                            }}
                   />
                 </div>
                 <div className="form-group">

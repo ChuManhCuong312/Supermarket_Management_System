@@ -49,16 +49,11 @@ export default function ImportList() {
 
     // === Fetch Imports ===
     const fetchImports = async () => {
-        try {
-            const data = await importService.getAll(page, 10);
-            setImports(data.imports);
-            setTotalItems(data.totalItems);
-            setTotalPages(data.totalPages);
-            setIsSearching(false);
-        } catch (err) {
-            console.error("Lỗi khi tải danh sách nhập kho:", err);
-            showModal("❌ Lỗi", "Không thể tải danh sách nhập kho", "error");
-        }
+        const data = await importService.getAll(page, 10);
+        setImports(data.imports);
+        setTotalItems(data.totalItems);
+        setTotalPages(data.totalPages);
+        setIsSearching(false);
     };
 
     // === Fetch Supplier Names ===
@@ -79,7 +74,7 @@ export default function ImportList() {
                 setSupplierNames(prev => ({ ...prev, ...newNames }));
             } catch (err) {
                 console.error("Lỗi khi tải tên nhà cung cấp:", err);
-                showModal("❌ Lỗi", "Không thể tải tên nhà cung cấp", "error");
+                showModal("Lỗi", "Không thể tải tên nhà cung cấp", "error");
             }
         };
 
@@ -91,14 +86,14 @@ export default function ImportList() {
     // === Search by Supplier Name ===
     const handleSearchBySupplierName = async () => {
         if (!searchSupplierName || searchSupplierName.trim() === "") {
-            showModal("⚠️ Cảnh báo", "Vui lòng nhập tên nhà cung cấp cần tìm", "error");
+            showModal("Lỗi", "Vui lòng nhập tên nhà cung cấp cần tìm", "error");
             return;
         }
 
         try {
             const suppliers = await supplierService.searchByName(searchSupplierName);
             if (suppliers.length === 0) {
-                showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với tên: ${searchSupplierName}`, "error");
+                showModal("Không tìm thấy", `Không tồn tại nhà cung cấp với tên: ${searchSupplierName}`, "error");
                 setImports([]);
                 return;
             }
@@ -113,11 +108,11 @@ export default function ImportList() {
                 setTotalPages(1);
                 setTotalItems(filteredImports.length);
             } else {
-                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với tên: ${searchSupplierName}`, "error");
+                showModal("Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với tên: ${searchSupplierName}`, "error");
                 setImports([]);
             }
         } catch (err) {
-            showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
+            showModal("Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
             console.error("Search error:", err);
         }
     };
@@ -125,14 +120,14 @@ export default function ImportList() {
     // === Search by Supplier ID ===
     const handleSearchBySupplierId = async () => {
         if (!searchSupplierId || searchSupplierId.trim() === "") {
-            showModal("⚠️ Cảnh báo", "Vui lòng nhập ID nhà cung cấp cần tìm", "error");
+            showModal("Lỗi", "Vui lòng nhập ID nhà cung cấp cần tìm", "error");
             return;
         }
 
         try {
             const supplier = await supplierService.getById(searchSupplierId);
             if (!supplier) {
-                showModal("❌ Không tìm thấy", `Không tồn tại nhà cung cấp với ID: ${searchSupplierId}`, "error");
+                showModal("Không tìm thấy", `Không tồn tại nhà cung cấp với ID: ${searchSupplierId}`, "error");
                 setImports([]);
                 return;
             }
@@ -146,11 +141,11 @@ export default function ImportList() {
                 setTotalPages(1);
                 setTotalItems(filteredImports.length);
             } else {
-                showModal("❌ Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với ID: ${searchSupplierId}`, "error");
+                showModal("Không tìm thấy", `Không tồn tại phiếu nhập cho nhà cung cấp với ID: ${searchSupplierId}`, "error");
                 setImports([]);
             }
         } catch (err) {
-            showModal("❌ Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
+            showModal("Lỗi", "Không thể tìm kiếm phiếu nhập", "error");
             console.error("Search error:", err);
         }
     };
@@ -175,7 +170,6 @@ export default function ImportList() {
 
     const handleFilterChange = (key, value) => setFilters({ ...filters, [key]: value });
     const handleNewChange = (key, value) => setNewImport({ ...newImport, [key]: value });
-
     const handleSupplierSearch = async (e) => {
         const value = e.target.value;
         setNewImport({ ...newImport, supplierName: value, supplierId: "" });
@@ -186,7 +180,7 @@ export default function ImportList() {
                 setSupplierSuggestions(suggestions);
             } catch (err) {
                 console.error("Lỗi khi tìm kiếm nhà cung cấp:", err);
-                showModal("❌ Lỗi", "Không thể tìm kiếm nhà cung cấp", "error");
+                showModal("Lỗi", "Không thể tìm kiếm nhà cung cấp", "error");
             }
         } else {
             setSupplierSuggestions([]);
@@ -208,7 +202,6 @@ export default function ImportList() {
 
         let hasError = false;
         const newErrors = {};
-
         if (!newImport.supplierId) {
             newErrors.supplierId = "Vui lòng chọn nhà cung cấp từ danh sách gợi ý";
             hasError = true;
@@ -236,10 +229,10 @@ export default function ImportList() {
 
             if (isEditing) {
                 await importService.update(editingId, payload);
-                showModal("✓ Thành công", "Cập nhật phiếu nhập thành công!", "success");
+                showModal("Thành công", "Cập nhật phiếu nhập thành công!", "success");
             } else {
                 await importService.create(payload);
-                showModal("✓ Thành công", "Thêm mới phiếu nhập thành công!", "success");
+                showModal("Thành công", "Thêm mới phiếu nhập thành công!", "success");
             }
 
             setShowAddBox(false);
@@ -268,11 +261,10 @@ export default function ImportList() {
                 };
                 setErrors(mappedErrors);
             } else {
-                showModal("❌ Lỗi", err.response?.data?.message || "Không thể lưu phiếu nhập", "error");
+                showModal("Lỗi", err.response?.data?.message || "Không thể lưu phiếu nhập", "error");
             }
         }
     };
-
 
     const handleEdit = async (importItem) => {
         let supplierName = supplierNames[importItem.supplier_id];
@@ -309,14 +301,13 @@ export default function ImportList() {
     const confirmDelete = async () => {
         setShowDeleteConfirm(false);
         if (!deleteId) return;
-
         try {
             await importService.delete(deleteId);
-            showModal("🗑️ Thành công", "Đã xoá phiếu nhập!", "success");
+            showModal("Thành công", "Đã xoá phiếu nhập!", "success");
             fetchImports();
         } catch (error) {
             console.error("Delete error:", error);
-            showModal("❌ Lỗi", error.response?.data?.message || "Xoá thất bại!", "error");
+            showModal("Lỗi", error.response?.data?.message || "Xoá thất bại!", "error");
         } finally {
             setDeleteId(null);
         }
@@ -337,7 +328,7 @@ export default function ImportList() {
             setSortDate(newOrder);
         } catch (err) {
             console.error("Sort error:", err);
-            showModal("❌ Lỗi", "Không thể sắp xếp", "error");
+            showModal("Lỗi", "Không thể sắp xếp", "error");
         }
     };
 
@@ -351,18 +342,18 @@ export default function ImportList() {
             setSortAmount(newOrder);
         } catch (err) {
             console.error("Sort error:", err);
-            showModal("❌ Lỗi", "Không thể sắp xếp", "error");
+            showModal("Lỗi", "Không thể sắp xếp", "error");
         }
     };
 
     const handleFilterByDate = async () => {
         const { startDate, endDate } = filters;
         if (!startDate || !endDate) {
-            showModal("⚠️ Cảnh báo", "Vui lòng nhập ngày bắt đầu và kết thúc", "error");
+            showModal("Lỗi", "Vui lòng nhập ngày bắt đầu và kết thúc", "error");
             return;
         }
         if (new Date(startDate) > new Date(endDate)) {
-            showModal("⚠️ Cảnh báo", "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc", "error");
+            showModal("Lỗi", "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc", "error");
             return;
         }
         try {
@@ -373,17 +364,15 @@ export default function ImportList() {
             setTotalItems(data.length);
         } catch (err) {
             console.error("Filter error:", err);
-            showModal("❌ Lỗi", "Không thể lọc theo ngày", "error");
+            showModal("Lỗi", "Không thể lọc theo ngày", "error");
         }
     };
 
     const handlePageChange = (newPage) => setPage(newPage);
-
     const showModal = (title, message, type = "info") => {
         setModal({ isOpen: true, title, message, type });
         setTimeout(() => setModal({ isOpen: false, title: "", message: "", type: "info" }), 3000);
     };
-
     const closeModal = () => setModal({ isOpen: false, title: "", message: "", type: "info" });
 
     return (
