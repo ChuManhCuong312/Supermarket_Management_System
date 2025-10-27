@@ -248,7 +248,7 @@ export default function ProductList() {
 
   // ===== Render =====
   return (
-    <div className="page">
+    <div className="page" style={{padding:"0px"}}>
       {/* Header */}
       <div className="header">
         <div className="header-left">
@@ -256,41 +256,76 @@ export default function ProductList() {
           <h2 className="header-title">Quản lý sản phẩm</h2>
         </div>
       </div>
-
+    <div className="content">
       {/* Filter */}
-      <div className="filter">
-        <div className="filter-grid">
+      <div className="search-section">
+        <div className="search-group">
+          <label>
+            <span className="search-icon" /> Tên sản phẩm
+          </label>
           <input
-            placeholder="Tên sản phẩm"
+            type="text"
+            placeholder="Nhập tên sản phẩm..."
             value={filters.name}
             onChange={(e) => handleFilterChange("name", e.target.value)}
           />
+            <span
+              className="clear-filter"
+              onClick={() => {
+                setFilters({ name: "", barcode: "", category: "", supplier: "" });
+                handleSearch({});
+              }}
+              >
+                ✖ Clear Filter
+            </span>
+        </div>
+
+        <div className="search-group">
+          <label>
+            <span className="list-icon" /> Mã vạch
+          </label>
           <input
-            placeholder="Mã vạch"
+            type="text"
+            placeholder="Nhập mã vạch..."
             value={filters.barcode}
             onChange={(e) => handleFilterChange("barcode", e.target.value)}
           />
+        </div>
+
+        <div className="search-group">
+          <label>
+            <span className="list-icon" /> Loại
+          </label>
           <input
-            placeholder="Loại"
+            type="text"
+            placeholder="Nhập loại sản phẩm..."
             value={filters.category}
             onChange={(e) => handleFilterChange("category", e.target.value)}
           />
+        </div>
+
+        <div className="search-group">
+          <label>
+            <span className="list-icon" /> Nhà cung cấp
+          </label>
           <input
-            placeholder="Nhà cung cấp"
+            type="text"
+            placeholder="Nhập tên nhà cung cấp..."
             value={filters.supplier}
             onChange={(e) => handleFilterChange("supplier", e.target.value)}
           />
         </div>
-        <div className="filter-buttons">
-          <button onClick={() => handleSearch(filters)} className="btn search-btn">
+      </div>
+        <div className="button-group">
+          <button onClick={() => handleSearch(filters)} className="search-btn">
             🔍 Tìm kiếm
           </button>
-          <button onClick={openAddForm} className="btn add-btn">
+          <button onClick={openAddForm} className="add-btn">
             ➕ Thêm mới
           </button>
         </div>
-      </div>
 
+    </div>
       {/* Stats */}
       <div style={{ padding: "10px 20px", color: "#666", fontSize: "14px", background: "#f1f8e9" }}>
         Tổng số: <strong>{totalItems}</strong> sản phẩm
