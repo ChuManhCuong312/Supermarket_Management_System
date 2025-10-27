@@ -125,3 +125,68 @@ INSERT INTO import (supplier_id, import_date, total_amount, status, note) VALUES
 (13, '2025-10-10', 650000, 'Completed', 'Nhập nước rửa chén Sunlight'),
 (14, '2025-10-11', 480000, 'Completed', 'Nhập cháo Vifon'),
 (15, '2025-10-12', 1000000, 'Completed', 'Nhập sữa TH True Milk');
+
+INSERT INTO import2 (import_date, total_amount, note) VALUES
+('2025-10-01', 1124000, 'Nhập hàng tháng 10 đợt 1 - sữa & mì gói'),
+('2025-10-03', 6914000, 'Nhập hàng bổ sung cho cửa hàng tạp hóa'),
+('2025-10-05', 2730000, 'Nhập hàng nước giải khát Pepsi, Trà xanh'),
+('2025-10-07', 4160000, 'Nhập hàng bánh kẹo chuẩn bị lễ hội'),
+('2025-10-10', 2260000, 'Nhập thêm hàng thực phẩm chế biến'),
+('2025-10-12', 2710000, 'Nhập hàng gia vị, nước mắm, bột ngọt'),
+('2025-10-15', 3260000, 'Nhập hàng thực phẩm tươi sống từ nhà cung cấp mới'),
+('2025-10-18', 6384000, 'Đợt nhập hàng định kỳ tuần 3 tháng 10'),
+('2025-10-22', 1512000, 'Nhập bổ sung hàng hóa theo yêu cầu khách hàng'),
+('2025-10-25', 4425000, 'Nhập hàng cuối tháng để chuẩn bị khuyến mãi');
+-- Phiếu 1
+INSERT INTO import_detail2 (import_id, product_id, quantity, unit_price) VALUES
+(1, 1, 100, 32000),
+(1, 2, 200, 4200);
+
+-- Phiếu 2
+INSERT INTO import_detail2 (import_id, product_id, quantity, unit_price) VALUES
+(2, 5, 50, 43000),
+(2, 6, 80, 9700),
+(2, 13, 60, 39000);
+
+-- Phiếu 3
+INSERT INTO import_detail2 (import_id, product_id, quantity, unit_price) VALUES
+(3, 4, 150, 8800),
+(3, 6, 200, 9500);
+
+-- Phiếu 4
+INSERT INTO import_detail2 (import_id, product_id, quantity, unit_price) VALUES
+(4, 11, 40, 50000),
+(4, 12, 60, 24000),
+(4, 5, 30, 44000);
+
+-- Phiếu 5
+INSERT INTO import_detail2 (import_id, product_id, quantity, unit_price) VALUES
+(5, 7, 25, 64000),
+(5, 14, 40, 14000);
+
+-- Phiếu 6
+INSERT INTO import_detail2 (import_id, product_id, quantity, unit_price) VALUES
+(6, 3, 60, 21500),
+(6, 10, 40, 26000);
+
+-- Phiếu 7
+INSERT INTO import_detail2 (import_id, product_id, quantity, unit_price) VALUES
+(7, 8, 50, 36000),
+(7, 9, 30, 68000);
+
+-- Phiếu 8
+INSERT INTO import_detail2 (import_id, product_id, quantity, unit_price) VALUES
+(8, 1, 120, 31500),
+(8, 2, 180, 4100),
+(8, 4, 150, 8700);
+
+-- Phiếu 9
+INSERT INTO import_detail2 (import_id, product_id, quantity, unit_price) VALUES
+(9, 13, 40, 38500),
+(9, 14, 60, 14800);
+
+-- Phiếu 10
+INSERT INTO import_detail2 (import_id, product_id, quantity, unit_price) VALUES
+(10, 15, 200, 9500),
+(10, 5, 60, 45000),
+(10, 12, 50, 25500);

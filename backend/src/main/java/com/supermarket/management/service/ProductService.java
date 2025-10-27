@@ -14,7 +14,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -179,5 +182,33 @@ public class ProductService {
                 .distinct()
                 .toList();
     }
+    public List<Map<String, Object>> searchProductNames(String name) {
+        List<Product> products;
+
+        if (name == null || name.isBlank()) {
+            products = productRepository.findAll();
+        } else {
+            products = productRepository.findByNameContainingIgnoreCase(name.trim());
+        }
+
+        // Trả về danh sách gồm id + name, loại bỏ trùng tên
+        return products.stream()
+                .filter(p -> p.getName() != null && !p.getName().isBlank())
+                .collect(Collectors.toMap(
+                        Product::getName, // key là tên để loại trùng
+                        p -> {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("productId", p.getProductId());
+                            map.put("name", p.getName());
+                            return map;
+                        },
+                        (existing, replacement) -> existing // giữ lại bản đầu tiên nếu trùng tên
+                ))
+                .values()
+                .stream()
+                .toList();
+    }
+
+
 
 }

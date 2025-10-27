@@ -27,4 +27,5 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     boolean existsByBarcode(String barcode);
     List<Product> findByCategoryContainingIgnoreCase(String category);
+    List<Product> findByNameContainingIgnoreCase(String name);
 }

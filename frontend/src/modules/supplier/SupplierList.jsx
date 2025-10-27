@@ -236,7 +236,7 @@ export default function SupplierList() {
   <div className="search-section">
     <div className="search-group">
       <label>
-        <span className="supplier-icon" /> Tên nhà cung cấp
+        <span className="search-icon"></span> Tên nhà cung cấp
       </label>
       <input
         type="text"
@@ -257,7 +257,7 @@ export default function SupplierList() {
 
     <div className="search-group">
       <label>
-        <span className="phone-icon" /> Số điện thoại
+        <span className="list-icon"></span> Số điện thoại
       </label>
       <input
         type="number"
@@ -269,7 +269,7 @@ export default function SupplierList() {
 
     <div className="search-group">
       <label>
-        <span className="email-icon" /> Email
+        <span className="list-icon"></span> Email
       </label>
       <input
         type="text"

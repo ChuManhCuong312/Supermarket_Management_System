@@ -123,5 +123,12 @@ public class ProductController {
         List<String> categories = productService.searchCategories(category);
         return ResponseEntity.ok(categories);
     }
+    @GetMapping("/namesearch")
+    public ResponseEntity<List<Map<String, Object>>> searchProductNames(
+            @RequestParam(required = false) String name) {
+
+        List<Map<String, Object>> productNames = productService.searchProductNames(name);
+        return ResponseEntity.ok(productNames);
+    }
 
 }

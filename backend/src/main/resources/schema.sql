@@ -85,4 +85,60 @@ CREATE TABLE import (
     FOREIGN KEY (supplier_id) REFERENCES supplier(supplier_id)
         ON UPDATE CASCADE ON DELETE SET NULL
 );
+CREATE TABLE import2 (
+    import_id INT AUTO_INCREMENT PRIMARY KEY,
+    import_date DATE NOT NULL,
+    total_amount DECIMAL(12,2) DEFAULT 0 CHECK (total_amount >= 0),
+    note TEXT
+);
+CREATE TABLE import_detail2 (
+    detail_id INT AUTO_INCREMENT PRIMARY KEY,
+    import_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity > 0),
+    unit_price DECIMAL(12,2) NOT NULL CHECK (unit_price >= 0),
+    subtotal DECIMAL(12,2) GENERATED ALWAYS AS (quantity * unit_price) STORED,
+
+    FOREIGN KEY (import_id) REFERENCES import2(import_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES product(product_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+);
+/////trigger
+DELIMITER $$
+
+CREATE TRIGGER trg_update_product_stock_after_import
+AFTER INSERT ON import_detail2
+FOR EACH ROW
+BEGIN
+    UPDATE product
+    SET stock = stock + NEW.quantity
+    WHERE product_id = NEW.product_id;
+END$$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE TRIGGER trg_update_product_stock_after_import_delete
+AFTER DELETE ON import_detail2
+FOR EACH ROW
+BEGIN
+    UPDATE product
+    SET stock = stock - OLD.quantity
+    WHERE product_id = OLD.product_id;
+END$$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE TRIGGER trg_update_product_stock_after_import_update
+AFTER UPDATE ON import_detail2
+FOR EACH ROW
+BEGIN
+    UPDATE product
+    SET stock = stock - OLD.quantity + NEW.quantity
+    WHERE product_id = NEW.product_id;
+END$$
+
+DELIMITER ;
 
