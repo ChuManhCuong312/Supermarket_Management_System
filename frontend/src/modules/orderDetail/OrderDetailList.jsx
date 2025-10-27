@@ -234,195 +234,198 @@ export default function OrderDetailList() {
           </button>
         </div>
 
-        {/* ===== Table ===== */}
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Mã đơn</th>
 
-              <th
-                className={`sortable ${
-                  sortConfig.field === "productId" ? sortConfig.direction : ""
-                }`}
-                onClick={() => handleSort("productId")}
-              >
-                Mã SP
-              </th>
-              <th>Số lượng</th>
-              <th>Đơn giá</th>
-              <th
-                className={`sortable ${
-                  sortConfig.field === "totalPrice" ? sortConfig.direction : ""
-                }`}
-                onClick={() => handleSort("totalPrice")}
-              >
-                Thành tiền
-              </th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="8" style={{ textAlign: "center" }}>
-                  Đang tải dữ liệu...
-                </td>
-              </tr>
-            ) : orderDetails.length > 0 ? (
-              orderDetails.map((detail) => (
-                <tr
-                  key={detail.orderDetailId}
-                  className={!detail.isOrderActive ? "inactive-order-row" : ""}
-                >
-                  <td>{detail.orderDetailId}</td>
-                  <td>{detail.orderId}</td>
-                  <td>{detail.productId}</td>
-                  <td>{detail.quantity}</td>
-                  <td>{detail.unitPrice}</td>
-                  <td>{detail.totalPrice}</td>
-                  <td>
-                    <div className="actions">
-                      {detail.isOrderActive ? (
-                        <>
-                          <button
-                            className="icon-button edit-icon"
-                            onClick={() => handleEdit(detail)}
-                            title="Sửa"
-                          >
-                            📝
-                          </button>
-                          <button
-                            className="icon-button delete-icon"
-                            onClick={() => handleDelete(detail)}
-                            title="Xóa"
-                          >
-                            🗑️
-                          </button>
-                        </>
-                      ) : (
-                        <span className="no-action" title="Đơn hàng đã bị hủy/ẩn">
-
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="8" style={{ textAlign: "center" }}>
-                  Không có dữ liệu.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-
-        {/* ===== Pagination ===== */}
-        {orderDetails.length > 0 && (
-          <div style={{
-            textAlign: "center",
-            padding: "10px 0",
-            color: "#666",
-            fontSize: "14px"
-          }}>
-            Hiển thị {orderDetails.length} / {totalPages * size} chi tiết đơn hàng
-          </div>
-        )}
-
-        {/* ===== Pagination Controls ===== */}
-        <div className="pagination">
-          {/* First page button */}
-          <button
-            onClick={() => setPage(0)}
-            disabled={page === 0}
-            title="Trang đầu"
-          >
-            «
-          </button>
-
-          {/* Previous page button */}
-          <button
-            onClick={() => setPage(page - 1)}
-            disabled={page === 0}
-            title="Trang trước"
-          >
-            ‹
-          </button>
-
-          {/* Page numbers - Smart pagination (max 5 visible) */}
-          {(() => {
-            const maxVisible = 5;
-            let startPage = 0;
-            let endPage = totalPages;
-
-            if (totalPages > maxVisible) {
-              // Calculate start and end based on current page
-              const halfVisible = Math.floor(maxVisible / 2);
-
-              if (page <= halfVisible) {
-                // Near the beginning
-                startPage = 0;
-                endPage = maxVisible;
-              } else if (page >= totalPages - halfVisible - 1) {
-                // Near the end
-                startPage = totalPages - maxVisible;
-                endPage = totalPages;
-              } else {
-                // In the middle
-                startPage = page - halfVisible;
-                endPage = page + halfVisible + 1;
-              }
-            }
-
-            return [...Array(endPage - startPage)].map((_, i) => {
-              const pageNum = startPage + i;
-              return (
-                <button
-                  key={pageNum}
-                  className={pageNum === page ? "active" : ""}
-                  onClick={() => setPage(pageNum)}
-                >
-                  {pageNum + 1}
-                </button>
-              );
-            });
-          })()}
-
-          {/* Next page button */}
-          <button
-            onClick={() => setPage(page + 1)}
-            disabled={page + 1 >= totalPages}
-            title="Trang sau"
-          >
-            ›
-          </button>
-
-          {/* Last page button */}
-          <button
-            onClick={() => setPage(totalPages - 1)}
-            disabled={page + 1 >= totalPages}
-            title="Trang cuối"
-          >
-            »
-          </button>
-
-          {/* Page size selector */}
-          <select
-            value={size}
-            onChange={(e) => {
-              setSize(parseInt(e.target.value));
-              setPage(0); // Reset to first page when changing size
-            }}
-            style={{ marginLeft: "10px" }}
-          >
-            <option value={5}>5 / trang</option>
-            <option value={10}>10 / trang</option>
-            <option value={20}>20 / trang</option>
-          </select>
         </div>
 
+        {/* ===== Table ===== */}
+        <div style={{ marginTop: "50px" }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Mã đơn</th>
+
+                      <th
+                        className={`sortable ${
+                          sortConfig.field === "productId" ? sortConfig.direction : ""
+                        }`}
+                        onClick={() => handleSort("productId")}
+                      >
+                        Mã SP
+                      </th>
+                      <th>Số lượng</th>
+                      <th>Đơn giá</th>
+                      <th
+                        className={`sortable ${
+                          sortConfig.field === "totalPrice" ? sortConfig.direction : ""
+                        }`}
+                        onClick={() => handleSort("totalPrice")}
+                      >
+                        Thành tiền
+                      </th>
+                      <th>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan="8" style={{ textAlign: "center" }}>
+                          Đang tải dữ liệu...
+                        </td>
+                      </tr>
+                    ) : orderDetails.length > 0 ? (
+                      orderDetails.map((detail) => (
+                        <tr
+                          key={detail.orderDetailId}
+                          className={!detail.isOrderActive ? "inactive-order-row" : ""}
+                        >
+                          <td>{detail.orderDetailId}</td>
+                          <td>{detail.orderId}</td>
+                          <td>{detail.productId}</td>
+                          <td>{detail.quantity}</td>
+                          <td>{detail.unitPrice}</td>
+                          <td>{detail.totalPrice}</td>
+                          <td>
+                            <div className="actions">
+                              {detail.isOrderActive ? (
+                                <>
+                                  <button
+                                    className="icon-button edit-icon"
+                                    onClick={() => handleEdit(detail)}
+                                    title="Sửa"
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    className="icon-button delete-icon"
+                                    onClick={() => handleDelete(detail)}
+                                    title="Xóa"
+                                  >
+                                    🗑️
+                                  </button>
+                                </>
+                              ) : (
+                                <span className="no-action" title="Đơn hàng đã bị hủy/ẩn">
+
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="8" style={{ textAlign: "center" }}>
+                          Không có dữ liệu.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+
+                {/* ===== Pagination ===== */}
+                {orderDetails.length > 0 && (
+                  <div style={{
+                    textAlign: "center",
+                    padding: "10px 0",
+                    color: "#666",
+                    fontSize: "14px"
+                  }}>
+                    Hiển thị {orderDetails.length} / {totalPages * size} chi tiết đơn hàng
+                  </div>
+                )}
+
+                {/* ===== Pagination Controls ===== */}
+                <div className="pagination">
+                  {/* First page button */}
+                  <button
+                    onClick={() => setPage(0)}
+                    disabled={page === 0}
+                    title="Trang đầu"
+                  >
+                    «
+                  </button>
+
+                  {/* Previous page button */}
+                  <button
+                    onClick={() => setPage(page - 1)}
+                    disabled={page === 0}
+                    title="Trang trước"
+                  >
+                    ‹
+                  </button>
+
+                  {/* Page numbers - Smart pagination (max 5 visible) */}
+                  {(() => {
+                    const maxVisible = 5;
+                    let startPage = 0;
+                    let endPage = totalPages;
+
+                    if (totalPages > maxVisible) {
+                      // Calculate start and end based on current page
+                      const halfVisible = Math.floor(maxVisible / 2);
+
+                      if (page <= halfVisible) {
+                        // Near the beginning
+                        startPage = 0;
+                        endPage = maxVisible;
+                      } else if (page >= totalPages - halfVisible - 1) {
+                        // Near the end
+                        startPage = totalPages - maxVisible;
+                        endPage = totalPages;
+                      } else {
+                        // In the middle
+                        startPage = page - halfVisible;
+                        endPage = page + halfVisible + 1;
+                      }
+                    }
+
+                    return [...Array(endPage - startPage)].map((_, i) => {
+                      const pageNum = startPage + i;
+                      return (
+                        <button
+                          key={pageNum}
+                          className={pageNum === page ? "active" : ""}
+                          onClick={() => setPage(pageNum)}
+                        >
+                          {pageNum + 1}
+                        </button>
+                      );
+                    });
+                  })()}
+
+                  {/* Next page button */}
+                  <button
+                    onClick={() => setPage(page + 1)}
+                    disabled={page + 1 >= totalPages}
+                    title="Trang sau"
+                  >
+                    ›
+                  </button>
+
+                  {/* Last page button */}
+                  <button
+                    onClick={() => setPage(totalPages - 1)}
+                    disabled={page + 1 >= totalPages}
+                    title="Trang cuối"
+                  >
+                    »
+                  </button>
+
+                  {/* Page size selector */}
+                  <select
+                    value={size}
+                    onChange={(e) => {
+                      setSize(parseInt(e.target.value));
+                      setPage(0); // Reset to first page when changing size
+                    }}
+                    style={{ marginLeft: "10px" }}
+                  >
+                    <option value={5}>5 / trang</option>
+                    <option value={10}>10 / trang</option>
+                    <option value={20}>20 / trang</option>
+                  </select>
+        </div>
       </div>
 
       {/* ✅ Modal Overlay */}

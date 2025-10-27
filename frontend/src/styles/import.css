@@ -31,13 +31,14 @@ ul.unsorted-list {
 }
 
 .filter-section label {
-    padding: 40px;
+    padding: 3px;
 }
 
 .filter-section input[type=date] {
     width: 140;
+    height: px;
     padding: 10px;
-    margin: 20px 0;
+    margin: 10px;
     border: 1px solid #ccc;
     border-radius: 3px;
 
@@ -53,9 +54,6 @@ ul.unsorted-list {
     display: flex;
     align-items: center;
     gap: 20px;
-
-
-
     padding: 10px 0;
 }
 

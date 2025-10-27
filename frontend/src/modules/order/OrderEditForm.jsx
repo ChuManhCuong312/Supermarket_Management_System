@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
+import "../../styles/order.css";
 import OrderService from "./orderService";
 import OrderDetailService from "../orderDetail/orderDetailService";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-import "../../styles/order.css";
 
 export default function OrderEditForm({ orderId, onSuccess, onCancel }) {
   const [orderData, setOrderData] = useState(null);
@@ -376,8 +376,8 @@ export default function OrderEditForm({ orderId, onSuccess, onCancel }) {
 
   if (loading) {
     return (
-      <div className="modal-overlay">
-        <div className="modal-content">
+      <div className="order-modal-overlay">
+        <div className="order-modal-content">
           <p>Đang tải dữ liệu...</p>
         </div>
       </div>
@@ -385,8 +385,8 @@ export default function OrderEditForm({ orderId, onSuccess, onCancel }) {
   }
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content" style={{ maxWidth: "800px", maxHeight: "90vh", overflowY: "auto" }}>
+    <div className="order-modal-overlay">
+      <div className="order-modal-content" >
         <style>{`
           .react-confirm-alert-overlay {
             z-index: 10000 !important;
@@ -489,7 +489,8 @@ export default function OrderEditForm({ orderId, onSuccess, onCancel }) {
               Không có chi tiết đơn hàng. Nhấn "Thêm sản phẩm mới" bên dưới để thêm sản phẩm.
             </p>
           ) : (
-            existingOrderDetails.map((detail, index) => (
+              <div className="order-details-grid">
+            {existingOrderDetails.map((detail, index) => (
               <div key={detail.orderDetailId} style={{
                 border: "1px solid #ddd",
                 padding: "15px",
@@ -579,13 +580,15 @@ export default function OrderEditForm({ orderId, onSuccess, onCancel }) {
                   Thành tiền: {(detail.quantity * detail.unitPrice).toLocaleString()}đ
                 </div>
               </div>
-            ))
+            ))}
+        </div>
           )}
 
           {/* New Order Details */}
           {newOrderDetails.length > 0 && (
             <>
               <h3 style={{ marginTop: "20px" }}>➕ Thêm sản phẩm mới</h3>
+              <div className="order-details-grid">
               {newOrderDetails.map((detail, index) => (
                 <div key={index} style={{
                   border: "1px solid #4CAF50",
@@ -689,6 +692,7 @@ export default function OrderEditForm({ orderId, onSuccess, onCancel }) {
                   </div>
                 </div>
               ))}
+          </div>
             </>
           )}
 
