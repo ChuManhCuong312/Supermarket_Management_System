@@ -21,8 +21,8 @@ function Header() {
       alignItems: "center",
       backgroundColor: "#fff"
     }}>
-      <h1 style={{ margin: 0, fontSize: 20, color: "#1976d2" }}>
-        🏪 Supermarket Management
+      <h1 style={{ margin: 0, fontSize: 35, color: "#1976d2" }}>
+        🏪 ÉliteMart
       </h1>
       
       <nav style={{ display: "flex", gap: "8px" }}>
