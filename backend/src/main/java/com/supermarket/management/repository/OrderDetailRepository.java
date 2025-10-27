@@ -39,4 +39,29 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
             @Param("productId") Integer productId,
             Pageable pageable
     );
+
+    // Revenue methods
+    @Query("SELECT p.name, COALESCE(SUM(od.totalPrice), 0) FROM OrderDetail od " +
+            "JOIN Product p ON od.productId = p.productId " +
+            "JOIN Order o ON od.orderId = o.orderId " +
+            "WHERE o.orderDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY p.productId, p.name " +
+            "ORDER BY SUM(od.totalPrice) DESC")
+    List<Object[]> getTopProductsByRevenue(@Param("startDate") java.time.LocalDate startDate, @Param("endDate") java.time.LocalDate endDate);
+
+    @Query("SELECT p.name, COALESCE(SUM(od.quantity), 0) FROM OrderDetail od " +
+            "JOIN Product p ON od.productId = p.productId " +
+            "JOIN Order o ON od.orderId = o.orderId " +
+            "WHERE o.orderDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY p.productId, p.name " +
+            "ORDER BY SUM(od.quantity) DESC")
+    List<Object[]> getTopProductsByQuantity(@Param("startDate") java.time.LocalDate startDate, @Param("endDate") java.time.LocalDate endDate);
+
+    @Query("SELECT p.category, COALESCE(SUM(od.totalPrice), 0) FROM OrderDetail od " +
+            "JOIN Product p ON od.productId = p.productId " +
+            "JOIN Order o ON od.orderId = o.orderId " +
+            "WHERE o.orderDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY p.category " +
+            "ORDER BY SUM(od.totalPrice) DESC")
+    List<Object[]> getRevenueByCategory(@Param("startDate") java.time.LocalDate startDate, @Param("endDate") java.time.LocalDate endDate);
 }
