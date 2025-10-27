@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import revenueService from '../revenueService';
 
 export default function EmployeeOrdersChart({ dateRange }) {
   const [employeesData, setEmployeesData] = useState([]);
@@ -12,63 +13,25 @@ export default function EmployeeOrdersChart({ dateRange }) {
   const fetchEmployeesData = async () => {
     setLoading(true);
     try {
-      // Mock data - replace with actual API calls
-      const mockData = [
-        {
-          id: 1,
-          name: 'Nguyễn Văn A',
-          position: 'Thu ngân',
-          orders: 245,
-          revenue: 12500000,
-          commission: 625000,
-          shift: 'Ca sáng',
-          performance: 95
-        },
-        {
-          id: 2,
-          name: 'Trần Thị B',
-          position: 'Bán hàng',
-          orders: 198,
-          revenue: 9800000,
-          commission: 490000,
-          shift: 'Ca chiều',
-          performance: 88
-        },
-        {
-          id: 3,
-          name: 'Lê Văn C',
-          position: 'Thu ngân',
-          orders: 156,
-          revenue: 7800000,
-          commission: 390000,
-          shift: 'Ca tối',
-          performance: 82
-        },
-        {
-          id: 4,
-          name: 'Phạm Thị D',
-          position: 'Bán hàng',
-          orders: 134,
-          revenue: 6700000,
-          commission: 335000,
-          shift: 'Ca sáng',
-          performance: 75
-        },
-        {
-          id: 5,
-          name: 'Hoàng Văn E',
-          position: 'Thu ngân',
-          orders: 112,
-          revenue: 5600000,
-          commission: 280000,
-          shift: 'Ca chiều',
-          performance: 68
-        }
-      ];
+      // Fetch từ API thật
+      const response = await revenueService.getEmployeePerformance(dateRange.startDate, dateRange.endDate);
       
-      setEmployeesData(mockData);
+      const employeesData = (response.data || []).map(item => ({
+        id: item.employeeId,
+        name: item.employeeName,
+        position: item.position,
+        orders: item.totalOrders || 0,
+        revenue: parseFloat(item.totalRevenue) || 0,
+        commission: parseFloat(item.commission) || 0,
+        shift: item.shift,
+        performance: parseFloat(item.performance) || 0
+      }));
+      
+      setEmployeesData(employeesData);
     } catch (error) {
       console.error('Error fetching employees data:', error);
+      // Fallback to empty data on error
+      setEmployeesData([]);
     } finally {
       setLoading(false);
     }
