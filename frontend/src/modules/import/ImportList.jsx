@@ -20,6 +20,7 @@ export default function ImportList() {
         endDate: "",
         minAmount: "",
         maxAmount: "",
+        status: "",
     });
 
     const [searchSupplierName, setSearchSupplierName] = useState("");
@@ -158,6 +159,7 @@ export default function ImportList() {
             endDate: "",
             minAmount: "",
             maxAmount: "",
+            status: "",
         });
         setIsSearching(false);
         setPage(0);
@@ -368,6 +370,31 @@ export default function ImportList() {
         }
     };
 
+    //Handle filter by status
+    const handleFilterByStatus = async () => {
+        const { status } = filters;
+        if (!status) {
+            showModal("Lỗi", "Vui lòng chọn trạng thái để lọc", "error");
+            return;
+        }
+        try {
+            const allImportsResponse = await importService.getAll(0, 1000);
+            const filteredImports = allImportsResponse.imports.filter(i => i.status === status);
+            if (filteredImports.length > 0) {
+                setImports(filteredImports);
+                setIsSearching(true);
+                setTotalPages(1);
+                setTotalItems(filteredImports.length);
+            } else {
+                showModal("Không tìm thấy", `Không tồn tại phiếu nhập với trạng thái: ${status}`, "error");
+                setImports([]);
+            }
+        } catch (err) {
+            console.error("Filter error:", err);
+            showModal("Lỗi", "Không thể lọc theo trạng thái", "error");
+        }
+    };
+
     const handlePageChange = (newPage) => setPage(newPage);
     const showModal = (title, message, type = "info") => {
         setModal({ isOpen: true, title, message, type });
@@ -396,6 +423,7 @@ export default function ImportList() {
                 filters={filters}
                 handleFilterChange={handleFilterChange}
                 handleFilterByDate={handleFilterByDate}
+                handleFilterByStatus={handleFilterByStatus}
             />
             <div className="total-number">
                 <p>Tổng số:<span className="total-items-count">{totalItems}</span> nhập đơn </p>
@@ -456,6 +484,7 @@ export default function ImportList() {
                     </div>
                 </div>
             )}
+
         </>
     );
 }

@@ -1,3 +1,4 @@
+// Updated SearchAndFilter.jsx with status filter UI
 import React from "react";
 
 export default function SearchAndFilter({
@@ -19,6 +20,7 @@ export default function SearchAndFilter({
     filters,
     handleFilterChange,
     handleFilterByDate,
+    handleFilterByStatus, // Added prop for status filter handler
 }) {
     const handleSearch = () => {
         const id = searchSupplierId.trim();
@@ -154,7 +156,6 @@ export default function SearchAndFilter({
 
             {/* Added Filter Section */}
             <div className="filter-section">
-
                 <label>Ngày bắt đầu:</label>
                 <input
                     type="date"
@@ -168,7 +169,26 @@ export default function SearchAndFilter({
                     onChange={(e) => handleFilterChange('endDate', e.target.value)}
                 />
                 <button id="btn-filter-date" onClick={handleFilterByDate}><span className="text-in-button">Lọc theo ngày </span></button>
+
+                {/* Added: Status filter */}
+                <label>Trạng thái:</label>
+                <select
+                    value={filters.status}
+                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                    style={{
+                        padding: '0.5rem',
+                        border: '1px solid #ddd',
+                        borderRadius: '5px',
+                        fontSize: '14px',
+                    }}
+                >
+                    <option value="">Tất cả</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+                <button id="btn-filter-date" onClick={handleFilterByStatus}><span className="text-in-button" >Lọc theo trạng thái </span></button>
             </div>
-        </div>
+        </div >
     );
 }
