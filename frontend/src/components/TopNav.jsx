@@ -1,4 +1,9 @@
 import React from "react";
+import CustomerList from "./modules/customer/CustomerList";
+import EmployeeList from "./modules/employee/EmployeeList";
+import OrderList from "./modules/order/OrderList";
+import ImportList from "./modules/import/ImportList";
+import OrderDetailList from "./modules/orderDetail/OrderDetailList";
 import { NavLink } from "react-router-dom";
 
 function TopNav() {
