@@ -61,6 +61,16 @@ const revenueService = {
         endDate
       }
     });
+  },
+
+  // Lấy báo cáo hiệu suất nhân viên
+  getEmployeePerformance: (startDate, endDate) => {
+    return axiosClient.get('/revenue/employees', {
+      params: {
+        startDate,
+        endDate
+      }
+    });
   }
 };
 
