@@ -206,7 +206,7 @@ export default function ProductList() {
     try {
       const payload = {
         ...formData,
-        supplierId: selectedSupplierId, // gửi id nhà cung cấp
+        supplierId: selectedSupplierId,
       };
 
       if (editingId) {
@@ -216,10 +216,18 @@ export default function ProductList() {
         await productService.createProduct(payload);
         showModal("✓ Thành công", "Thêm mới sản phẩm thành công!", "success");
       }
+
       closeForm();
       fetchProducts();
     } catch (err) {
-      let errorMsg = err.response?.data?.message || err.message || "Có lỗi xảy ra";
+      console.error("❌ API Error:", err.response?.data || err.message);
+
+      // ✅ Ưu tiên thông báo từ backend
+      let errorMsg =
+        typeof err.response?.data === "string"
+          ? err.response.data
+          : err.response?.data?.message || err.message || "Có lỗi xảy ra";
+
       showModal("❌ Lỗi", errorMsg, "error");
     }
   };
