@@ -1,0 +1,31 @@
+.input-wrapper {
+    width: "100%";
+    padding: "8px 10px";
+    border-radius: "6px";
+    border: "1px solid #ccc";
+    box-sizing: "border-box";
+}
+
+.error-text {
+    font-size: small;
+    color: red;
+}
+
+ul.unsorted-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 150px;
+    overflow-y: auto;
+    background-color: #fff;
+    position: absolute;
+    width: calc(100% - 22px);
+    z-index: 1000;
+}
+
+.filter-section {
+    margin: 60 0;
+
+}

@@ -1,6 +1,4 @@
-// src/components/ImportTable.js
 import React from "react";
-
 export default function ImportTable({
     imports,
     supplierNames,
