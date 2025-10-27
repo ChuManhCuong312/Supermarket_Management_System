@@ -1,6 +1,8 @@
 package com.supermarket.management.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -12,22 +14,30 @@ public class Order {
     @Column(name = "order_id")
     private Integer orderId;
 
+    @NotNull(message = "Mã khách hàng không được để trống")
+    @Min(value = 1, message = "Mã khách hàng phải lớn hơn 0")
     @Column(name = "customer_id")
     private Integer customerId;
 
+    @NotNull(message = "Mã nhân viên không được để trống")
+    @Min(value = 1, message = "Mã nhân viên phải lớn hơn 0")
     @Column(name = "employee_id")
     private Integer employeeId;
 
-    @Column(name = "order_date")
+    @NotNull(message = "Ngày đặt hàng không được để trống")
+    @PastOrPresent(message = "Ngày đặt hàng không thể ở tương lai")
+    @Column(name = "order_date",nullable = false)
     private LocalDate orderDate;
 
     @Column(name = "total_amount")
     private BigDecimal totalAmount;
 
-    @Column(name = "discount")
+    @DecimalMin(value = "0.00", message = "Giảm giá không thể âm")
+    @Digits(integer = 5, fraction = 2, message = "Định dạng giảm giá không hợp lệ")
+    @Column(name = "discount",nullable = true)
     private BigDecimal discount;
 
-    @Column(name = "deleted_type")
+    @Column(name = "deleted_type",length = 50)
     private String deletedType;
 
     //Getters and Setters

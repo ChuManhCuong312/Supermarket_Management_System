@@ -1,6 +1,8 @@
 package com.supermarket.management.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+
 import java.math.BigDecimal;
 
 @Entity
@@ -11,13 +13,19 @@ public class OrderDetail {
     @Column(name = "order_detail_id")
     private Integer orderDetailId;
 
-    @Column(name = "order_id")
+    @NotNull(message = "Mã đơn hàng không được để trống")
+    @Min(value = 1, message = "Mã đơn hàng phải lớn hơn 0")
+    @Column(name = "order_id", nullable = false)
     private Integer orderId;
 
-    @Column(name = "product_id")
+    @NotNull(message = "Mã sản phẩm không được để trống")
+    @Min(value = 1, message = "Mã sản phẩm phải lớn hơn 0")
+    @Column(name = "product_id",nullable = false)
     private Integer productId;
 
-    @Column(name = "quantity")
+    @NotNull(message = "Số lượng không được để trống")
+    @Min(value = 1, message = "Số lượng phải lớn hơn 0")
+    @Column(name = "quantity",nullable = false)
     private Integer quantity;
 
     @Column(name = "unit_price")

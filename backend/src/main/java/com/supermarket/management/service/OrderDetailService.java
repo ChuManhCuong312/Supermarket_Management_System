@@ -47,6 +47,8 @@ public class OrderDetailService {
 
     @Transactional
     public OrderDetail createOrderDetail(OrderDetail orderDetail) {
+        trimOrderDetail(orderDetail);
+        validateOrderDetail(orderDetail, null);
         // ✅ First, check if the order exists and is active (deletedType = null)
         Order order = orderRepository.findById(orderDetail.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
@@ -102,7 +104,8 @@ public class OrderDetailService {
     public OrderDetail updateOrderDetail(Integer id, OrderDetail updatedDetail) {
         OrderDetail existing = orderDetailRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order detail not found"));
-
+        trimOrderDetail(existing);
+        validateOrderDetail(existing, updatedDetail);
         // ✅ Check if the order is active before allowing update
         Order order = orderRepository.findById(existing.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
@@ -209,6 +212,44 @@ public class OrderDetailService {
     }
     public Page<OrderDetail> searchByCriteria(Integer orderId, Integer productId, Pageable pageable) {
         return orderDetailRepository.findByCriteria(orderId, productId, pageable);
+    }
+
+    // ================================
+    // Validate dữ liệu
+    // ================================
+    private void validateOrderDetail(OrderDetail orderDetail, OrderDetail existingOrderDetail) {
+        // Kiểm tra mã đơn hàng
+        if (orderDetail.getOrderId() == null || orderDetail.getOrderId() <= 0) {
+            throw new IllegalArgumentException("Mã đơn hàng không được để trống và phải lớn hơn 0");
+        }
+
+        if (!orderRepository.existsById(orderDetail.getOrderId())) {
+            throw new IllegalArgumentException("Đơn hàng không tồn tại trong hệ thống");
+        }
+
+        // Kiểm tra mã sản phẩm
+        if (orderDetail.getProductId() == null || orderDetail.getProductId() <= 0) {
+            throw new IllegalArgumentException("Mã sản phẩm không được để trống và phải lớn hơn 0");
+        }
+
+        if (!productRepository.existsById(orderDetail.getProductId())) {
+            throw new IllegalArgumentException("Sản phẩm không tồn tại trong hệ thống");
+        }
+
+        // Kiểm tra số lượng
+        if (orderDetail.getQuantity() == null || orderDetail.getQuantity() <= 0) {
+            throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
+        }
+
+        // unit_price và total_price không cần kiểm tra (tự động tính)
+    }
+
+    // ================================
+    // Cắt khoảng trắng
+    // ================================
+    private void trimOrderDetail(OrderDetail orderDetail) {
+        // Không có chuỗi ký tự cần trim trong entity này
+        // nhưng để hàm này cho thống nhất cấu trúc service
     }
 
 }
