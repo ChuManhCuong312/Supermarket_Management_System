@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.supermarket.management.dto.CategoryRevenueDTO;
 import com.supermarket.management.dto.DailyRevenueDTO;
+import com.supermarket.management.dto.EmployeePerformanceDTO;
 import com.supermarket.management.dto.MonthlyRevenueDTO;
 import com.supermarket.management.dto.ProductRevenueDTO;
 import com.supermarket.management.dto.RevenueResponse;
@@ -179,6 +180,59 @@ public class RevenueService {
         }
 
         return categoryRevenueList;
+    }
+
+    /**
+     * Lấy báo cáo hiệu suất nhân viên
+     */
+    public List<EmployeePerformanceDTO> getEmployeePerformance(LocalDate startDate, LocalDate endDate) {
+        List<Object[]> results = orderRepository.getEmployeePerformance(startDate, endDate);
+        List<EmployeePerformanceDTO> employeePerformanceList = new ArrayList<>();
+
+        // Calculate total revenue for performance calculation
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        for (Object[] result : results) {
+            BigDecimal revenue = (BigDecimal) result[5];
+            if (revenue != null) {
+                totalRevenue = totalRevenue.add(revenue);
+            }
+        }
+
+        for (Object[] result : results) {
+            Integer employeeId = (Integer) result[0];
+            String employeeName = (String) result[1];
+            String position = (String) result[2];
+            String shift = (String) result[3];
+            Long totalOrders = (Long) result[4];
+            BigDecimal revenue = (BigDecimal) result[5];
+
+            // Calculate commission (5% of revenue)
+            BigDecimal commission = BigDecimal.ZERO;
+            if (revenue != null) {
+                commission = revenue.multiply(BigDecimal.valueOf(0.05)).setScale(2, RoundingMode.HALF_UP);
+            }
+
+            // Calculate performance percentage based on revenue contribution
+            Double performance = 0.0;
+            if (totalRevenue.compareTo(BigDecimal.ZERO) > 0 && revenue != null) {
+                performance = revenue.divide(totalRevenue, 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .doubleValue();
+            }
+
+            employeePerformanceList.add(new EmployeePerformanceDTO(
+                employeeId,
+                employeeName,
+                position,
+                shift,
+                totalOrders != null ? totalOrders : 0L,
+                revenue != null ? revenue : BigDecimal.ZERO,
+                commission,
+                performance
+            ));
+        }
+
+        return employeePerformanceList;
     }
 
     /**

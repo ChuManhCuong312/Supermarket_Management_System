@@ -170,6 +170,109 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
     }
   };
 
+// 🔹 CUSTOMER HANDLER
+const handleCustomerByNameChange = async (value) => {
+  setCustomerInput(value);
+
+  // 🩵 1️⃣ Empty input → reload top 10
+  if (!value || value.trim() === "") {
+    try {
+      const res = await axiosClient.get("/customers?page=1&size=10");
+      setCustomers(res.data.data || []);
+    } catch (err) {
+      console.error("❌ Lỗi khi tải danh sách khách hàng:", err);
+    }
+    setFormData((prev) => ({ ...prev, customerId: "" }));
+    return;
+  }
+
+  // 🩵 2️⃣ Try extract numeric ID
+  const idMatch = value.match(/^\d+/);
+  const inputId = idMatch ? parseInt(idMatch[0], 10) : null;
+
+  try {
+    // Always fetch a full list to search globally
+    const res = await axiosClient.get("/customers?page=1&size=100");
+    const list = res.data.data || [];
+
+    // 🩵 3️⃣ Filter by ID or partial name match
+    const filtered = list.filter((c) => {
+      const idOk = inputId && c.id === inputId;
+      const nameOk = c.name.toLowerCase().includes(value.toLowerCase());
+      return idOk || nameOk;
+    });
+
+    // 🩵 Always show something (if nothing matches, fallback to first 10)
+    setCustomers(filtered.length > 0 ? filtered.slice(0, 10) : list.slice(0, 10));
+
+    // 🩵 4️⃣ Auto-select exact ID or name
+    const exact = filtered.find(
+      (c) =>
+        c.id === inputId ||
+        c.name.toLowerCase().trim() === value.toLowerCase().trim()
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      customerId: exact ? exact.id.toString() : "",
+    }));
+  } catch (err) {
+    console.error("❌ Lỗi khi tìm khách hàng:", err);
+  }
+};
+
+// 🔹 EMPLOYEE HANDLER — same logic as customer, fully stable
+const handleEmployeeByNameChange = async (value) => {
+  setEmployeeInput(value);
+
+  // 🩵 1️⃣ Empty input → reload top 10
+  if (!value || value.trim() === "") {
+    try {
+      const res = await axiosClient.get("/employees?page=0&size=10");
+      setEmployees(res.data.data || []);
+    } catch (err) {
+      console.error("❌ Lỗi khi tải danh sách nhân viên:", err);
+    }
+    setFormData((prev) => ({ ...prev, employeeId: "" }));
+    return;
+  }
+
+  // 🩵 2️⃣ Try extract numeric ID
+  const idMatch = value.match(/^\d+/);
+  const inputId = idMatch ? parseInt(idMatch[0], 10) : null;
+
+  try {
+    // Always fetch a full list to search globally — use page=0 for first page
+    const res = await axiosClient.get("/employees?page=0&size=100");  // 🔴 Changed to page=0
+    const list = res.data.data || [];
+
+    // 🩵 3️⃣ Filter by ID or partial name match
+    const filtered = list.filter((e) => {
+      const idOk = inputId && e.id === inputId;
+      const nameOk = e.name.toLowerCase().includes(value.toLowerCase());
+      return idOk || nameOk;
+    });
+
+    // 🩵 Always show something (if nothing matches, fallback to first 10)
+    setEmployees(filtered.length > 0 ? filtered.slice(0, 10) : list.slice(0, 10));
+
+    // 🩵 4️⃣ Auto-select exact ID or name
+    const exact = filtered.find(
+      (e) =>
+        e.id === inputId ||
+        e.name.toLowerCase().trim() === value.toLowerCase().trim()
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      employeeId: exact ? exact.id.toString() : "",
+    }));
+  } catch (err) {
+    console.error("❌ Lỗi khi tìm nhân viên:", err);
+  }
+};
+
+
   const handleProductChange = async (index, value) => {
     const newOrderDetails = [...orderDetails];
     newOrderDetails[index].productInput = value;
@@ -314,12 +417,12 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
             <label>Khách hàng *</label>
             <input
               list="customer-list"
-              name="customerInput"
+              name="customerName"
               value={customerInput}
-              onChange={handleCustomerChange}
+              onChange={(e) => handleCustomerByNameChange(e.target.value)}
               required
               autoComplete="off"
-              placeholder="Nhập hoặc chọn mã khách hàng"
+              placeholder="Nhập hoặc chọn tên khách hàng"
             />
             <datalist id="customer-list">
               {customers.map((c) => (
@@ -336,12 +439,12 @@ export default function OrderForm({ initialData, onSuccess, onCancel }) {
             <label>Nhân viên *</label>
             <input
               list="employee-list"
-              name="employeeInput"
+              name="employeeName"
               value={employeeInput}
-              onChange={handleEmployeeChange}
+              onChange={(e) => handleEmployeeByNameChange(e.target.value)}
               required
               autoComplete="off"
-              placeholder="Nhập hoặc chọn mã nhân viên"
+              placeholder="Nhập hoặc chọn tên nhân viên"
             />
             <datalist id="employee-list">
               {employees

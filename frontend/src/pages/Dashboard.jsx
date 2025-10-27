@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Hero from '../components/Hero.jsx';
 import FeatureCard from '../components/FeatureCard.jsx';
-import '../styles/Dashboard.css';
 
 function Dashboard() {
   const navigate = useNavigate();

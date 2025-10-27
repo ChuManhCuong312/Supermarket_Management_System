@@ -1,14 +1,24 @@
 package com.supermarket.management.controller;
 
-import com.supermarket.management.dto.*;
-import com.supermarket.management.service.RevenueService;
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.util.List;
+import com.supermarket.management.dto.CategoryRevenueDTO;
+import com.supermarket.management.dto.DailyRevenueDTO;
+import com.supermarket.management.dto.EmployeePerformanceDTO;
+import com.supermarket.management.dto.MonthlyRevenueDTO;
+import com.supermarket.management.dto.ProductRevenueDTO;
+import com.supermarket.management.dto.RevenueResponse;
+import com.supermarket.management.service.RevenueService;
 
 @RestController
 @RequestMapping("/api/revenue")
@@ -95,6 +105,19 @@ public class RevenueController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
         List<CategoryRevenueDTO> response = revenueService.getRevenueByCategory(startDate, endDate);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Lấy báo cáo hiệu suất nhân viên
+     * GET /api/revenue/employees?startDate=2024-01-01&endDate=2024-12-31
+     */
+    @GetMapping("/employees")
+    public ResponseEntity<List<EmployeePerformanceDTO>> getEmployeePerformance(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        List<EmployeePerformanceDTO> response = revenueService.getEmployeePerformance(startDate, endDate);
         return ResponseEntity.ok(response);
     }
 }

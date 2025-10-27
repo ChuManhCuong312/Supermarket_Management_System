@@ -1,6 +1,9 @@
 package com.supermarket.management.repository;
 
-import com.supermarket.management.entity.Order;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,9 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import com.supermarket.management.entity.Order;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer> {
@@ -98,4 +99,20 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     @Query("SELECT YEAR(o.orderDate), MONTH(o.orderDate), COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) ORDER BY YEAR(o.orderDate), MONTH(o.orderDate)")
     List<Object[]> getMonthlyRevenue(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    // Employee performance methods
+    @Query("SELECT o.orderDate, COALESCE(SUM(o.totalAmount), 0), COUNT(o) FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate GROUP BY o.orderDate ORDER BY o.orderDate")
+    List<Object[]> getDailyRevenueWithOrderCount(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT YEAR(o.orderDate), MONTH(o.orderDate), COALESCE(SUM(o.totalAmount), 0), COUNT(o) FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate GROUP BY YEAR(o.orderDate), MONTH(o.orderDate) ORDER BY YEAR(o.orderDate), MONTH(o.orderDate)")
+    List<Object[]> getMonthlyRevenueWithOrderCount(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    // Employee performance report
+    @Query("SELECT o.employeeId, e.name, e.position, e.shift, COUNT(o) as totalOrders, COALESCE(SUM(o.totalAmount), 0) as totalRevenue " +
+           "FROM Order o " +
+           "JOIN Employee e ON o.employeeId = e.id " +
+           "WHERE o.orderDate BETWEEN :startDate AND :endDate " +
+           "GROUP BY o.employeeId, e.name, e.position, e.shift " +
+           "ORDER BY totalRevenue DESC")
+    List<Object[]> getEmployeePerformance(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }
