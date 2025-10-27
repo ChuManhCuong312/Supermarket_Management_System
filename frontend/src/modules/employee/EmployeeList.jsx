@@ -443,6 +443,7 @@ const handleSaveEmployee = async (e) => {
                 <div className="form-group">
                   <label>Lương <span className="required">*</span></label>
                   <input
+                  required
                     type="number"
                     placeholder="Nhập lương"
                     value={newEmployee.salary}
