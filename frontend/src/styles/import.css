@@ -1,0 +1,89 @@
+.input-wrapper {
+    width: "100%";
+    padding: "8px 10px";
+    border-radius: "6px";
+    border: "1px solid #ccc";
+    box-sizing: "border-box";
+}
+
+.error-text {
+    font-size: small;
+    color: red;
+}
+
+ul.unsorted-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 150px;
+    overflow-y: auto;
+    background-color: #fff;
+    position: absolute;
+    width: calc(100% - 22px);
+    z-index: 1000;
+}
+
+.filter-section {
+    margin: 60 0;
+
+}
+
+.filter-section label {
+    padding: 3px;
+}
+
+.filter-section input[type=date] {
+    width: 140;
+    height: px;
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+
+}
+
+.filter-section number {
+    padding: 10px;
+    font-weight: bold;
+}
+
+
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.total-number {
+    margin-left: 15px;
+    padding: 10px 20px;
+    color: rgb(102, 102, 102);
+    font-size: 14px;
+    background: rgb(241, 248, 233);
+}
+
+.total-items-count {
+    font-weight: bold;
+    padding: 5px;
+}
+
+#btn-filter-date {
+    background: rgb(47, 135, 207);
+    color: 'white';
+    padding: 10px;
+    border: 'none';
+    border-radius: '5px';
+    cursor: 'pointer';
+    white-space: 'nowrap';
+    border: 1px solid #ccc;
+    border-radius: 3px;
+
+}
+
+.text-in-button {
+    color: white;
+    font-weight: bold;
+}
